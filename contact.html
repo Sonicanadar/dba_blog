@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact | Senior Database Infrastructure Engineer</title>
+    <!-- Links to your unified global stylesheet asset file -->
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .contact-container {
+            max-width: 700px;
+            margin: 2rem auto;
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 2rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+
+        .terminal-header {
+            font-family: 'SFMono-Regular', Consolas, monospace;
+            color: var(--accent-color);
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 0.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+            font-family: 'SFMono-Regular', Consolas, monospace;
+        }
+
+        .form-label {
+            display: block;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .form-label::before {
+            content: "$ ";
+            color: var(--accent-color);
+        }
+
+        .form-input {
+            width: 100%;
+            background-color: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            padding: 0.75rem;
+            color: var(--text-main);
+            font-family: inherit;
+            font-size: 0.95rem;
+            transition: border-color 0.2s ease;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--accent-color);
+        }
+
+        textarea.form-input {
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        .submit-btn {
+            background-color: var(--accent-color);
+            color: #ffffff;
+            border: 1px solid var(--accent-color);
+            padding: 0.75rem 1.5rem;
+            border-radius: 4px;
+            font-family: 'SFMono-Regular', Consolas, monospace;
+            font-size: 0.95rem;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+            transition: all 0.2s ease;
+        }
+
+        .submit-btn:hover {
+            background-color: transparent;
+            color: var(--accent-color);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Empty header; generated dynamically via components.js -->
+    <header></header>
+
+    <div class="container" style="max-width: 1100px;">
+        <div class="contact-container">
+            <div class="terminal-header">📥 INITIALIZE CONNECTION PROFILE</div>
+            
+            <!-- Standard Form - Hooked to Formspree for free submission processing without code backend -->
+            <form action="https://formspree.io" method="POST">
+                
+                <div class="form-group">
+                    <label class="form-label" for="client_name">SET_CLIENT_NAME:</label>
+                    <input type="text" id="client_name" name="name" class="form-input" placeholder="e.g., John Doe / Hiring Manager" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="client_email">SET_CONNECTION_EMAIL:</label>
+                    <input type="email" id="client_email" name="email" class="form-input" placeholder="e.g., manager@company.com" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="msg_payload">APPEND_MESSAGE_PAYLOAD:</label>
+                    <textarea id="msg_payload" name="message" class="form-input" placeholder="Enter consulting requirements or job description details..." required></textarea>
+                </div>
+
+                <button type="submit" class="submit-btn">EXECUTE SEND_MESSAGE ;</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Empty footer; generated dynamically via components.js -->
+    <footer></footer>
+
+    <!-- Shared dependency script loading pipeline -->
+    <script src="posts.js"></script>
+    <script src="components.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

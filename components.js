@@ -15,29 +15,58 @@ document.addEventListener("DOMContentLoaded", () => {
         ? '' // Home page keeps title clean without an overlapping home button layout
         : `<a href="index.html" class="theme-toggle-btn" style="text-decoration: none; position: static;">🏠 Back to Home</a>`;
 
-    // ==========================================
-    // A. INJECT HEADER LAYOUT (Banner Removed)
+       // ==========================================
+    // A. INJECT HEADER LAYOUT (With Upper Corner "About" Link)
     // ==========================================
     const headerElement = document.querySelector('header');
     if (headerElement) {
-        headerElement.className = "dark-theme"; 
+        headerElement.className = "dark-theme"; // Ensures layout alignment structures
         
-        // ⚡ FIXED: Set this to a blank string to remove the terminal box entirely
-        const profileBannerMarkup = ''; 
+        // Generate profile banner markup ONLY if the viewer is standing on the index homepage feed
+        const profileBannerMarkup = isHomePage 
+            ? `
+            <div class="dba-profile-banner">
+                <div class="terminal-line">
+                    <span class="term-prompt">oracle@localhost:~$</span>
+                    <span class="term-cmd">sqlplus / as sysdba</span>
+                </div>
+                <div class="terminal-line" style="color: #22c55e; font-weight: bold; margin-left: 1.25rem;">
+                    Connected to: Oracle Database 19c Enterprise Edition - Production
+                </div>
+                <div class="term-output">
+                    [EXPERIENCE] : Senior Database Infrastructure Engineer (Production Administration)<br>
+                    [PLATFORMS]  : Oracle Linux (OEL), RedHat Enterprise Linux (RHEL), Solaris, AIX<br>
+                    [EXPERTISE]  : Real Application Clusters (RAC), Data Guard, RMAN Backup, Tuning, Patching<br>
+                    [CREDENTIALS]: <span class="cert-pill">Oracle Certified Professional (OCP)</span> <span class="cert-pill">OCI Cloud Architect</span>
+                </div>
+                <div class="terminal-line">
+                    <span class="term-prompt">SQL&gt;</span>
+                    <span class="term-cmd">SELECT status FROM v$instance;</span>
+                </div>
+                <div class="terminal-line" style="color: #22c55e; font-weight: bold; margin-left: 1.25rem;">
+                    STATUS: OPEN (PRODUCTION SYSTEM INSTANCE STABILIZED)
+                </div>
+            </div>
+            `
+            : '';
 
-        headerElement.innerHTML = `
+          headerElement.innerHTML = `
             <div class="header-content">
                 <h1>The Oracle DBA Logbook</h1>
                 <p>Production reference scripts, architectural blueprints, and critical error triage metrics.</p>
-                ${profileBannerMarkup}
             </div>
-            <!-- Unified Corner Action Panel Wrapper Control Group -->
-            <div class="header-actions-wrap">
+            
+            <!-- UPPER CORNER CONTROLS WRAPPER WITH CONTACT LINK LINKED -->
+            <div class="header-actions-wrap" style="align-items: center;">
                 ${navigationControls}
+                <a href="about.html" class="theme-toggle-btn" style="text-decoration: none; display: flex; align-items: center;">ℹ️ About</a>
+                <!-- ⬇️ ADD THIS LINK HERE ⬇️ -->
+                <a href="contact.html" class="theme-toggle-btn" style="text-decoration: none; display: flex; align-items: center;">✉️ Contact</a>
                 <button id="themeToggleBtn" class="theme-toggle-btn" style="position: static;">☀️ Light Mode</button>
             </div>
         `;
     }
+
 
 
     // ==========================================
