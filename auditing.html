@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Oracle Unified Auditing & Compliance Matrix</title>
+    <!-- Links to your unified global stylesheet asset file -->
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .auditing-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-top: 1rem;
+        }
+        @media (max-width: 900px) {
+            .auditing-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body >
+
+    <header>
+        <!-- Dynamic header injection point via components.js -->
+    </header>
+
+    <div class="container">
+        <div class="auditing-grid">
+            
+            <!-- Column 1: Auditing Operations Selector Panel -->
+            <section class="diagram-container">
+                <h3 style="color: var(--card-title-color); font-size: 1.1rem; margin-bottom: 0.5rem;">Compliance Audit Policies</h3>
+                <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem;">Select a security auditing scenario to load verified production PL/SQL policies and queries.</p>
+
+                <!-- Phase 1: Policy Configuration -->
+                <div class="block-group" data-label="POLICY CREATION & ACTIVATION">
+                    <div class="mem-pool-grid" style="grid-template-columns: 1fr;">
+                        <div class="arch-node selected" data-target="aud_sys_actions">Audit High-Privilege Actions (SYS Actions)</div>
+                        <div class="arch-node" data-target="aud_sensitive_data">Audit Sensitive Application Tables (PII Tracking)</div>
+                    </div>
+                </div>
+
+                <!-- Phase 2: Inspection & Management -->
+                <div class="block-group" data-label="AUDIT INSPECTION & CLEANUP" style="margin-top: 1.5rem;">
+                    <div class="mem-pool-grid" style="grid-template-columns: 1fr;">
+                        <div class="arch-node" data-target="aud_query_trail">Query Unified Audit Trail Log Entries</div>
+                        <div class="arch-node" data-target="aud_purge_trail">Safely Purge Historical Audit Trails via DBMS_AUDIT_MGMT</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Column 2: Code & Execution Script Inspector -->
+            <aside class="inspector-panel" id="inspectorPanel">
+                <h2 class="inspector-title" id="audTitle">Audit High-Privilege Actions (SYS Actions)</h2>
+                <div class="inspector-type" id="audType">SECURITY TARGET: CREATE AUDIT POLICY</div>
+                <p class="inspector-desc" id="audDesc">Creates a targeted Unified Auditing policy that tracks whenever administrative system modifications or critical structural database tasks are executed by powerful user accounts.</p>
+                
+                <h4 style="color: var(--card-title-color); font-size: 0.9rem; margin-bottom: 0.5rem; font-family: monospace;">Triage & Execution Code:</h4>
+                <div class="code-container">
+                    <button class="copy-btn" onclick="copyToClipboard('audParam', this)">Copy</button>
+                    <pre style="margin: 0;"><code id="audParam">-- Initialize administrative audit policy template</code></pre>
+                </div>
+            </aside>
+        </div>
+    </div>
+
+    <footer>
+        <!-- Dynamic footer injection point via components.js -->
+    </footer>
+
+    <script src="posts.js"></script>
+    <script src="components.js"></script>
+    <script src="script.js"></script>
+    <script>
+        const auditingMetadata = {
+            aud_sys_actions: {
+                title: "Audit High-Privilege Actions (SYS Actions)",
+                type: "SECURITY TARGET: UNIFIED AUDITING POLICY",
+                desc: "Enterprise compliance mandates tracking high-privilege activities. This script establishes a policy to log administrative structural tasks (like dropping user schemas or modifying table variables) globally across the engine container framework.",
+                param: "-- Step 1: Create the policy to track high-privilege DDL operations\nCREATE AUDIT POLICY sys_admin_audit_policy\n    ACTIONS ALTER SYSTEM, DROP USER, ALTER DATABASE, CREATE USER;\n\n-- Step 2: Activate the policy globally for all connecting users\nAUDIT POLICY sys_admin_audit_policy;"
+            },
+            aud_sensitive_data: {
+                title: "Audit Sensitive Application Tables (PII Tracking)",
+                type: "SECURITY TARGET: PRIVACY COMPLIANCE AUDITING",
+                desc: "Protects sensitive Personally Identifiable Information (PII). This policy tracks whenever any non-authorized database user triggers a `SELECT` statement on a high-security table column (such as credit card records or salaries).",
+                param: "-- Step 1: Define a fine-grained audit rule targeting data extraction operations\nCREATE AUDIT POLICY sensitive_data_policy\n    ACTIONS SELECT ON hr.employees;\n\n-- Step 2: Enable the policy explicitly for all accounts except known application servers\nAUDIT POLICY sensitive_data_policy EXCEPT app_server_user;"
+            },
+            aud_query_trail: {
+                title: "Query Unified Audit Trail Log Entries",
+                type: "DIAGNOSTIC TARGET: UNIFIED_AUDIT_TRAIL",
+                desc: "Queries the centralized system data log dictionary view to evaluate real-time policy infractions, extract trace tracking records, and pinpoint unauthorized query origins.",
+                param: "SET LINESIZE 200 PAGESIZE 100\nCOL dbusername FORMAT A15\nCOL action_name FORMAT A15\nCOL object_name FORMAT A20\n\nSELECT \n    event_timestamp,\n    dbusername,\n    action_name,\n    object_schema,\n    object_name,\n    os_user,\n    userhost\nFROM \n    unified_audit_trail\nWHERE \n    unified_audit_policy = 'SYS_ADMIN_AUDIT_POLICY'\nORDER BY \n    event_timestamp DESC;"
+            },
+            aud_purge_trail: {
+                title: "Safely Purge Historical Audit Trails via DBMS_AUDIT_MGMT",
+                type: "MAINTENANCE OPERATIONS: DBMS_AUDIT_MGMT.CLEAN_AUDIT_TRAIL",
+                desc: "Unmanaged system audit trails will grow endlessly, expanding memory constraints and choking data files. This maintenance routine establishes an absolute timestamp boundary block and clears historical data trail records safely.",
+                param: "BEGIN\n    -- Step 1: Set a timestamp cutoff limit (e.g., purge audit trails older than 30 days)\n    DBMS_AUDIT_MGMT.SET_LAST_ARCHIVE_TIMESTAMP(\n        audit_trail_type  => DBMS_AUDIT_MGMT.AUDIT_TRAIL_UNIFIED,\n        last_archive_time => SYSDATE - 30\n    );\n    \n    -- Step 2: Clear historical records out of system tablespaces\n    DBMS_AUDIT_MGMT.CLEAN_AUDIT_TRAIL(\n        audit_trail_type        => DBMS_AUDIT_MGMT.AUDIT_TRAIL_UNIFIED,\n        use_last_arch_timestamp => TRUE\n    );\nEND;\n/"
+            }
+        };
+
+        const nodes = document.querySelectorAll('.arch-node');
+        nodes.forEach(node => {
+            node.addEventListener('click', () => {
+                nodes.forEach(n => n.classList.remove('selected'));
+                node.classList.add('selected');
+                const targetKey = node.getAttribute('data-target');
+                const metrics = auditingMetadata[targetKey];
+                document.getElementById('audTitle').innerText = metrics.title;
+                document.getElementById('audType').innerText = metrics.type;
+                document.getElementById('audDesc').innerText = metrics.desc;
+                document.getElementById('audParam').innerText = metrics.param;
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Oracle SQL Plan Baseline Stability Matrix</title>
+    <!-- Links to your unified global stylesheet asset file -->
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .baseline-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-top: 1rem;
+        }
+        @media (max-width: 900px) {
+            .baseline-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <!-- Dynamic header injection point via components.js -->
+    </header>
+
+    <div class="container">
+        <div class="baseline-grid">
+            
+            <!-- Column 1: Baseline Task Selection Directory -->
+            <section class="diagram-container">
+                <h3 style="color: var(--card-title-color); font-size: 1.1rem; margin-bottom: 0.5rem;">Plan Stability Workflows</h3>
+                <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem;">Select a plan baseline management operation to load verified production PL/SQL scripts.</p>
+
+                <!-- Phase 1: Investigation & Capture -->
+                <div class="block-group" data-label="PHASE 1: PLAN DISCOVERY & CAPTURE">
+                    <div class="mem-pool-grid" style="grid-template-columns: 1fr;">
+                        <div class="arch-node selected" data-target="spb_check">Query Existing Baselines & Verification Status</div>
+                        <div class="arch-node" data-target="spb_load_cc">Capture Good Plan from Library Cache (Shared Pool)</div>
+                        <div class="arch-node" data-target="spb_load_awr">Extract Historical Plan from AWR Repository</div>
+                    </div>
+                </div>
+
+                <!-- Phase 2: Maintenance & Evolution -->
+                <div class="block-group" data-label="PHASE 2: PLAN EVOLUTION & ENFORCEMENT" style="margin-top: 1.5rem;">
+                    <div class="mem-pool-grid" style="grid-template-columns: 1fr;">
+                        <div class="arch-node" data-target="spb_evolve">Evolve Baseline to Authorise Faster Plan Path</div>
+                        <div class="arch-node" data-target="spb_disable">Disable Regression / Faulty Baselines</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Column 2: Code & Execution Script Inspector -->
+            <aside class="inspector-panel" id="inspectorPanel">
+                <h2 class="inspector-title" id="spbTitle">Query Existing Baselines & Verification Status</h2>
+                <div class="inspector-type" id="spbType">DIAGNOSTIC TARGET: DBA_SQL_PLAN_BASELINES</div>
+                <p class="inspector-desc" id="spbDesc">Audits the database dictionary tracking system to list active, accepted, and fixed SQL plan baselines alongside their text footprints.</p>
+                
+                <h4 style="color: var(--card-title-color); font-size: 0.9rem; margin-bottom: 0.5rem; font-family: monospace;">Triage & Execution Code:</h4>
+                <div class="code-container">
+                    <button class="copy-btn" onclick="copyToClipboard('spbParam', this)">Copy</button>
+                    <pre style="margin: 0;"><code id="spbParam">-- Query SQL plan baselines snapshot view template</code></pre>
+                </div>
+            </aside>
+        </div>
+    </div>
+
+    <footer>
+        <!-- Dynamic footer injection point via components.js -->
+    </footer>
+
+    <script src="posts.js"></script>
+    <script src="components.js"></script>
+    <script src="script.js"></script>
+    <script>
+        const baselineMetadata = {
+            spb_check: {
+                title: "Query Existing Baselines & Verification Status",
+                type: "DIAGNOSTIC TARGET: DBA_SQL_PLAN_BASELINES",
+                desc: "Before modifying plan pathways, scan the system catalog to audit existing records. Look specifically at the `ACCEPTED` (enforced) and `FIXED` (highest priority override) columns.",
+                param: "SET LINESIZE 200 PAGESIZE 100\nCOL SQL_TEXT FORMAT A40\nCOL PLAN_NAME FORMAT A30\n\nSELECT \n    sql_handle,\n    plan_name,\n    enabled,\n    accepted,\n    fixed,\n    to_char(created, 'YYYY-MM-DD') as date_created,\n    sql_text\nFROM \n    dba_sql_plan_baselines\nORDER BY \n    created DESC;"
+            },
+            spb_load_cc: {
+                title: "Capture Good Plan from Library Cache (Shared Pool)",
+                type: "MITIGATION OPERATIONS: DBMS_SPB.LOAD_PLANS_FROM_CURSOR_CACHE",
+                desc: "If a query recently regressed but a fast version of it still exists inside the library cache footprints, load that specific clean `PLAN_HASH_VALUE` directly to anchor it as the baseline standard.",
+                param: "-- Step 1: Identify your target query SQL_ID and Plan Hash Value from memory\nSELECT sql_id, plan_hash_value, child_number FROM v$sql WHERE sql_id = 'a87g6fd5sa98s';\n\n-- Step 2: Load the clean plan profile into the SQL plan baseline repository\nDECLARE\n    v_plans_loaded PLS_INTEGER;\nBEGIN\n    v_plans_loaded := DBMS_SPB.LOAD_PLANS_FROM_CURSOR_CACHE(\n        sql_id          => 'a87g6fd5sa98s',\n        plan_hash_value => 1234567890\n    );\nEND;\n/"
+            },
+            spb_load_awr: {
+                title: "Extract Historical Plan from AWR Repository",
+                type: "MITIGATION OPERATIONS: DBMS_SPB.LOAD_PLANS_FROM_AWR",
+                desc: "Used when a critical plan regressed, and the old efficient plan has already been completely aged out of active cache memory footprints. You can fish it back out from historical Automatic Workload Repository (AWR) snapshots.",
+                param: "-- Load the baseline directly using historical AWR snapshot ranges\nDECLARE\n    v_awr_plans PLS_INTEGER;\nBEGIN\n    v_awr_plans := DBMS_SPB.LOAD_PLANS_FROM_AWR(\n        begin_snap   => 4520,\n        end_snap     => 4530,\n        basic_filter => 'sql_id=''a87g6fd5sa98s'''\n    );\nEND;\n/"
+            },
+            spb_evolve: {
+                title: "Evolve Baseline to Authorise Faster Plan Path",
+                type: "TUNING OPERATIONS: DBMS_SPB.EVOLVE_SQL_PLAN_BASELINE",
+                desc: "When a new indexing strategy or tuning task creates a *better, faster* plan, the database won't use it right away because it isn't 'accepted' yet. Running an evolution task runs both plans under test boundaries and updates status if the new plan proves faster.",
+                param: "SET LONG 50000 LINESIZE 150 PAGESIZE 0\n\n-- Execute evolution tracking report to safely verify performance metrics\nSELECT DBMS_SPB.EVOLVE_SQL_PLAN_BASELINE(\n    sql_handle => 'SYS_SQL_0a123bc45de67f89',\n    plan_name  => 'SQL_PLAN_0bc123456def789a',\n    verify     => 'YES',  -- Run tuning simulations to confirm improvement\n    commit     => 'YES'  -- Set to ACCEPTED automatically if performance proves faster\n) FROM dual;"
+            },
+            spb_disable: {
+                title: "Disable Regression / Faulty Baselines",
+                type: "MAINTENANCE OPERATIONS: DBMS_SPB.ALTER_SQL_PLAN_BASELINE",
+                desc: "If a baseline was added in error or forces queries into faulty paths due to structural schema changes, drop or switch its active enforcement properties instantly.",
+                param: "DECLARE\n    v_altered_plans PLS_INTEGER;\nBEGIN\n    -- Toggles enabled flag to NO to stop plan enforcement\n    v_altered_plans := DBMS_SPB.ALTER_SQL_PLAN_BASELINE(\n        sql_handle => 'SYS_SQL_0a123bc45de67f89',\n        plan_name  => 'SQL_PLAN_0bc123456def789a',\n        attribute_name  => 'ENABLED',\n        attribute_value => 'NO'\n    );\nEND;\n/"
+            }
+        };
+
+        const nodes = document.querySelectorAll('.arch-node');
+        nodes.forEach(node => {
+            node.addEventListener('click', () => {
+                nodes.forEach(n => n.classList.remove('selected'));
+                node.classList.add('selected');
+                const targetKey = node.getAttribute('data-target');
+                const metrics = baselineMetadata[targetKey];
+                document.getElementById('spbTitle').innerText = metrics.title;
+                document.getElementById('spbType').innerText = metrics.type;
+                document.getElementById('spbDesc').innerText = metrics.desc;
+                document.getElementById('spbParam').innerText = metrics.param;
+            });
+        });
+    </script>
+</body>
+</html>

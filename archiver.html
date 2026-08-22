@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Oracle Archiver Exception Triage Runbook</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .archiver-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-top: 1rem;
+        }
+        @media (max-width: 900px) {
+            .archiver-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <!-- Generated dynamically via components.js; fallback structures kept safe -->
+    </header>
+
+    <div class="container">
+        <div class="archiver-grid">
+            
+            <!-- Column 1: Incident Resolution Steps -->
+            <section class="diagram-container">
+                <h3 style="color: var(--card-title-color); font-size: 1.1rem; margin-bottom: 0.5rem;">Emergency Triage Steps</h3>
+                <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem;">Select a diagnostic phase block to load the corresponding emergency SQL or RMAN resolution commands.</p>
+
+                <!-- Phase 1: Diagnostics -->
+                <div class="block-group" data-label="PHASE 1: INCIDENT DIAGNOSTICS">
+                    <div class="mem-pool-grid" style="grid-template-columns: 1fr;">
+                        <div class="arch-node selected" data-target="fra_check">Check Fast Recovery Area (FRA) Space Usage</div>
+                        <div class="arch-node" data-target="dest_check">Verify Archive Log Destinations Status</div>
+                    </div>
+                </div>
+
+                <!-- Phase 2: Emergency Mitigation -->
+                <div class="block-group" data-label="PHASE 2: EMERGENCY MITIGATION" style="margin-top: 1.5rem;">
+                    <div class="mem-pool-grid" style="grid-template-columns: 1fr;">
+                        <div class="arch-node" data-target="rman_purge">Purge Expired Logs via RMAN Maintenance</div>
+                        <div class="arch-node" data-target="temp_expand">Temporary Space Expansion Allocation</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Column 2: Code & Execution Script Inspector -->
+            <aside class="inspector-panel" id="inspectorPanel">
+                <h2 class="inspector-title" id="archTitle">Check Fast Recovery Area (FRA) Space Usage</h2>
+                <div class="inspector-type" id="archType">DIAGNOSTIC TARGET: V$RECOVERY_AREA_USAGE</div>
+                <p class="inspector-desc" id="archDesc">Queries the dynamic system recovery views to pinpoint exactly what percentage of the FRA disk limit is consumed by archived logs, flashback logs, or backup pieces.</p>
+                
+                <h4 style="color: var(--card-title-color); font-size: 0.9rem; margin-bottom: 0.5rem; font-family: monospace;">Triage & Execution Code:</h4>
+                <div class="code-container">
+                    <button class="copy-btn" onclick="copyToClipboard('archParam', this)">Copy</button>
+                    <pre style="margin: 0;"><code id="archParam">SELECT file_type, percent_space_used, percent_space_reclaimable, number_of_files FROM v$recovery_area_usage;</code></pre>
+                </div>
+            </aside>
+        </div>
+    </div>
+
+    <footer>
+        <!-- Generated dynamically via components.js -->
+    </footer>
+
+    <script src="posts.js"></script>
+    <script src="components.js"></script>
+    <script src="script.js"></script>
+    <script>
+        const archiverMetadata = {
+            fra_check: {
+                title: "Check Fast Recovery Area (FRA) Space Usage",
+                type: "DIAGNOSTIC TARGET: V$RECOVERY_AREA_USAGE & V$RECOVERY_FILE_DEST",
+                desc: "When a database hangs under ORA-00257, check the FRA sizing parameters to find out how much space is left and exactly which files are exhausting the pool.",
+                param: "SELECT name, space_limit/1024/1024/1024 AS limit_gb, space_used/1024/1024/1024 AS used_gb FROM v$recovery_file_dest;\n\nSELECT file_type, percent_space_used, number_of_files FROM v$recovery_area_usage WHERE percent_space_used > 0;"
+            },
+            dest_check: {
+                title: "Verify Archive Log Destinations Status",
+                type: "DIAGNOSTIC TARGET: V$ARCHIVE_DEST & V$ARCHIVED_LOG",
+                desc: "Identifies whether an explicit localized operating system mount point or disk destination has completely run out of raw space blocks or encountered an absolute file locking failure.",
+                param: "SELECT dest_id, status, destination, error FROM v$archive_dest WHERE status = 'ERROR';\n\n-- Find the sequence total count of recent logs waiting for transmission\nSELECT sequence#, archived, status FROM v$archived_log WHERE status = 'A' ORDER BY sequence# DESC FETCH FIRST 5 ROWS ONLY;"
+            },
+            rman_purge: {
+                title: "Purge Expired Logs via RMAN Maintenance",
+                type: "MITIGATION OPERATIONS: RMAN CLEANUP",
+                desc: "The absolute standard recovery mechanism. Deletes archaic logs from disk that have already been securely backed up, safely reclaiming filesystem storage bounds immediately.",
+                param: "# Crosscheck the catalog against physical disk files\nCROSSCHECK ARCHIVELOG ALL;\n\n# Safely delete logs backed up to tape or secondary tiers\nDELETE OBSOLETE;\n\n# Emergency clear down: delete logs backed up at least 1 time\nDELETE NOPROMPT ARCHIVELOG ALL BACKED UP 1 TIMES TO DEVICE TYPE DISK;"
+            },
+            temp_expand: {
+                title: "Temporary Space Expansion Allocation",
+                type: "MITIGATION OPERATIONS: ALTER SYSTEM SET DB_RECOVERY_FILE_DEST_SIZE",
+                desc: "If RMAN maintenance cannot clear out blocks because no backup history exists, execute an emergency parameter resize. This allocates instant headroom so background archiver processes (`ARCn`) can flush logs and unfreeze the instance.",
+                param: "-- View current size assignment parameters\nSHOW PARAMETER db_recovery_file_dest_size;\n\n-- Dynamically increase disk size footprint constraints without downtime\nALTER SYSTEM SET db_recovery_file_dest_size = 20G SCOPE=BOTH;"
+            }
+        };
+
+        const nodes = document.querySelectorAll('.arch-node');
+        nodes.forEach(node => {
+            node.addEventListener('click', () => {
+                nodes.forEach(n => n.classList.remove('selected'));
+                node.classList.add('selected');
+                const targetKey = node.getAttribute('data-target');
+                const metrics = archiverMetadata[targetKey];
+                document.getElementById('archTitle').innerText = metrics.title;
+                document.getElementById('archType').innerText = metrics.type;
+                document.getElementById('archDesc').innerText = metrics.desc;
+                document.getElementById('archParam').innerText = metrics.param;
+            });
+        });
+    </script>
+</body>
+</html>

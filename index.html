@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Oracle DBA Logbook</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body >
+
+    <!-- 1. Left completely empty; components.js handles generation -->
+    <header></header>
+
+    <div class="container">
+        <div class="feed-grid">
+            <aside class="sidebar">
+                <input type="text" id="searchBar" class="search-box" placeholder="Search concepts or error codes...">
+                <div class="filter-title">Filter by Domain</div>
+                <button class="tag-btn active" id="btn-all">All Concepts</button>
+                <button class="tag-btn" id="btn-architecture">Architecture</button>
+                <button class="tag-btn" id="btn-performance">Performance Tuning</button>
+                <button class="tag-btn" id="btn-backup">Backup & Recovery</button>
+                <button class="tag-btn" id="btn-multitenant">Multitenant (CDB/PDB)</button>
+                <button class="tag-btn" id="btn-troubleshooting">Troubleshooting</button>
+                <button class="tag-btn" id="btn-patching">Patch Application</button>
+                <button class="tag-btn" id="btn-storage">Storage Capacity</button>
+                <button class="tag-btn" id="btn-archiver">Archiver Errors</button>
+                <button class="tag-btn" id="btn-prechecks">Health Pre-Checks</button>
+                <button class="tag-btn" id="btn-security">Database Security</button>
+                <button class="tag-btn" id="btn-rac">RAC Clustering</button>
+                <button class="tag-btn" id="btn-automation">Shell Automation</button>
+                <button class="tag-btn" id="btn-cloud">Cloud Systems</button>
+                <button class="tag-btn" id="btn-datapump">Data Pump</button>
+                <button class="tag-btn" id="btn-baselines">SQL Baselines</button>
+                <button class="tag-btn" id="btn-pinning">SQL Pinning</button>
+                <button class="tag-btn" id="btn-auditing">Audit & Compliance</button>
+            </aside>
+
+            <main class="content-area" id="logContainer">
+                <!-- JavaScript renders items dynamically here -->
+            </main>
+        </div>
+    </div>
+
+    <!-- 2. Left completely empty; components.js handles generation -->
+    <footer></footer>
+
+    <!-- 3. SCRIPT LINKING TRACES (Crucial order sequencing rule) -->
+    <script src="posts.js"></script>
+    <script src="components.js"></script> <!-- ⬅️ Load components file before application rules -->
+    <script src="script.js"></script>
+</body>
+</html>

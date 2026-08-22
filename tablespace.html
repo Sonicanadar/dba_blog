@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Oracle Tablespace Space Management Matrix</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .space-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-top: 1rem;
+        }
+        @media (max-width: 900px) {
+            .space-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body >
+
+    <header>
+        
+    </header>
+
+    <div class="container">
+        <div class="space-grid">
+            
+            <!-- Column 1: Capacity Tasks Directory -->
+            <section class="diagram-container">
+                <h3 style="color: var(--card-title-color); font-size: 1.1rem; margin-bottom: 0.5rem;">Storage Resolution Workflows</h3>
+                <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem;">Select an administrative space management task block to retrieve verified production SQL diagnostics.</p>
+
+                <!-- Phase 1: Investigation -->
+                <div class="block-group" data-label="PHASE 1: SPACE INTAKE & INVESTIGATION">
+                    <div class="mem-pool-grid" style="grid-template-columns: 1fr;">
+                        <div class="arch-node selected" data-target="space_check">Check Free Percentage Across All Tablespaces</div>
+                        <div class="arch-node" data-target="find_top_segments">Identify Largest Space-Consuming Segments</div>
+                    </div>
+                </div>
+
+                <!-- Phase 2: Mitigation Operations  -->
+                <div class="block-group" data-label="PHASE 2: CRITICAL EXCEPTION MITIGATION" style="margin-top: 1.5rem;">
+                    <div class="mem-pool-grid" style="grid-template-columns: 1fr;">
+                        <div class="arch-node selected" data-target="add_datafile">Resolve ORA-01653 / ORA-01654: Add Datafile to Tablespace</div>
+                        <div class="arch-node" data-target="resize_datafile">Resolve ORA-01653 / ORA-01654: Manually Resize Existing Datafile</div>
+                        <div class="arch-node" data-target="autoextend_on">Enable Autoextend and Maxsize Constraints</div>
+                    </div>
+                </div>
+
+            </section>
+
+            <!-- Column 2: Code & Execution Script Inspector -->
+            <aside class="inspector-panel" id="inspectorPanel">
+                <h2 class="inspector-title" id="spaceTitle">Check Free Percentage Across All Tablespaces</h2>
+                <div class="inspector-type" id="spaceType">DIAGNOSTIC TARGET: DBA_FREE_SPACE & DBA_DATA_FILES</div>
+                <p class="inspector-desc" id="spaceDesc">Aggregates structural allocations, consumed bytes, and remaining free disk space metrics across your global storage dictionary layouts to flag saturation thresholds early.</p>
+                
+                <h4 style="color: var(--card-title-color); font-size: 0.9rem; margin-bottom: 0.5rem; font-family: monospace;">Triage & Execution Code:</h4>
+                <div class="code-container">
+                    <button class="copy-btn" onclick="copyToClipboard('spaceParam', this)">Copy</button>
+                    <pre style="margin: 0;"><code id="spaceParam">SELECT tablespace_name, total_space_mb, free_space_mb, round((free_space_mb/total_space_mb)*100,2) pct_free FROM dba_tablespaces;</code></pre>
+                </div>
+            </aside>
+        </div>
+    </div>
+<footer>
+        <!-- Generated dynamically via components.js -->
+    </footer>
+
+    <script src="posts.js"></script>
+    <script src="components.js"></script>
+    <script src="script.js"></script>
+    <script>
+        const spaceMetadata = {
+            space_check: {
+                title: "Check Free Percentage Across All Tablespaces",
+                type: "DIAGNOSTIC TARGET: DATADICTIONARY METADATA VIEWS",
+                desc: "Queries internal dictionary tables to calculate total allocated sizes, actual storage utilization metrics, and remaining headroom percentages across your entire database ecosystem.",
+                param: "SELECT \n    d.tablespace_name,\n    ROUND(a.bytes_alloc / 1024 / 1024, 2) AS total_mb,\n    ROUND((a.bytes_alloc - nvl(f.bytes_free, 0)) / 1024 / 1024, 2) AS used_mb,\n    ROUND(nvl(f.bytes_free, 0) / 1024 / 1024, 2) AS free_mb,\n    ROUND((nvl(f.bytes_free, 0) / a.bytes_alloc) * 100, 2) AS pct_free\nFROM \n    dba_tablespaces d,\n    (SELECT tablespace_name, SUM(bytes) AS bytes_alloc FROM dba_data_files GROUP BY tablespace_name) a,\n    (SELECT tablespace_name, SUM(bytes) AS bytes_free FROM dba_free_space GROUP BY tablespace_name) f\nWHERE \n    d.tablespace_name = a.tablespace_name(+)\n    AND d.tablespace_name = f.tablespace_name(+)\nORDER BY \n    pct_free ASC;"
+            },
+            find_top_segments: {
+                title: "Identify Largest Space-Consuming Segments",
+                type: "DIAGNOSTIC TARGET: DBA_SEGMENTS",
+                desc: "Traces exactly which physical tables, indexes, or LOB segments are growing abnormally fast inside a targeting tablespace parameter environment during high-frequency batched data intake operations.",
+                param: "SELECT segment_name, segment_type, owner, bytes/1024/1024 AS size_mb \nFROM dba_segments \nWHERE tablespace_name = 'USERS' \nORDER BY bytes DESC \nFETCH FIRST 10 ROWS ONLY;"
+            },
+             add_datafile: {
+                title: "ORA-01653: unable to extend table or ORA-01654: unable to extend index",
+                type: "MITIGATION OPERATIONS: ALTER TABLESPACE ADD DATAFILE",
+                desc: "This error occurs when the database engine tries to allocate a new space chunk (extent) for a growing table or index, but the target tablespace is completely full. Appending a fresh physical container datafile instantly clears the blockage.",
+                param: "ALTER TABLESPACE USERS \nADD DATAFILE '/u01/app/oracle/oradata/CDB1/users02.dbf' \nSIZE 1G \nAUTOEXTEND ON \nNEXT 100M \nMAXSIZE 32G;"
+            },
+            resize_datafile: {
+                title: "Manually Resizing Existing Datafiles under ORA-01653 / ORA-01654",
+                type: "MITIGATION OPERATIONS: ALTER DATABASE DATAFILE RESIZE",
+                desc: "If your storage naming conventions restrict you from creating new files, manually expand an existing datafile to allocate immediate blocks for the blocked transaction data stream.",
+                param: "-- Step 1: Identify your file identifier or target filesystem string name\nSELECT file_name, bytes/1024/1024 AS size_mb FROM dba_data_files WHERE tablespace_name = 'USERS';\n\n-- Step 2: Manually increase file storage limits\nALTER DATABASE DATAFILE '/u01/app/oracle/oradata/CDB1/users01.dbf' \nRESIZE 10G;"
+            },
+            autoextend_on: {
+                title: "Enable Autoextend and Maxsize Constraints",
+                type: "MITIGATION OPERATIONS: ALTER DATABASE DATAFILE AUTOEXTEND",
+                desc: "Automates storage expansion by allowing datafiles to request extra chunk blocks incrementally when saturated, protecting applications from experiencing structural failures.",
+                param: "ALTER DATABASE DATAFILE '/u01/app/oracle/oradata/CDB1/users01.dbf' \nAUTOEXTEND ON \nNEXT 200M \nMAXSIZE UNLIMITED; -- Or explicit caps like: MAXSIZE 32G"
+            }
+        };
+
+        const nodes = document.querySelectorAll('.arch-node');
+        nodes.forEach(node => {
+            node.addEventListener('click', () => {
+                nodes.forEach(n => n.classList.remove('selected'));
+                node.classList.add('selected');
+                const targetKey = node.getAttribute('data-target');
+                const metrics = spaceMetadata[targetKey];
+                document.getElementById('spaceTitle').innerText = metrics.title;
+                document.getElementById('spaceType').innerText = metrics.type;
+                document.getElementById('spaceDesc').innerText = metrics.desc;
+                document.getElementById('spaceParam').innerText = metrics.param;
+            });
+        });
+    </script>
+</body>
+</html>

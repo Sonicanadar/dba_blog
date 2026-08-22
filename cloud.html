@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Oracle Cloud Infrastructure & Migration Matrix</title>
+    <!-- Links to your unified global stylesheet asset file -->
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .cloud-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-top: 1rem;
+        }
+        @media (max-width: 900px) {
+            .cloud-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <!-- Dynamic header injection point via components.js -->
+    </header>
+
+    <div class="container">
+        <div class="cloud-grid">
+            
+            <!-- Column 1: Cloud Operations Selector Panel -->
+            <section class="diagram-container">
+                <h3 style="color: var(--card-title-color); font-size: 1.1rem; margin-bottom: 0.5rem;">Cloud Migration Runbooks</h3>
+                <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem;">Select a cloud deployment or migration task block to load verified production command scripts.</p>
+
+                <!-- Phase 1: Object Storage & Data Pump -->
+                <div class="block-group" data-label="CLOUD INTEROPERABILITY & CLOUD BACKUPS">
+                    <div class="mem-pool-grid" style="grid-template-columns: 1fr;">
+                        <div class="arch-node selected" data-target="cloud_dump">Encrypted Data Pump Export to OCI Object Storage</div>
+                    </div>
+                </div>
+
+                <!-- Phase 2: Autonomous Scaling -->
+                <div class="block-group" data-label="AUTONOMOUS DATABASE OPERATIONS" style="margin-top: 1.5rem;">
+                    <div class="mem-pool-grid" style="grid-template-columns: 1fr;">
+                        <div class="arch-node" data-target="auto_scale">Configuring OCI Autonomous Auto-Scaling Limits</div>
+                    </div>
+                </div>
+
+                <!-- Phase 3: Zero Downtime Migrations -->
+                <div class="block-group" data-label="HYBRID CLOUD DISASTER RECOVERY" style="margin-top: 1.5rem;">
+                    <div class="mem-pool-grid" style="grid-template-columns: 1fr;">
+                        <div class="arch-node" data-target="zdm_sync">Zero Downtime Migration (ZDM) Active Sync Pipeline</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Column 2: Code & Execution Script Inspector -->
+            <aside class="inspector-panel" id="inspectorPanel">
+                <h2 class="inspector-title" id="cloudTitle">Encrypted Data Pump Export to OCI Object Storage</h2>
+                <div class="inspector-type" id="cloudType">EXECUTION TARGET: DBMS_DATAPUMP & OCI CLI</div>
+                <p class="inspector-desc" id="cloudDesc">Extracts multi-terabyte system schemas securely using advanced encryption blocks, and streams the binary dump files directly into a secure remote cloud object bucket for cloud instantiation workflows.</p>
+                
+                <h4 style="color: var(--card-title-color); font-size: 0.9rem; margin-bottom: 0.5rem; font-family: monospace;">Triage & Execution Code:</h4>
+                <div class="code-container">
+                    <button class="copy-btn" onclick="copyToClipboard('cloudParam', this)">Copy</button>
+                    <pre style="margin: 0;"><code id="cloudParam"># Data Pump Export command template wrapper</code></pre>
+                </div>
+            </aside>
+        </div>
+    </div>
+
+    <footer>
+        <!-- Dynamic footer injection point via components.js -->
+    </footer>
+
+    <script src="posts.js"></script>
+    <script src="components.js"></script>
+    <script src="script.js"></script>
+    <script>
+        const cloudMetadata = {
+            cloud_dump: {
+                title: "Encrypted Data Pump Export to OCI Object Storage",
+                type: "EXECUTION TARGET: ORACLE DATA PUMP ENGINE (EXPDP)",
+                desc: "Before kicking off a logical migration, export your primary database tablespaces while enforcing secure AES256 block encryption. You can configure a cloud credential token object to stream data straight into an OCI Object Storage bucket.",
+                param: "# 1. Run inside the Linux shell as the oracle software owner user\nexpdp system/ManagerPassword99@PROD \\\n    SCHEMAS=HR,SALES \\\n    DIRECTORY=DATA_PUMP_DIR \\\n    DUMPFILE=enterprise_cloud_mig_%U.dmp \\\n    FILESIZE=5G \\\n    LOGFILE=cloud_migration_datapump.log \\\n    ENCRYPTION=ALL \\\n    ENCRYPTION_PASSWORD=CrypticPassToken112"
+            },
+            auto_scale: {
+                title: "Configuring OCI Autonomous Auto-Scaling Limits",
+                type: "EXECUTION TARGET: PL/SQL DBMS_CLOUD_ADMIN EXECUTIONS",
+                desc: "Oracle Autonomous Databases allow compute structures to scale out dynamically during high-frequency production transaction spikes. Use these configuration views to audit and restrict absolute boundary thresholds.",
+                param: "-- Connect via SQL*Plus or SQL Developer to your cloud Autonomous instance\n-- View current dynamic compute allocation configurations\nSELECT min_ocpu, max_ocpu, dynamic_scaling_status FROM v$autonomous_db_config;\n\n-- Modify execution resource allocation properties dynamically inside cloud structures\nEXEC DBMS_CLOUD_ADMIN.ENABLE_AUTO_SCALING(resource_type => 'CPU');"
+            },
+            zdm_sync: {
+                title: "Zero Downtime Migration (ZDM) Active Sync Pipeline",
+                type: "EXECUTION TARGET: ORACLE ZERO DOWNTIME MIGRATION CLI",
+                desc: "Oracle ZDM leverages a combination of direct physical RMAN backup transfers and Data Guard synchronization loops to safely shift active primary databases onto OCI Base Database Services with near-zero application downtime.",
+                param: "# Invoke the ZDM operational migration command utility framework\n# Validates your custom migration configuration response file attributes\n\nzdmauth -config /u01/app/oracle/zdm/zdm_migration_profile.rsp -eval\n\n# Initiate the live hot-switch live cross-network cloud migration sync\nzdmcli move database -rsp /u01/app/oracle/zdm/zdm_migration_profile.rsp -proceed"
+            }
+        };
+
+        const nodes = document.querySelectorAll('.arch-node');
+        nodes.forEach(node => {
+            node.addEventListener('click', () => {
+                nodes.forEach(n => n.classList.remove('selected'));
+                node.classList.add('selected');
+                const targetKey = node.getAttribute('data-target');
+                const metrics = cloudMetadata[targetKey];
+                document.getElementById('cloudTitle').innerText = metrics.title;
+                document.getElementById('cloudType').innerText = metrics.type;
+                document.getElementById('cloudDesc').innerText = metrics.desc;
+                document.getElementById('cloudParam').innerText = metrics.param;
+            });
+        });
+    </script>
+</body>
+</html>

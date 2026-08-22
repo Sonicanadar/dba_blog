@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Oracle Database Infrastructure Automation Matrix</title>
+    <!-- Links to your unified global stylesheet asset file -->
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .automation-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-top: 1rem;
+        }
+        @media (max-width: 900px) {
+            .automation-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body >
+
+    <header>
+        <!-- Dynamic header injection point via components.js -->
+    </header>
+
+    <div class="container">
+        <div class="automation-grid">
+            
+            <!-- Column 1: Automation Tasks Panel -->
+            <section class="diagram-container">
+                <h3 style="color: var(--card-title-color); font-size: 1.1rem; margin-bottom: 0.5rem;">Infrastructure Automation Scripts</h3>
+                <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem;">Select an operations script daemon block to load its background execution shell criteria.</p>
+
+                <!-- Phase 1: Proactive Monitoring -->
+                <div class="block-group" data-label="LOG WATCHERS & HEARTBEATS">
+                    <div class="mem-pool-grid" style="grid-template-columns: 1fr;">
+                        <div class="arch-node selected" data-target="sh_alert_log">Automated Alert Log Scanner Daemon</div>
+                        <div class="arch-node" data-target="sh_db_up">Multi-Instance Listener & Database Up-time Checker</div>
+                    </div>
+                </div>
+
+                <!-- Phase 2: Housekeeping & Purging -->
+                <div class="block-group" data-label="AUTOMATED HOUSEKEEPING & MAINTENANCE" style="margin-top: 1.5rem;">
+                    <div class="mem-pool-grid" style="grid-template-columns: 1fr;">
+                        <div class="arch-node" data-target="sh_trace_purge">ADRCI Automated Incident Trace Purge Script</div>
+                        <div class="arch-node" data-target="sh_stats_lock">Proactive High-Frequency Schema Stats Locker</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Column 2: Code & Execution Script Inspector -->
+            <aside class="inspector-panel" id="inspectorPanel">
+                <h2 class="inspector-title" id="autoTitle">Automated Alert Log Scanner Daemon</h2>
+                <div class="inspector-type" id="autoType">EXECUTION LAYER: BASH SHELL CRONTAB</div>
+                <p class="inspector-desc" id="autoDesc">Scans the live core Oracle trace log footprint every 15 minutes, filters out critical kernel errors, and handles instant notification warning sequences automatically.</p>
+                
+                <h4 style="color: var(--card-title-color); font-size: 0.9rem; margin-bottom: 0.5rem; font-family: monospace;">Bash Execution Script:</h4>
+                <div class="code-container">
+                    <button class="copy-btn" onclick="copyToClipboard('autoParam', this)">Copy</button>
+                    <pre style="margin: 0;"><code id="autoParam"># Automated Alert Log monitoring engine placeholder</code></pre>
+                </div>
+            </aside>
+        </div>
+    </div>
+
+    <footer>
+        <!-- Dynamic footer injection point via components.js -->
+    </footer>
+
+    <script src="posts.js"></script>
+    <script src="components.js"></script>
+    <script src="script.js"></script>
+    <script>
+        const automationMetadata = {
+            sh_alert_log: {
+                title: "Automated Alert Log Scanner Daemon",
+                type: "EXECUTION LAYER: LINUX SHELL CRONTAB",
+                desc: "A production-grade Linux Bash script designed to scan your active alert log file for database crashes or memory exhaustions. It flags matching error parameters and sends an immediate diagnostic text email to the administration queue.",
+                param: "#!/bin/bash\n# Cron Trigger: */15 * * * * /u01/app/oracle/scripts/alert_scan.sh\n\nORACLE_SID=PROD\nALERT_LOG=\"/u01/app/oracle/diag/rdbms/prod/prod/trace/alert_prod.log\"\nERR_FILE=\"/tmp/alert_errors.txt\"\n\n# Search for critical unhandled ORA exception blocks\ngrep -E \"ORA-00600|ORA-04031|ORA-01578|ORA-00257\" $ALERT_LOG | tail -n 5 > $ERR_FILE\n\nif [ -s $ERR_FILE ]; then\n    mailx -s \"CRITICAL PRODUCTION ALERT: $ORACLE_SID Core Failure Detected\" dba_team@company.com < $ERR_FILE\nfi\nrm -f $ERR_FILE;"
+            },
+            sh_db_up: {
+                title: "Multi-Instance Listener & Database Up-time Checker",
+                type: "EXECUTION LAYER: BASH SHELL / ORATAB PARSER",
+                desc: "Loops through your system's global service registry path file (`/etc/oratab`), verifies that background processes (`pmon`) are fully alive for all registered database targets, and alerts if a database crashed silently.",
+                param: "#!/bin/bash\n# Loops through active /etc/oratab registry definitions\n\ncat /etc/oratab | grep -v -E \"^#|^$\" | while read -r line; do\n    SID=$(echo \"$line\" | cut -d: -f1)\n    \n    # Check if the process monitor thread is alive on the operating system\n    ps -ef | grep pmon_${SID} | grep -v grep > /dev/null\n    if [ $? -ne 0 ]; then\n        echo \"WARNING: Oracle Instance $SID is completely DOWN!\"\n        # Include system emergency restart handler wrappers here if needed\n    fi\ndone"
+            },
+            sh_trace_purge: {
+                title: "ADRCI Automated Incident Trace Purge Script",
+                type: "EXECUTION LAYER: ADRCI CLI WRAPPER",
+                desc: "Unmanaged system traces can silently fill up your local server filesystem, crashing your database home. This automation script invokes Oracle's Automatic Diagnostic Repository Command Interface (ADRCI) to drop dump logs older than 7 days.",
+                param: "#!/bin/bash\n# Automated space manager tracking task script\n\n# Invoke ADRCI command environment blocks natively inside shell structures\nadrci exec=\"purge -age 10080 -type ALERT\"\nadrci exec=\"purge -age 10080 -type TRACE\"\nadrci exec=\"purge -age 10080 -type INCIDENT\"\n\necho \"ADRCI Maintenance Complete: Extraneous dump traces older than 7 days purged cleanly.\""
+            },
+            sh_stats_lock: {
+                title: "Proactive High-Frequency Schema Stats Locker",
+                type: "EXECUTION LAYER: PL/SQL EXECUTABLE / BASH WRAPPER",
+                desc: "Prevents automated daily maintenance tasks from collecting unexpected statistics on high-frequency application tables (which can abruptly break stable optimizer execution plans during live core tracking peaks).",
+                param: "#!/bin/bash\n# Locks statistics tracking baseline boundaries securely\n\nsqlplus -s / as sysdba <<EOF\nBEGIN\n    -- Lock schema statistics for core transaction tables to preserve query plans\n    DBMS_STATS.LOCK_SCHEMA_STATS('SCOTT');\n    -- Safely unlock specific stable tracking blocks if required manually later\nEND;\n/\nEXIT;\nEOF"
+            }
+        };
+
+        const nodes = document.querySelectorAll('.arch-node');
+        nodes.forEach(node => {
+            node.addEventListener('click', () => {
+                nodes.forEach(n => n.classList.remove('selected'));
+                node.classList.add('selected');
+                const targetKey = node.getAttribute('data-target');
+                const metrics = automationMetadata[targetKey];
+                document.getElementById('autoTitle').innerText = metrics.title;
+                document.getElementById('autoType').innerText = metrics.type;
+                document.getElementById('autoDesc').innerText = metrics.desc;
+                document.getElementById('autoParam').innerText = metrics.param;
+            });
+        });
+    </script>
+</body>
+</html>

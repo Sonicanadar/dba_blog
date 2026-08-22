@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Oracle Performance Tuning & Diagnostics Matrix</title>
+    <!-- Links to your unified global stylesheet asset file -->
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* Specific page override adjustment to match architecture grid layouts */
+        .tuning-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-top: 1rem;
+        }
+        @media (max-width: 900px) {
+            .tuning-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+     <header>
+            </header>
+
+    <div class="container">
+        <div class="tuning-grid">
+            
+            <!-- Column 1: Bottleneck Symptom Selector Panel -->
+            <section class="diagram-container">
+                <h3 style="color: var(--card-title-color); font-size: 1.1rem; margin-bottom: 0.5rem;">Diagnostic Bottleneck Directory</h3>
+                <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem;">Select a real-world database performance symptom to retrieve its triage script block parameters.</p>
+
+                <!-- CPU / Parsing Block Group -->
+                <div class="block-group" data-label="CPU & PARSING ISSUES">
+                    <div class="mem-pool-grid" style="grid-template-columns: 1fr;">
+                        <div class="arch-node selected" data-target="high_cpu">High CPU / Hard Parsing Bottleneck</div>
+                        <div class="arch-node" data-target="unshared_sql">Literals Overuse (Missing Bind Variables)</div>
+                    </div>
+                </div>
+
+                <!-- Concurrency & Locking Group -->
+                <div class="block-group" data-label="CONCURRENCY & LOCKS" style="margin-top: 1.5rem;">
+                    <div class="mem-pool-grid" style="grid-template-columns: 1fr;">
+                        <div class="arch-node" data-target="row_lock">TX Row Lock Contention (Enqueues)</div>
+                        <div class="arch-node" data-target="latch_free">latch: cache buffers chains Wait Event</div>
+                    </div>
+                </div>
+
+                <!-- Disk I/O & Memory Group -->
+                <div class="block-group" data-label="MEMORY & STORAGE I/O" style="margin-top: 1.5rem;">
+                    <div class="mem-pool-grid" style="grid-template-columns: 1fr;">
+                        <div class="arch-node" data-target="db_seq_read">db file sequential read (Index vs Full Scan)</div>
+                        <div class="arch-node" data-target="temp_space">Excessive Temp Tablespace Spilling</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Column 2: SQL Triage Code Inspector Panel -->
+            <aside class="inspector-panel" id="inspectorPanel">
+                <h2 class="inspector-title" id="tuneTitle">High CPU / Hard Parsing Bottleneck</h2>
+                <div class="inspector-type" id="tuneType">DIAGNOSTIC TARGET: V$SQL & V$SQLAREA</div>
+                <p class="inspector-desc" id="tuneDesc">Identifies expensive statements consuming abnormal amounts of CPU run time. Hard parsing indicates that the database engine is spending critical cycles generating execution plans instead of reusing existing ones.</p>
+                
+                <h4 style="color: var(--card-title-color); font-size: 0.9rem; margin-bottom: 0.5rem; font-family: monospace;">Triage & Resolution Query:</h4>
+                <div class="code-container">
+                    <button class="copy-btn" onclick="copyToClipboard('tuneParam', this)">Copy</button>
+                    <pre style="margin: 0;"><code id="tuneParam">SELECT sql_id, executions, cpu_time/1000000 cpu_sec, elapsed_time/1000000 rows_eval, sql_text \nFROM v$sql \nORDER BY cpu_time DESC \nFETCH FIRST 10 ROWS ONLY;</code></pre>
+                </div>
+            </aside>
+
+        </div>
+    </div>
+
+   <footer>
+        <!-- Generated dynamically via components.js -->
+    </footer>
+
+    <script src="posts.js"></script>
+    <script src="components.js"></script>
+    <script src="script.js"></script>
+    
+    <script>
+        /* DIAGNOSTIC TUNING METADATA DICTIONARY */
+        const tuningMetadata = {
+            high_cpu: {
+                title: "High CPU / Hard Parsing Bottleneck",
+                type: "DIAGNOSTIC TARGET: V$SQL & V$SQLAREA",
+                desc: "Identifies statements consuming abnormal levels of CPU runtime. Hard parsing indicates that the engine is spending cycles compiling and optimization mapping execution plans instead of reusing cursor data.",
+                param: "SELECT sql_id, executions, cpu_time/1000000 as cpu_sec, elapsed_time/1000000 as elapsed_sec, sql_text \nFROM v$sql \nWHERE executions > 0 \nORDER BY cpu_time DESC \nFETCH FIRST 10 ROWS ONLY;"
+            },
+            unshared_sql: {
+                title: "Literals Overuse (Missing Binds)",
+                type: "DIAGNOSTIC TARGET: V$SQLAREA_PLAN_HASH",
+                desc: "Queries without bind variables flood the Shared Pool library cache, forcing frequent garbage collections and mutex conflicts. Grouping by plan signature shows identical queries with differing string constants.",
+                param: "SELECT force_matching_signature, COUNT(*), MAX(sql_id) \nFROM v$sql \nGROUP BY force_matching_signature \nHAVING COUNT(*) > 5 \nORDER BY COUNT(*) DESC;"
+            },
+            row_lock: {
+                title: "TX Row Lock Contention (Enqueues)",
+                type: "DIAGNOSTIC TARGET: V$SESSION & V$SESSION_BLOCKERS",
+                desc: "Occurs when a session attempts to modify a row currently locked by another uncommitted transaction. Use this diagnostic routine to trace who is blocking whom in the transaction tree.",
+                param: "SELECT s.sid, s.serial#, s.username, s.blocking_session, s.wait_class, s.seconds_in_wait \nFROM v$session s \nWHERE s.blocking_session IS NOT NULL;"
+            },
+            latch_free: {
+                title: "latch: cache buffers chains",
+                type: "DIAGNOSTIC TARGET: V$SESSION_WAIT & V$SGA_CONTAINER",
+                desc: "Indicates intense concurrent user access to a small subset of database blocks residing in memory (Hot Blocks). Triage requires tracking down highly repetitive nested loop queries or non-indexed predicates.",
+                param: "SELECT event, p1astext, p1, p2astext, p2, p3astext, p3 \nFROM v$session_wait \nWHERE event = 'latch: cache buffers chains';"
+            },
+            db_seq_read: {
+                title: "db file sequential read",
+                type: "DIAGNOSTIC TARGET: V$SEGMENT_STATISTICS",
+                desc: "Signifies single-block physical disk read I/O operations, typically associated with index lookups. Unusually high wait times indicate bad index design, fragmented tables, or outdated system optimizer stats.",
+                param: "SELECT ash.sql_id, ash.event, COUNT(*) wait_count \nFROM v$active_session_history ash \nWHERE ash.event = 'db file sequential read' \nGROUP BY ash.sql_id, ash.event \nORDER BY wait_count DESC;"
+            },
+            temp_space: {
+                title: "Excessive Temp Tablespace Spilling",
+                type: "DIAGNOSTIC TARGET: V$SORT_USAGE & V$SYSSTAT",
+                desc: "Triggers when memory arrays assigned inside individual session PGAs (`WORKAREA_SIZE_POLICY`) are completely saturated during massive grouping or sorting operations, forcing blocks to write to disk.",
+                param: "SELECT su.username, su.sid, su.tablespace, su.contents, (su.blocks * 8192) / 1024 / 1024 as temp_mb \nFROM v$sort_usage su \nORDER BY temp_mb DESC;"
+            }
+        };
+
+        const nodes = document.querySelectorAll('.arch-node');
+        nodes.forEach(node => {
+            node.addEventListener('click', () => {
+                nodes.forEach(n => n.classList.remove('selected'));
+                node.classList.add('selected');
+
+                const targetKey = node.getAttribute('data-target');
+                const metrics = tuningMetadata[targetKey];
+
+                document.getElementById('tuneTitle').innerText = metrics.title;
+                document.getElementById('tuneType').innerText = metrics.type;
+                document.getElementById('tuneDesc').innerText = metrics.desc;
+                document.getElementById('tuneParam').innerText = metrics.param;
+            });
+        });
+    </script>
+</body>
+</html>

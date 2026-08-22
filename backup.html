@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Oracle RMAN Backup & Recovery Matrix</title>
+    <!-- Links to your unified global stylesheet asset file -->
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* Reusing the structural grid component architecture from the tuning page */
+        .backup-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-top: 1rem;
+        }
+        @media (max-width: 900px) {
+            .backup-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body >
+
+    <header>
+        <div class="header-content">
+            <h1>RMAN Backup & Recovery Logbook</h1>
+            <p>Production recovery patterns, media failure handling, and automated retention block scripts.</p>
+        </div>
+        <!-- ⬇️ Corner Wrap Elements Panel -->
+        <div class="header-actions-wrap">
+            <a href="index.html" class="theme-toggle-btn" style="text-decoration: none; position: static;">🏠 Home</a>
+            <button id="themeToggleBtn" class="theme-toggle-btn" style="position: static;">☀️ Light Mode</button>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="backup-grid">
+            
+            <!-- Column 1: Media Failure Scenarios Directory -->
+            <section class="diagram-container">
+                <h3 style="color: var(--card-title-color); font-size: 1.1rem; margin-bottom: 0.5rem;">Recovery Scenario Matrix</h3>
+                <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem;">Select a failure target profile to instantly pull the required RMAN execution command string parameters.</p>
+
+                <!-- Base Routine Maintenance -->
+                <div class="block-group" data-label="ROUTINE PRODUCTION MAINTENANCE">
+                    <div class="mem-pool-grid" style="grid-template-columns: 1fr;">
+                        <div class="arch-node selected" data-target="full_bkp">Full Database Compression Backup Block</div>
+                    </div>
+                </div>
+
+                <!-- Media Corruption / Failures -->
+                <div class="block-group" data-label="DISASTER RECOVERY & MEDIA FAILURES" style="margin-top: 1.5rem;">
+                    <div class="mem-pool-grid" style="grid-template-columns: 1fr;">
+                        <div class="arch-node" data-target="lost_control">Lost All Controlfiles (Restore from Autobackup)</div>
+                        <div class="arch-node" data-target="pitr_recovery">Database Point-In-Time Recovery (DBPITR)</div>
+                    </div>
+                </div>
+
+                <!-- Block Level Corruption -->
+                <div class="block-group" data-label="PHYSICAL INTEGRITY & REPAIR" style="margin-top: 1.5rem;">
+                    <div class="mem-pool-grid" style="grid-template-columns: 1fr;">
+                        <div class="arch-node" data-target="block_repair">Active Block Media Recovery (BMR)</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Column 2: RMAN Syntax Execution Inspector -->
+            <aside class="inspector-panel" id="inspectorPanel">
+                <h2 class="inspector-title" id="bkpTitle">Full Database Compression Backup Block</h2>
+                <div class="inspector-type" id="bkpType">TARGET COMMAND: RMAN COMPRESSED BACKUP</div>
+                <p class="inspector-desc" id="bkpDesc">Executes a binary compression pool backup of the root target environment including datafiles, initialization files, and dynamic archive log segments, then completely clears down expired transaction traces from storage tracks.</p>
+                
+                <h4 style="color: var(--card-title-color); font-size: 0.9rem; margin-bottom: 0.5rem; font-family: monospace;">RMAN Terminal Command String:</h4>
+                <div class="code-container">
+                    <button class="copy-btn" onclick="copyToClipboard('bkpParam', this)">Copy</button>
+                    <pre style="margin: 0;"><code id="bkpParam">RUN {\n  ALLOCATE CHANNEL c1 DEVICE TYPE DISK;\n  BACKUP AS COMPRESSED BACKUPSET DATABASE PLUS ARCHIVELOG DELETE INPUT;\n  RELEASE CHANNEL c1;\n}</code></pre>
+                </div>
+            </aside>
+        </div>
+    </div>
+
+   <footer>
+        <!-- Generated dynamically via components.js -->
+    </footer>
+
+    <script src="posts.js"></script>
+    <script src="components.js"></script>
+    <script src="script.js"></script>
+    <script>
+        /* RMAN RECOVERY METADATA DICTIONARY */
+                /* 📋 UPDATED RMAN RECOVERY METADATA DICTIONARY WITH CLEAN TEMPLATE LITERALS */
+        const backupMetadata = {
+            full_bkp: {
+                title: "Full Database Compression Backup Block",
+                type: "TARGET COMMAND: RMAN COMPRESSED BACKUP",
+                desc: "Executes a binary compression backup of the target environment database including all system datafiles, parameter files, and active archived redo log paths, safely wiping down backed-up sequence logs from disk storage arrays.",
+                /* ⬇️ FIXED: Wrapped in backticks to force perfect multi-line block formatting ⬇️ */
+                param: `RUN {
+    ALLOCATE CHANNEL c1 DEVICE TYPE DISK;
+    BACKUP AS COMPRESSED BACKUPSET 
+    DATABASE PLUS ARCHIVELOG DELETE INPUT;
+    RELEASE CHANNEL c1;
+}`
+            },
+            lost_control: {
+                title: "Lost All Controlfiles (Autobackup)",
+                type: "TARGET COMMAND: RESTORE CONTROLFILE",
+                desc: "Invoked when physical controlfile parameters are completely missing or corrupted. Boots the database instance into a raw NOMOUNT state, targets the DBID tag directly, and extracts metadata tracking maps from the backup repository.",
+                param: `# Start target instance manually in NOMOUNT state
+# Run inside RMAN wrapper connected to target file paths:
+SET DBID 1482958295; 
+RUN {
+    SET CONTROLFILE AUTOBACKUP FORMAT FOR DEVICE TYPE DISK TO '/u01/app/oracle/fast_recovery_area/%F';
+    RESTORE CONTROLFILE FROM AUTOBACKUP;
+    ALTER DATABASE MOUNT;
+}`
+            },
+            pitr_recovery: {
+                title: "Database Point-In-Time Recovery (DBPITR)",
+                type: "TARGET COMMAND: RECOVER DATABASE UNTIL",
+                desc: "Rolls the database instance back to an exact historical wall-clock timestamp parameter boundary to safe-guard against human errors. Must be executed in a MOUNT state and concluded with a reset log sequence clearance.",
+                param: `RUN {
+    SET UNTIL TIME "TO_DATE('2026-08-22 06:00:00', 'YYYY-MM-DD HH24:MI:SS')";
+    RESTORE DATABASE;
+    RECOVER DATABASE;
+    ALTER DATABASE OPEN RESETLOGS;
+}`
+            },
+            block_repair: {
+                title: "Active Block Media Recovery (BMR)",
+                type: "TARGET COMMAND: RECOVER DATAFILE ... BLOCK",
+                desc: "Repairs single or multi-block data block physical corruptions online, completely avoiding database downtime by restoring the localized target block segments from active backup sets.",
+                param: `# Query corruptions: SELECT file#, block# FROM v$database_block_corruption;
+RUN {
+    RECOVER DATAFILE 4 BLOCK 1256;
+}`
+            }
+        };
+
+    </script>
+</body>
+</html>
