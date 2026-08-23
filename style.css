@@ -513,7 +513,7 @@ body {
     max-width: 800px;
     margin: 60px auto;
     padding: 40px 20px;
-    background-color: #161b22; /* Elevated terminal layer panel */
+    background-color: white; /* Elevated terminal layer panel */
     border: 1px solid #30363d;
     border-radius: 8px;
     box-shadow: 0 10px 30px rgba(0,0,0,0.5);
