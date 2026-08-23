@@ -487,3 +487,238 @@ code {
     font-size: 0.75rem;
     font-weight: bold;
 }
+
+/* =========================================================================
+   1. CORE PROJECT SYSTEM SETUP & TECH DARK THEME
+   ========================================================================= */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Consolas', 'Courier New', Monaco, monospace; /* Database terminal look */
+}
+
+body {
+    background-color: #0d1117; /* Dark charcoal system background */
+    color: #c9d1d9;
+    overflow-x: hidden;
+    padding: 0;
+    margin: 0;
+}
+
+/* =========================================================================
+   2. CONTAINER MAIN LAYOUT WRAPPER
+   ========================================================================= */
+.contact {
+    max-width: 800px;
+    margin: 60px auto;
+    padding: 40px 20px;
+    background-color: #161b22; /* Elevated terminal layer panel */
+    border: 1px solid #30363d;
+    border-radius: 8px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+
+.contact h2 {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #ff9f43; /* System Amber focus accent color */
+    margin-bottom: 12px;
+    letter-spacing: -0.5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.contact p.contact-subtitle {
+    color: #8b949e;
+    font-size: 14px;
+    margin-bottom: 35px;
+    text-align: center;
+    line-height: 1.5;
+    border-bottom: 1px dashed #30363d;
+    padding-bottom: 20px;
+}
+
+.contact form {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* Flex structural boxes for parallel data inputs */
+form .input-box {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+.input-box .input-field {
+    width: 100%;
+}
+
+form .textarea-field {
+    width: 100%;
+}
+
+/* Dynamic metadata parameter labels */
+.field label {
+    display: block;
+    font-size: 12px;
+    text-transform: uppercase;
+    color: #8b949e;
+    margin-bottom: 6px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+/* =========================================================================
+   3. TERMINAL INPUT FIELD TILES
+   ========================================================================= */
+.field .item {
+    width: 100%;
+    padding: 12px 16px;
+    background-color: #0d1117; /* Nested pitch black view layer slot */
+    border: 1px solid #30363d;
+    outline: none;
+    border-radius: 4px;
+    color: #56d364;            /* Terminal Monitor Matrix Green output values font */
+    font-size: 14px;
+    transition: all 0.2s ease-in-out;
+}
+
+form .textarea-field .item {
+    resize: none; 
+}
+
+.field .item::placeholder {
+    color: #484f58; 
+}
+
+/* Active click focus tracking state overrides */
+.field .item:focus {
+    border-color: #ff9f43; /* Glows amber color on active user inputs */
+    box-shadow: 0 0 8px rgba(255, 159, 67, 0.15);
+}
+
+/* =========================================================================
+   4. OPERATION SUBMIT TERMINAL BUTTONS
+   ========================================================================= */
+form button[type="submit"] {
+    padding: 14px 40px;
+    background-color: #ff9f43; /* System Amber Primary key color element */
+    border: none;
+    outline: none;
+    border-radius: 4px;
+    font-size: 14px;
+    color: #0d1117;            /* Extreme dark baseline contract on font fill text */
+    font-weight: 700;
+    cursor: pointer;
+    align-self: center;
+    min-width: 220px;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 12px rgba(255, 159, 67, 0.15);
+    text-transform: uppercase;
+}
+
+form button[type="submit"]:hover {
+    background-color: #ffb366;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(255, 159, 67, 0.25);
+}
+
+form button[type="submit"]:active {
+    transform: translateY(1px);
+}
+
+/* Syntax alert warning layout items */
+.field .error-txt {
+    font-size: 12px;
+    color: #ff7b72;            /* Error message notification red text layers tracking */
+    text-align: left;
+    margin-top: 4px;
+    display: none;
+}
+
+/* =========================================================================
+   5. SECURE TRANSACTION STATUS MODAL POPUP
+   ========================================================================= */
+.popup {
+    width: 420px;
+    max-width: 92vw;
+    background-color: #161b22; 
+    border: 2px solid #30363d;
+    border-radius: 8px;
+    position: fixed;
+    top: 0;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.1);
+    text-align: center;
+    padding: 40px 30px 30px;
+    color: #f0f6fc;
+    visibility: hidden;
+    transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), top 0.4s ease;
+    z-index: 9999;           
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7);
+}
+
+.open-popup {
+    visibility: visible;
+    top: 50%;
+    transform: translate(-50%, -50%) scale(1); /* Snappy popup entry */
+}
+
+.popup h3 {
+    font-size: 1.6rem;
+    font-weight: 600;
+    margin-bottom: 12px;
+    color: #56d364; /* Terminal Success Green text pop status info output */
+}
+
+.popup p {
+    font-size: 14px;
+    color: #8b949e;
+    line-height: 1.6;
+    margin-bottom: 25px;
+}
+
+.popup button {
+    width: 50%;
+    padding: 10px 0;
+    background-color: #30363d;
+    color: #f0f6fc;
+    border: 1px solid #444c56;
+    outline: none;
+    font-size: 13px;
+    font-weight: 700;
+    border-radius: 4px;
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: background-color 0.15s ease;
+}
+
+.popup button:hover {
+    background-color: #444c56;
+    color: #ffffff;
+}
+
+/* =========================================================================
+   6. ADAPTIVE MOBILE LAYOUT COMPRESSION
+   ========================================================================= */
+@media screen and (max-width: 640px) {
+    form .input-box {
+        flex-direction: column;
+        gap: 20px;
+    }
+    
+    .contact h2 {
+        font-size: 1.4rem;
+    }
+    
+    .contact {
+        margin: 20px auto;
+        padding: 25px 15px;
+    }
+}

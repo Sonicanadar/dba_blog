@@ -3,127 +3,106 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Contact | Senior Database Infrastructure Engineer</title>
-    <!-- Links to your unified global stylesheet asset file -->
+    <title>DBA Gateway Connection - The Oracle DBA Logbook</title>
+    
+    <!-- Link to separated CSS file -->
     <link rel="stylesheet" href="style.css">
-    <style>
-        .contact-container {
-            max-width: 700px;
-            margin: 2rem auto;
-            background-color: var(--bg-secondary);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 2rem;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-        }
-
-        .terminal-header {
-            font-family: 'SFMono-Regular', Consolas, monospace;
-            color: var(--accent-color);
-            font-size: 1.2rem;
-            font-weight: bold;
-            margin-bottom: 1.5rem;
-            border-bottom: 1px solid var(--border-color);
-            padding-bottom: 0.5rem;
-        }
-
-        .form-group {
-            margin-bottom: 1.5rem;
-            font-family: 'SFMono-Regular', Consolas, monospace;
-        }
-
-        .form-label {
-            display: block;
-            color: var(--text-muted);
-            font-size: 0.85rem;
-            margin-bottom: 0.5rem;
-        }
-
-        .form-label::before {
-            content: "$ ";
-            color: var(--accent-color);
-        }
-
-        .form-input {
-            width: 100%;
-            background-color: var(--bg-primary);
-            border: 1px solid var(--border-color);
-            border-radius: 4px;
-            padding: 0.75rem;
-            color: var(--text-main);
-            font-family: inherit;
-            font-size: 0.95rem;
-            transition: border-color 0.2s ease;
-        }
-
-        .form-input:focus {
-            outline: none;
-            border-color: var(--accent-color);
-        }
-
-        textarea.form-input {
-            resize: vertical;
-            min-height: 120px;
-        }
-
-        .submit-btn {
-            background-color: var(--accent-color);
-            color: #ffffff;
-            border: 1px solid var(--accent-color);
-            padding: 0.75rem 1.5rem;
-            border-radius: 4px;
-            font-family: 'SFMono-Regular', Consolas, monospace;
-            font-size: 0.95rem;
-            font-weight: bold;
-            cursor: pointer;
-            width: 100%;
-            transition: all 0.2s ease;
-        }
-
-        .submit-btn:hover {
-            background-color: transparent;
-            color: var(--accent-color);
-        }
-    </style>
 </head>
 <body>
 
-    <!-- Empty header; generated dynamically via components.js -->
-    <header></header>
-
-    <div class="container" style="max-width: 1100px;">
-        <div class="contact-container">
-            <div class="terminal-header">📥 INITIALIZE CONNECTION PROFILE</div>
+    <!-- Main Terminal Wrapper Grid Canvas Block -->
+    <div class="contact">
+        <h2>📥 INITIALIZE CONNECTION PROFILE</h2>
+        <p class="contact-subtitle">Execute the initialization profile sequence block below to establish a handshake connection payload route mapping straight to the Oracle DBA infrastructure matrix.</p>
+        
+        <!-- Interactive Form Configuration Block -->
+        <form id="contactForm">
+            <div class="input-box">
+                <div class="input-field field">
+                    <label>SET_CLIENT_NAME:</label>
+                    <input type="text" id="name" placeholder="string [e.g. Sysadmin / Developer]" class="item" required>
+                    <div class="error-txt">ORA-01400: cannot insert NULL into ("CLIENT_NAME")</div>
+                </div>
+                <div class="input-field field">
+                    <label>SET_CONNECTION_EMAIL:</label>
+                    <input type="email" id="email" placeholder="string [e.g. user@domain.com]" class="item" required>
+                    <div class="error-txt">ORA-01401: entered value is not a valid communication address.</div>
+                </div>
+            </div>
+            <div class="input-box">
+                <div class="input-field field">
+                    <label>SET_INSTANCE_PHONE:</label>
+                    <input type="tel" id="phone" placeholder="numeric numeric integer array strings" class="item" required>
+                    <div class="error-txt">ORA-01402: contact reference assignment tracker target required.</div>
+                </div>
+                <div class="input-field field">
+                    <label>SET_LOCATION_PINCODE:</label>
+                    <input type="text" id="pincode" placeholder="numeric zip location data" class="item" required>
+                    <div class="error-txt">ORA-01403: regional zip location dataset sector is missing.</div>
+                </div>
+            </div>
+            <div class="textarea-field field">
+                <label>APPEND_MESSAGE_PAYLOAD:</label>
+                <textarea id="address" placeholder="CLOB text block [Describe database system architecture concept context details / query profiles]" class="item" rows="6" required></textarea>
+                <div class="error-txt">ORA-01404: execution transaction aborted due to empty block payload tracking values.</div>
+            </div>
             
-            <!-- Standard Form - Hooked to Formspree for free submission processing without code backend -->
-            <form action="https://formspree.io" method="POST">
-                
-                <div class="form-group">
-                    <label class="form-label" for="client_name">SET_CLIENT_NAME:</label>
-                    <input type="text" id="client_name" name="name" class="form-input" placeholder="e.g., John Doe / Hiring Manager" required>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label" for="client_email">SET_CONNECTION_EMAIL:</label>
-                    <input type="email" id="client_email" name="email" class="form-input" placeholder="e.g., manager@company.com" required>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label" for="msg_payload">APPEND_MESSAGE_PAYLOAD:</label>
-                    <textarea id="msg_payload" name="message" class="form-input" placeholder="Enter consulting requirements or job description details..." required></textarea>
-                </div>
-
-                <button type="submit" class="submit-btn">EXECUTE SEND_MESSAGE ;</button>
-            </form>
-        </div>
+            <button type="submit">EXECUTE SEND_MESSAGE ;</button>
+        </form>
     </div>
 
-    <!-- Empty footer; generated dynamically via components.js -->
-    <footer></footer>
+    <div id="popup" class="popup">
+        <h3>PL/SQL PROCEDURE INITIALIZED</h3>
+        <p>Your client email application has been invoked. Complete the send instruction to commit the active logbook database table matrix record lines.</p>
+        <button type="button" onclick="closePopup()">COMMIT ;</button>
+    </div>
 
-    <!-- Shared dependency script loading pipeline -->
-    <script src="posts.js"></script>
-    <script src="components.js"></script>
-    <script src="script.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const contactForm = document.getElementById("contactForm");
+            const popup = document.getElementById("popup");
+
+            window.closePopup = function() {
+                if(popup) popup.classList.remove("open-popup");
+            };
+
+            if (contactForm) {
+                contactForm.addEventListener("submit", (e) => {
+                    e.preventDefault(); // Stop standard browser page refresh loops
+
+                    // Collect value items from form targets
+                    const fullName = document.getElementById("name")?.value;
+                    const emailAddress = document.getElementById("email")?.value;
+                    const phoneNumber = document.getElementById("phone")?.value;
+                    const pinCode = document.getElementById("pincode")?.value;
+                    const streetAddress = document.getElementById("address")?.value;
+
+                    // Build a clean, structured plaintext terminal log body layout
+                    let emailSubject = encodeURIComponent(`Oracle Logbook Entry - ${fullName}`);
+                    let emailBody = encodeURIComponent(
+`NEW LOGBOOK GATEWAY SUBMISSION
+========================================
+[+] CLIENT NAME      : ${fullName}
+[+] CONNECTION EMAIL : ${emailAddress}
+[+] INSTANCE PHONE   : ${phoneNumber}
+[+] LOCATION PINCODE : ${pinCode}
+
+APPEND_MESSAGE_PAYLOAD (CLOB Block):
+----------------------------------------
+${streetAddress}
+========================================`
+                    );
+
+                    // 🎯 NATIVE MAILTO PIPELINE: Fires instantly without needing external scripts or tokens
+                    const destinationEmail = "sonicawebdev@gmail.com";
+                    window.location.href = `mailto:${destinationEmail}?subject=${emailSubject}&body=${emailBody}`;
+
+                    // Trigger the confirmation popup on the interface layout grid screen
+                    if(popup) popup.classList.add("open-popup");
+                    contactForm.reset();
+                });
+            }
+        });
+    </script>
 </body>
 </html>
