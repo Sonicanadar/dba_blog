@@ -3,51 +3,223 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Oracle DBA Logbook</title>
+    <title>Step 'n' Style | Dance Event Management & Choreography</title>
+    <!-- Google Fonts: Montserrat Premium Weight Setup -->
+    <link rel="preconnect" href="https://googleapis.com">
+    <link rel="preconnect" href="https://gstatic.com" crossorigin>
+    <link href="https://googleapis.com/css2?family=Montserrat:wght@400;700;800;900&display=swap" rel="stylesheet">
+    <!-- Local Consolidated Stylesheet Path -->
     <link rel="stylesheet" href="style.css">
 </head>
-<body >
+<body>
 
-    <!-- 1. Left completely empty; components.js handles generation -->
-    <header></header>
+    <!-- --- 1. GLASSMORPHISM STICKY NAVIGATION BAR --- -->
+    <nav class="navbar">
+        <a href="#" class="logo">Step 'n' <span>Style</span></a>
+        <!-- --- THEME SWITCH CONTROLLER TOGGLE --- -->
+<button id="themeToggleBtn" aria-label="Toggle Color Theme" style="background: transparent; border: none; font-size: 1.3rem; cursor: pointer; margin-left: auto; margin-right: 20px; transition: transform 0.3s ease;">
+    🌙
+</button>
 
-    <div class="container">
-        <div class="feed-grid">
-            <aside class="sidebar">
-                <input type="text" id="searchBar" class="search-box" placeholder="Search concepts or error codes...">
-                <div class="filter-title">Filter by Domain</div>
-                <button class="tag-btn active" id="btn-all">All Concepts</button>
-                <button class="tag-btn" id="btn-architecture">Architecture</button>
-                <button class="tag-btn" id="btn-performance">Performance Tuning</button>
-                <button class="tag-btn" id="btn-backup">Backup & Recovery</button>
-                <button class="tag-btn" id="btn-multitenant">Multitenant (CDB/PDB)</button>
-                <button class="tag-btn" id="btn-troubleshooting">Troubleshooting</button>
-                <button class="tag-btn" id="btn-patching">Patch Application</button>
-                <button class="tag-btn" id="btn-storage">Storage Capacity</button>
-                <button class="tag-btn" id="btn-archiver">Archiver Errors</button>
-                <button class="tag-btn" id="btn-prechecks">Health Pre-Checks</button>
-                <button class="tag-btn" id="btn-security">Database Security</button>
-                <button class="tag-btn" id="btn-rac">RAC Clustering</button>
-                <button class="tag-btn" id="btn-automation">Shell Automation</button>
-                <button class="tag-btn" id="btn-cloud">Cloud Systems</button>
-                <button class="tag-btn" id="btn-datapump">Data Pump</button>
-                <button class="tag-btn" id="btn-baselines">SQL Baselines</button>
-                <button class="tag-btn" id="btn-pinning">SQL Pinning</button>
-                <button class="tag-btn" id="btn-auditing">Audit & Compliance</button>
-            </aside>
+        <!-- Responsive Mobile Hamburger Icon Trigger -->
+        <button class="hamburger" id="hamburgerBtn" aria-label="Toggle Navigation Menu">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
 
-            <main class="content-area" id="logContainer">
-                <!-- JavaScript renders items dynamically here -->
-            </main>
+        <!-- Navigation Context Menu Routing Map Links -->
+        <ul class="nav-links" id="navLinks">
+            <li><a href="#home" class="active">Home</a></li>
+            <li><a href="#showcase">Event Showcase</a></li>
+            <li><a href="#about">About</a></li>
+            <li><a href="#contact">Contact</a></li>
+        </ul>
+    </nav>
+
+    <!-- --- 2. AMBIENT PREMIUM HERO LANDING ENTRY --- -->
+    <header class="overview-section" id="home" style="padding: 120px 8% 60px; max-width: 1400px; margin: 0 auto; text-align: center;">
+        <h1 style="font-size: 3.5rem; font-weight: 900; line-height: 1.2; margin-bottom: 20px; text-transform: uppercase;">
+            Elevating Your Events <br>Through <span class="highlight">Movement</span>
+        </h1>
+        <p style="color: #a0a0ab; font-size: 1.2rem; max-width: 700px; margin: 0 auto 40px; line-height: 1.8;">
+            Bespoke dance choreography and complete event management for elite Weddings, high-energy Birthdays, and corporate brand Galas. Engineered for seamless stage execution.
+        </p>
+        <div class="hero-actions">
+            <a href="#showcase" class="btn">Explore Showreels</a>
+            <a href="#about" class="btn secondary-btn">Meet The Team</a>
+        </div>
+    </header>
+    <!-- --- 3. INTERACTIVE SHOWCASE DYNAMIC SUB-SYSTEM --- -->
+    <section class="dashboard-container" id="showcase" style="padding: 60px 8%; max-width: 1400px; margin: 0 auto;">
+        <div class="section-header" style="margin-bottom: 40px; text-align: center;">
+            <h2 style="font-size: 2.5rem; font-weight: 900; text-transform: uppercase; margin-bottom: 10px;">
+                Event <span class="highlight">Showcase Hub</span>
+            </h2>
+            <p style="color: #a0a0ab;">Select an event profile sub-list below to populate the primary media player window.</p>
+        </div>
+
+        <!-- Filter Category Filter Matrix Navigation Tabs -->
+        <div class="category-filter-row" style="display: flex; justify-content: center; gap: 15px; margin-bottom: 30px; flex-wrap: wrap;">
+            <button class="btn category-tab active" data-category="weddings">💍 Weddings & Sangeet</button>
+            <button class="btn category-tab" data-category="birthdays">🎂 Birthday Bashes</button>
+            <button class="btn category-tab" data-category="corporate">🏢 Corporate Galas</button>
+        </div>
+
+        <!-- Dynamic Unified Theater Panel Layout Matrix Component Grid -->
+        <div class="showcase-theater-grid" style="display: grid; grid-template-columns: 1.8fr 1fr; gap: 30px;">
+            
+            <!-- Left Side: Core Screen Theater Board Interface -->
+            <div class="main-theater-display" style="background: #0f0f18; border: 1px solid rgba(255,255,255,0.04); padding: 25px; border-radius: 16px;">
+                <div class="video-wrapper" style="position: relative; width: 100%; border-radius: 8px; overflow: hidden; background: #000; aspect-ratio: 16/9;">
+                    <video id="mainVideoPlayer" controls playsinline style="width: 100%; height: 100%; object-fit: cover;">
+                        <source id="mainVideoSource" src="" type="video/mp4">
+                        Your browser does not support the video tag.
+                    </video>
+                </div>
+                <div class="video-meta-details" style="margin-top: 20px;">
+                    <h3 id="activeTitle" style="font-size: 1.6rem; font-weight: 800; margin-bottom: 10px; color: #fff;">Loading...</h3>
+                    <p id="activeDescription" style="color: #a0a0ab; line-height: 1.6; font-size: 0.95rem;">Please select a category item loop target element.</p>
+                </div>
+            </div>
+
+            <!-- Right Side: Sidebar Choice Interactive Canvas Tracks -->
+            <div class="playlist-sidebar-block" style="background: #0f0f18; border: 1px solid rgba(255,255,255,0.04); padding: 25px; border-radius: 16px; display: flex; flex-direction: column; gap: 15px; max-height: 560px; overflow-y: auto;">
+                <h4 style="font-size: 1.1rem; text-transform: uppercase; letter-spacing: 0.5px; color: #ff007f; margin-bottom: 5px;">Available Showreels</h4>
+                
+                <!-- Target node used by JS Template Engine to append data cards loops safely -->
+                <div id="playlistDynamicContainer" style="display: flex; flex-direction: column; gap: 15px;">
+                    <!-- Appended dynamic content elements render injection target zone -->
+                </div>
+            </div>
+
+        </div>
+    </section>
+    <!-- --- 4. BEHIND THE GROOVE ABOUT BLOCK --- -->
+    <section class="about-container" id="about">
+        <div class="about-content">
+            <h2>Behind the <span class="highlight">Groove</span></h2>
+            <p>Founded with a pure passion for dance and performance coordination, <strong>Step 'n' Style</strong> transforms traditional celebrations into synchronized theatrical experiences.</p>
+            <p>We understand that not everyone is a trained dancer. That's why our core signature philosophy focuses on building layout routines that are incredibly easy to learn, look highly polished on stage, and keep your guests completely comfortable and confident.</p>
+            
+            <h3 style="margin-top: 30px; font-size: 1.3rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px;">Our 3-Step Execution Process:</h3>
+            <ul class="process-list">
+                <li><strong>1. Music Mix Customization:</strong> We slice, map, and professionally blend your selected music tracks.</li>
+                <li><strong>2. Group Rehearsal Pacing:</strong> We break down steps step-by-step in fluid sessions or via personal online instruction videos.</li>
+                <li><strong>3. On-Site Floor Management:</strong> We stage-manage entry spacing, light cues, and formations directly at your event venue.</li>
+            </ul>
+        </div>
+        <div class="about-image" style="display: flex; align-items: center; justify-content: center;">
+            <img src="images/soni1.jpg" alt="Step 'n' Style Choreography Team Work Session">
+        </div>
+    </section>
+
+    <!-- --- 5. INDEPENDENT BOOKING CONTACT PAGE AREA --- -->
+    <section class="contact-container" id="contact">
+        <div class="contact-info-panel">
+            <h2>Let's Start Your <br><span class="highlight">Performance Journey</span></h2>
+            <p>Ready to bring the stage to life? Whether you need a romantic wedding waltz, an explosive surprise birthday flashmob, or a sleek corporate routine, our team is ready to choreograph your vision.</p>
+            
+            <div class="info-details-block">
+                <div class="info-item">
+                    <h4>📍 Location Base</h4>
+                    <p>Malad West, Mumbai, Maharashtra, India</p>
+                </div>
+                <div class="info-item">
+                    <h4>✉ Direct Email</h4>
+                    <p>hello@stepnstyle.dance</p>
+                </div>
+                <div class="info-item">
+                    <h4>🕒 Operating Hours</h4>
+                    <p>Monday - Saturday: 10:00 AM - 8:00 PM</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Consultation Request Form Architecture Panel Layout -->
+        <div class="booking-form-wrapper">
+            <h3 style="font-size: 1.5rem; font-weight: 800; margin-bottom: 25px; text-transform: uppercase;">Consultation Request Form</h3>
+            <form id="mainContactForm">
+                
+                <div class="form-field">
+                    <label for="fullName">Your Full Name</label>
+                    <input type="text" id="fullName" required placeholder="e.g. Rahul Sharma">
+                </div>
+
+                <div class="form-group-row">
+                    <div class="form-field no-margin">
+                        <label for="emailAddress">Email Address</label>
+                        <input type="email" id="emailAddress" required placeholder="rahul@example.com">
+                    </div>
+                    <div class="form-field no-margin">
+                        <label for="phoneNumber">Phone Number</label>
+                        <input type="tel" id="phoneNumber" required placeholder="e.g. 9876543210">
+                    </div>
+                </div>
+
+                <div class="form-field" style="margin-top: 20px;">
+                    <label for="eventType">Select Event Type</label>
+                    <select id="eventType" required>
+                        <option value="" disabled selected>Choose an event profile...</option>
+                        <option value="Wedding & Family Sangeet">💍 Wedding & Family Sangeet</option>
+                        <option value="Birthday Bash / Sweet 16">🎂 Birthday Bash / Sweet 16</option>
+                        <option value="Corporate Launch / Gala">🏢 Corporate Launch / Gala</option>
+                        <option value="Other Custom Celebration">⭐ Other Custom Celebration</option>
+                    </select>
+                </div>
+
+                <div class="form-group-row">
+                    <div class="form-field no-margin">
+                        <label for="dancerCount">Approximate Number of Dancers</label>
+                        <select id="dancerCount" required>
+                            <option value="Solo performance / Couple Only">Solo performance / Couple Only</option>
+                            <option value="Small Group (3 - 8 participants)">Small Group (3 - 8 participants)</option>
+                            <option value="Medium Group (9 - 20 participants)">Medium Group (9 - 20 participants)</option>
+                            <option value="Massive Flashmob (21+ participants)">Massive Flashmob (21+ participants)</option>
+                        </select>
+                    </div>
+                    <div class="form-field no-margin">
+                        <label for="budgetBracket">Estimated Budget Bracket</label>
+                        <select id="budgetBracket" required>
+                            <option value="Standard Choreography Package">Standard Package</option>
+                            <option value="Premium Package (Includes Edit mixes & Video tutorials)">Premium Package (Edits & Tutorials)</option>
+                            <option value="Elite Package (Includes On-site floor stage management)">Elite Package (On-site Staging)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-field" style="margin-top: 20px;">
+                    <label for="visionDetails">Tell Us About Your Vision</label>
+                    <textarea id="visionDetails" rows="4" placeholder="Describe music tracks preference, theme goals, dance styles, etc..."></textarea>
+                </div>
+
+                <button type="submit" class="btn full-width-btn">Submit Booking Details</button>
+            </form>
+        </div>
+    </section>
+
+    <!-- --- 6. INTERACTIVE GLASSMORPHISM SUCCESS OVERLAY MODAL --- -->
+    <div class="modal-overlay" id="bookingModalOverlay">
+        <div class="modal-box">
+            <button class="modal-close-x" id="closeModalBtn" aria-label="Close Confirmation Window">&times;</button>
+            <div class="modal-icon">✨</div>
+            <h3>Booking Configured!</h3>
+            
+            <!-- Message block tracking content transformations processed via javascript elements -->
+            <p id="modalDynamicMessage">Setting up tracking details routing engine metrics profiles...</p>
+            
+            <div class="modal-footer">
+                <button class="btn" id="modalActionBtn">Send to WhatsApp 🚀</button>
+            </div>
         </div>
     </div>
 
-    <!-- 2. Left completely empty; components.js handles generation -->
-    <footer></footer>
+    <!-- --- 7. CORE FOOTER STAGE --- -->
+    <footer style="text-align: center; padding: 40px 20px; border-top: 1px solid rgba(255,255,255,0.05); background: #060609; margin-top: 60px;">
+        <p style="color: #666; font-size: 0.85rem;">&copy; 2026 Step 'n' Style. Designed for flawless event scheduling and execution.</p>
+    </footer>
 
-    <!-- 3. SCRIPT LINKING TRACES (Crucial order sequencing rule) -->
-    <script src="posts.js"></script>
-    <script src="components.js"></script> <!-- ⬅️ Load components file before application rules -->
+    <!-- Core Interactive Architecture Script Wire Connection File -->
     <script src="script.js"></script>
 </body>
 </html>
