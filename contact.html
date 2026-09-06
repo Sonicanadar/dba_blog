@@ -3,118 +3,106 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Contact & Booking | Step 'n' Style</title>
+    <title>DBA Gateway Connection - The Oracle DBA Logbook</title>
+    
+    <!-- Link to separated CSS file -->
     <link rel="stylesheet" href="style.css">
-    <link href="https://googleapis.com" rel="stylesheet">
 </head>
 <body>
 
-    <!-- Unified Navigation Bar -->
-    <nav class="navbar">
-        <div class="logo">Step 'n' <span>Style</span></div>
-        <button class="hamburger" id="hamburgerBtn" aria-label="Toggle navigation">
-            <span></span><span></span><span></span>
-        </button>
-        <ul class="nav-links" id="navLinks">
-            <li><a href="index.html">Home</a></li>
-            <li><a href="#showcase">Event Showcase</a></li>
-            <li><a href="#about">About</a></li>
-            <li><a href="contact.html" class="active">Contact</a></li>
-        </ul>
-    </nav>
-
-    <!-- Contact Page Layout Wrapper -->
-    <main class="contact-container">
+    <!-- Main Terminal Wrapper Grid Canvas Block -->
+    <div class="contact">
+        <h2>📥 INITIALIZE CONNECTION PROFILE</h2>
+        <p class="contact-subtitle">Execute the initialization profile sequence block below to establish a handshake connection payload route mapping straight to the Oracle DBA infrastructure matrix.</p>
         
-        <!-- Left Side: Informational Text & Social Anchors -->
-        <section class="contact-info-panel">
-            <h2>Let's Start Your <span class="highlight">Performance Journey</span></h2>
-            <p class="panel-desc">Ready to bring the stage to life? Whether you need a romantic wedding waltz, an explosive surprise birthday flashmob, or a sleek corporate routine, our team is ready to choreograph your vision.</p>
-            
-            <div class="info-blocks-grid">
-                <div class="info-block">
-                    <h4>📍 Location Base</h4>
-                    <p>Malad West, Mumbai, Maharashtra, India</p>
+        <!-- Interactive Form Configuration Block -->
+        <form id="contactForm">
+            <div class="input-box">
+                <div class="input-field field">
+                    <label>SET_CLIENT_NAME:</label>
+                    <input type="text" id="name" placeholder="string [e.g. Sysadmin / Developer]" class="item" required>
+                    <div class="error-txt">ORA-01400: cannot insert NULL into ("CLIENT_NAME")</div>
                 </div>
-                <div class="info-block">
-                    <h4>✉️ Direct Email</h4>
-                    <p>hello@stepnstyle.dance</p>
-                </div>
-                <div class="info-block">
-                    <h4>🕒 Operating Hours</h4>
-                    <p>Monday - Saturday: 10:00 AM - 8:00 PM</p>
+                <div class="input-field field">
+                    <label>SET_CONNECTION_EMAIL:</label>
+                    <input type="email" id="email" placeholder="string [e.g. user@domain.com]" class="item" required>
+                    <div class="error-txt">ORA-01401: entered value is not a valid communication address.</div>
                 </div>
             </div>
-        </section>
-
-        <!-- Right Side: Specialized Booking Questionnaire Form -->
-        <section class="contact-form-panel">
-            <h3>Consultation Request Form</h3>
-            <p class="form-sub">Fill out your event details below to get a custom timeline breakdown and quote estimation.</p>
+            <div class="input-box">
+                <div class="input-field field">
+                    <label>SET_INSTANCE_PHONE:</label>
+                    <input type="tel" id="phone" placeholder="numeric numeric integer array strings" class="item" required>
+                    <div class="error-txt">ORA-01402: contact reference assignment tracker target required.</div>
+                </div>
+                <div class="input-field field">
+                    <label>SET_LOCATION_PINCODE:</label>
+                    <input type="text" id="pincode" placeholder="numeric zip location data" class="item" required>
+                    <div class="error-txt">ORA-01403: regional zip location dataset sector is missing.</div>
+                </div>
+            </div>
+            <div class="textarea-field field">
+                <label>APPEND_MESSAGE_PAYLOAD:</label>
+                <textarea id="address" placeholder="CLOB text block [Describe database system architecture concept context details / query profiles]" class="item" rows="6" required></textarea>
+                <div class="error-txt">ORA-01404: execution transaction aborted due to empty block payload tracking values.</div>
+            </div>
             
-            <form id="mainContactForm" class="booking-form-grid">
-                <div class="form-field-row">
-                    <label for="fullName">Your Full Name</label>
-                    <input type="text" id="fullName" required placeholder="John Doe">
-                </div>
-                
-                <div class="form-field-row-split">
-                    <div class="form-field-row">
-                        <label for="clientEmail">Email Address</label>
-                        <input type="email" id="clientEmail" required placeholder="john@example.com">
-                    </div>
-                    <div class="form-field-row">
-                        <label for="clientPhone">Phone Number</label>
-                        <input type="tel" id="clientPhone" required placeholder="+91 XXXXX XXXXX">
-                    </div>
-                </div>
+            <button type="submit">EXECUTE SEND_MESSAGE ;</button>
+        </form>
+    </div>
 
-                <div class="form-field-row-split">
-                    <div class="form-field-row">
-                        <label for="eventType">Select Event Type</label>
-                        <select id="eventType" required>
-                            <option value="" disabled selected>Choose an event profile...</option>
-                            <option value="wedding">💍 Wedding & Family Sangeet</option>
-                            <option value="birthday">🎂 Birthday Bash / Sweet 16</option>
-                            <option value="corporate">🏢 Corporate Launch / Gala</option>
-                            <option value="other">⭐ Other Custom Celebration</option>
-                        </select>
-                    </div>
-                    <div class="form-field-row">
-                        <label for="dancerCount">Approximate Number of Dancers</label>
-                        <select id="dancerCount">
-                            <option value="solo-couple">Solo performance / Couple Only</option>
-                            <option value="small">Small Group (3 - 8 participants)</option>
-                            <option value="medium">Medium Group (9 - 20 participants)</option>
-                            <option value="large">Massive Flashmob (21+ participants)</option>
-                        </select>
-                    </div>
-                </div>
+    <div id="popup" class="popup">
+        <h3>PL/SQL PROCEDURE INITIALIZED</h3>
+        <p>Your client email application has been invoked. Complete the send instruction to commit the active logbook database table matrix record lines.</p>
+        <button type="button" onclick="closePopup()">COMMIT ;</button>
+    </div>
 
-                <div class="form-field-row">
-                    <label for="budgetBracket">Estimated Budget Bracket</label>
-                    <select id="budgetBracket">
-                        <option value="standard">Standard Choreography Package</option>
-                        <option value="premium">Premium Package (Includes Edit mixes & Video tutorials)</option>
-                        <option value="elite">Elite Elite Package (Includes On-site floor stage management)</option>
-                    </select>
-                </div>
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const contactForm = document.getElementById("contactForm");
+            const popup = document.getElementById("popup");
 
-                <div class="form-field-row">
-                    <label for="additionalNotes">Tell Us About Your Vision</label>
-                    <textarea id="additionalNotes" rows="4" placeholder="Mention preferred music genres, song choices, dance background, or any specific theme ideas..."></textarea>
-                </div>
+            window.closePopup = function() {
+                if(popup) popup.classList.remove("open-popup");
+            };
 
-                <button type="submit" class="btn full-width-btn">Submit Booking Details</button>
-            </form>
-        </section>
+            if (contactForm) {
+                contactForm.addEventListener("submit", (e) => {
+                    e.preventDefault(); // Stop standard browser page refresh loops
 
-    </main>
+                    // Collect value items from form targets
+                    const fullName = document.getElementById("name")?.value;
+                    const emailAddress = document.getElementById("email")?.value;
+                    const phoneNumber = document.getElementById("phone")?.value;
+                    const pinCode = document.getElementById("pincode")?.value;
+                    const streetAddress = document.getElementById("address")?.value;
 
-    <footer>
-        <p>&copy; 2026 Step 'n' Style. Designed for flawless event scheduling and execution.</p>
-    </footer>
+                    // Build a clean, structured plaintext terminal log body layout
+                    let emailSubject = encodeURIComponent(`Oracle Logbook Entry - ${fullName}`);
+                    let emailBody = encodeURIComponent(
+`NEW LOGBOOK GATEWAY SUBMISSION
+========================================
+[+] CLIENT NAME      : ${fullName}
+[+] CONNECTION EMAIL : ${emailAddress}
+[+] INSTANCE PHONE   : ${phoneNumber}
+[+] LOCATION PINCODE : ${pinCode}
 
-    <script src="script.js"></script>
+APPEND_MESSAGE_PAYLOAD (CLOB Block):
+----------------------------------------
+${streetAddress}
+========================================`
+                    );
+
+                    // 🎯 NATIVE MAILTO PIPELINE: Fires instantly without needing external scripts or tokens
+                    const destinationEmail = "sonicawebdev@gmail.com";
+                    window.location.href = `mailto:${destinationEmail}?subject=${emailSubject}&body=${emailBody}`;
+
+                    // Trigger the confirmation popup on the interface layout grid screen
+                    if(popup) popup.classList.add("open-popup");
+                    contactForm.reset();
+                });
+            }
+        });
+    </script>
 </body>
 </html>
