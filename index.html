@@ -685,7 +685,219 @@ ALTER USER app WITH LOGIN = app;`],
 ['SQL Server','Migration','Detach and attach a database','The database is offline while you copy. Backup and restore is usually safer.',`EXEC sp_detach_db 'mydb';
 -- copy the .mdf and .ldf files to the new server, then
 CREATE DATABASE mydb ON (FILENAME = 'D:\\data\\mydb.mdf'), (FILENAME = 'E:\\log\\mydb_log.ldf')
-  FOR ATTACH;`]
+  FOR ATTACH;`],
+
+['Oracle','Disaster recovery','Recover from a lost control file','1. Start in NOMOUNT. 2. Restore from autobackup. 3. Mount. 4. Recover. 5. Open with RESETLOGS.',`RMAN> STARTUP NOMOUNT;
+RMAN> RESTORE CONTROLFILE FROM AUTOBACKUP;
+RMAN> ALTER DATABASE MOUNT;
+RMAN> RECOVER DATABASE;
+RMAN> ALTER DATABASE OPEN RESETLOGS;`],
+['Oracle','Disaster recovery','Point-in-time recovery of the whole database','Needs archived logs covering the period.',`RMAN> STARTUP MOUNT;
+RMAN> RUN {
+  SET UNTIL TIME "TO_DATE('2026-09-20 14:30:00','YYYY-MM-DD HH24:MI:SS')";
+  RESTORE DATABASE;
+  RECOVER DATABASE;
+}
+RMAN> ALTER DATABASE OPEN RESETLOGS;`],
+['PostgreSQL','Disaster recovery','Restore a base backup to a point in time','1. Stop the server and empty the data directory. 2. Extract the base backup. 3. Set the recovery target. 4. Create recovery.signal. 5. Start.',`sudo systemctl stop postgresql-17
+tar -xzf /backup/base/base.tar.gz -C /var/lib/pgsql/17/data
+# postgresql.conf
+restore_command = 'cp /archive/%f %p'
+recovery_target_time = '2026-09-20 14:30:00'
+recovery_target_action = 'promote'
+touch /var/lib/pgsql/17/data/recovery.signal
+sudo systemctl start postgresql-17`],
+['PostgreSQL','Disaster recovery','Rebuild the old primary with pg_rewind','After a failover. Needs wal_log_hints or data checksums.',`pg_rewind --target-pgdata=/var/lib/pgsql/17/data \\
+  --source-server="host=new_primary user=postgres dbname=postgres"
+touch /var/lib/pgsql/17/data/standby.signal`],
+['MySQL','Disaster recovery','Recover a crashed InnoDB instance','Start at level 1 and raise it only if needed. Dump the data, then rebuild the server and restore.',`# my.cnf
+[mysqld]
+innodb_force_recovery = 1
+sudo systemctl start mysqld
+mysqldump --all-databases --routines > rescue.sql`],
+['MySQL','Disaster recovery','Fail over to a replica','1. Make the old source read-only. 2. Let the replica catch up. 3. Stop replication on it. 4. Make it writable. 5. Repoint applications.',`-- old source
+SET GLOBAL read_only = ON;
+-- on the replica
+STOP REPLICA;
+RESET REPLICA ALL;
+SET GLOBAL read_only = OFF;`],
+['SQL Server','Disaster recovery','Restore the master database','1. Start in single-user mode. 2. Restore master. 3. Start normally.',`net stop MSSQLSERVER
+net start MSSQLSERVER /m"SQLCMD"
+sqlcmd -S localhost -E
+RESTORE DATABASE master FROM DISK = 'D:\\bak\\master.bak' WITH REPLACE;`],
+['SQL Server','Disaster recovery','Emergency repair (last resort)','Can lose data. Restore from backup instead whenever possible.',`ALTER DATABASE mydb SET EMERGENCY;
+ALTER DATABASE mydb SET SINGLE_USER WITH ROLLBACK IMMEDIATE;
+DBCC CHECKDB (mydb, REPAIR_ALLOW_DATA_LOSS);
+ALTER DATABASE mydb SET MULTI_USER;`],
+
+['Oracle','Auditing','Audit DDL with a unified audit policy','Records table create, drop and alter.',`CREATE AUDIT POLICY ddl_audit ACTIONS CREATE TABLE, DROP TABLE, ALTER TABLE;
+AUDIT POLICY ddl_audit;
+SELECT policy_name, enabled_option FROM audit_unified_enabled_policies;`],
+['Oracle','Auditing','Encrypt a tablespace with TDE','Set WALLET_ROOT and TDE_CONFIGURATION first. 1. Create the keystore. 2. Open it. 3. Set the master key. 4. Create an encrypted tablespace.',`ADMINISTER KEY MANAGEMENT CREATE KEYSTORE '/u01/wallet' IDENTIFIED BY "<pwd>";
+ADMINISTER KEY MANAGEMENT SET KEYSTORE OPEN IDENTIFIED BY "<pwd>";
+ADMINISTER KEY MANAGEMENT SET KEY IDENTIFIED BY "<pwd>" WITH BACKUP;
+CREATE TABLESPACE secure_data DATAFILE SIZE 1G ENCRYPTION USING 'AES256' ENCRYPT;`],
+['PostgreSQL','Auditing','Log connections and DDL','Writes to the server log.',`ALTER SYSTEM SET log_connections = on;
+ALTER SYSTEM SET log_disconnections = on;
+ALTER SYSTEM SET log_statement = 'ddl';
+SELECT pg_reload_conf();`],
+['PostgreSQL','Auditing','Require SSL connections','1. Turn on ssl and set the certificate files. 2. Use hostssl in pg_hba.conf. 3. Reload and verify.',`# postgresql.conf
+ssl = on
+ssl_cert_file = 'server.crt'
+ssl_key_file = 'server.key'
+# pg_hba.conf
+hostssl  all  all  0.0.0.0/0  scram-sha-256
+sudo systemctl reload postgresql
+SELECT ssl, version FROM pg_stat_ssl WHERE pid = pg_backend_pid();`],
+['MySQL','Auditing','Turn on the general log briefly','Logs every statement, including passwords. Use for short periods only.',`SET GLOBAL general_log_file = '/var/lib/mysql/general.log';
+SET GLOBAL general_log = 'ON';
+-- reproduce the activity, then
+SET GLOBAL general_log = 'OFF';`],
+['MySQL','Auditing','Require SSL for an account','Then confirm SSL is available.',`ALTER USER 'app'@'%' REQUIRE SSL;
+SHOW VARIABLES LIKE 'have_ssl';
+SHOW STATUS LIKE 'Ssl_cipher';`],
+['SQL Server','Auditing','Audit failed and successful logins','Writes audit files to disk.',`CREATE SERVER AUDIT login_audit TO FILE (FILEPATH = 'D:\\audit\\');
+CREATE SERVER AUDIT SPECIFICATION login_spec FOR SERVER AUDIT login_audit
+  ADD (FAILED_LOGIN_GROUP), ADD (SUCCESSFUL_LOGIN_GROUP) WITH (STATE = ON);
+ALTER SERVER AUDIT login_audit WITH (STATE = ON);`],
+['SQL Server','Auditing','Enable Transparent Data Encryption (TDE)','Back up the certificate and key. Without them the database cannot be restored elsewhere.',`USE master;
+CREATE MASTER KEY ENCRYPTION BY PASSWORD = '<pwd>';
+CREATE CERTIFICATE tde_cert WITH SUBJECT = 'TDE certificate';
+BACKUP CERTIFICATE tde_cert TO FILE = 'D:\\bak\\tde_cert.cer'
+  WITH PRIVATE KEY (FILE = 'D:\\bak\\tde_cert.pvk', ENCRYPTION BY PASSWORD = '<pwd>');
+USE mydb;
+CREATE DATABASE ENCRYPTION KEY WITH ALGORITHM = AES_256 ENCRYPTION BY SERVER CERTIFICATE tde_cert;
+ALTER DATABASE mydb SET ENCRYPTION ON;`],
+
+['Oracle','Cloud','Create an Amazon RDS for Oracle instance','Uses the AWS CLI. Bring your own license.',`aws rds create-db-instance --db-instance-identifier ora-prod \\
+  --engine oracle-ee --license-model bring-your-own-license \\
+  --db-instance-class db.m6i.large --allocated-storage 100 \\
+  --master-username admin --master-user-password <pwd> --multi-az`],
+['Oracle','Cloud','Admin tasks on RDS for Oracle','RDS has no SYSDBA access, so use the rdsadmin package.',`EXEC rdsadmin.rdsadmin_util.kill(sid => 123, serial => 456);
+EXEC rdsadmin.rdsadmin_util.flush_shared_pool;`],
+['PostgreSQL','Cloud','Create an Amazon RDS for PostgreSQL instance','Uses the AWS CLI.',`aws rds create-db-instance --db-instance-identifier pg-prod \\
+  --engine postgres --db-instance-class db.m6g.large --allocated-storage 100 \\
+  --master-username admin --master-user-password <pwd> --multi-az`],
+['PostgreSQL','Cloud','Snapshot and point-in-time restore on RDS','Works the same for every RDS engine.',`aws rds create-db-snapshot --db-instance-identifier pg-prod --db-snapshot-identifier pg-prod-snap1
+aws rds restore-db-instance-to-point-in-time --source-db-instance-identifier pg-prod \\
+  --target-db-instance-identifier pg-restore --restore-time 2026-09-20T14:30:00Z`],
+['MySQL','Cloud','Create an Amazon RDS for MySQL instance','Uses the AWS CLI.',`aws rds create-db-instance --db-instance-identifier mysql-prod \\
+  --engine mysql --db-instance-class db.m6g.large --allocated-storage 100 \\
+  --master-username admin --master-user-password <pwd> --backup-retention-period 7`],
+['MySQL','Cloud','Add a read replica on RDS','Spreads read traffic and can be promoted later.',`aws rds create-db-instance-read-replica --db-instance-identifier mysql-replica \\
+  --source-db-instance-identifier mysql-prod`],
+['SQL Server','Cloud','Create an Amazon RDS for SQL Server instance','Uses the AWS CLI. License included.',`aws rds create-db-instance --db-instance-identifier mssql-prod \\
+  --engine sqlserver-se --license-model license-included \\
+  --db-instance-class db.m6i.xlarge --allocated-storage 200 \\
+  --master-username admin --master-user-password <pwd>`],
+['SQL Server','Cloud','Back up to S3 on RDS','Needs the SQLSERVER_BACKUP_RESTORE option group.',`EXEC msdb.dbo.rds_backup_database @source_db_name = 'mydb',
+  @s3_arn_to_backup_to = 'arn:aws:s3:::my-bucket/mydb.bak', @overwrite_S3_backup_file = 1;`],
+
+['Oracle','Interview questions','Instance versus database','The instance is memory plus background processes. The database is the files on disk. One instance opens one database (several in RAC).',`SELECT instance_name, status FROM v$instance;
+SELECT name, open_mode FROM v$database;`],
+['Oracle','Interview questions','What happens at commit?','LGWR writes the redo to the online redo log and the commit completes. DBWn writes the changed blocks later.',`SELECT name, value FROM v$sysstat WHERE name IN ('user commits','redo size');`],
+['PostgreSQL','Interview questions','What is MVCC and why is VACUUM needed?','Updates and deletes create new row versions instead of overwriting. Old versions stay until VACUUM removes them, so readers never block writers.',`SELECT relname, n_live_tup, n_dead_tup FROM pg_stat_user_tables
+ORDER BY n_dead_tup DESC LIMIT 5;`],
+['PostgreSQL','Interview questions','What is WAL?','The write-ahead log records every change before it reaches the data files. It gives crash recovery, replication and point-in-time recovery.',`SHOW wal_level;
+SELECT pg_current_wal_lsn();`],
+['MySQL','Interview questions','Redo log versus undo log in InnoDB','Redo replays committed changes after a crash. Undo rolls back transactions and gives consistent reads.',`SHOW VARIABLES LIKE 'innodb_flush_log_at_trx_commit';`],
+['MySQL','Interview questions','Transaction isolation levels','READ UNCOMMITTED, READ COMMITTED, REPEATABLE READ (the InnoDB default) and SERIALIZABLE.',`SELECT @@transaction_isolation;
+SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED;`],
+['SQL Server','Interview questions','Clustered versus non-clustered index','A clustered index is the table data sorted by the key, one per table. A non-clustered index is a separate structure that points to the rows.',`SELECT name, type_desc FROM sys.indexes WHERE object_id = OBJECT_ID('dbo.Orders');`],
+['SQL Server','Interview questions','What are the recovery models?','Simple, Full and Bulk-logged. Only Full and Bulk-logged allow log backups and point-in-time restore.',`SELECT name, recovery_model_desc FROM sys.databases;
+ALTER DATABASE mydb SET RECOVERY FULL;`],
+
+['Oracle','Indexing','Create an index and check its usage','dba_index_usage needs Oracle 12.2 or later.',`CREATE INDEX hr.emp_dept_ix ON hr.employees (department_id) ONLINE;
+SELECT name, total_access_count, last_used FROM dba_index_usage WHERE owner = 'HR';`],
+['Oracle','Indexing','Make an index invisible before dropping it','The optimizer ignores it, but it is still maintained. Bring it back if performance drops.',`ALTER INDEX hr.emp_dept_ix INVISIBLE;
+-- test the workload, then either
+DROP INDEX hr.emp_dept_ix;
+-- or restore it
+ALTER INDEX hr.emp_dept_ix VISIBLE;`],
+['PostgreSQL','Indexing','Create an index without blocking writes','A failed concurrent build leaves an invalid index. Check and drop it.',`CREATE INDEX CONCURRENTLY idx_orders_customer ON orders (customer_id);
+SELECT indexrelid::regclass FROM pg_index WHERE NOT indisvalid;`],
+['PostgreSQL','Indexing','Tables read mostly by sequential scan','Large tables with many sequential reads may need an index.',`SELECT relname, seq_scan, seq_tup_read, idx_scan FROM pg_stat_user_tables
+WHERE seq_scan > 0 ORDER BY seq_tup_read DESC LIMIT 10;`],
+['MySQL','Indexing','Add an index online and check the plan','Fails instead of locking if the change cannot be done online.',`ALTER TABLE orders ADD INDEX idx_customer (customer_id), ALGORITHM = INPLACE, LOCK = NONE;
+EXPLAIN SELECT * FROM orders WHERE customer_id = 42;`],
+['MySQL','Indexing','Make an index invisible before dropping it','The optimizer ignores it. Make it visible again if queries slow down.',`ALTER TABLE orders ALTER INDEX idx_customer INVISIBLE;
+-- test, then
+ALTER TABLE orders DROP INDEX idx_customer;`],
+['SQL Server','Indexing','Create an index with included columns','ONLINE = ON needs Enterprise edition.',`CREATE NONCLUSTERED INDEX IX_Orders_Customer ON dbo.Orders (CustomerId)
+  INCLUDE (OrderDate) WITH (ONLINE = ON, FILLFACTOR = 90);`],
+['SQL Server','Indexing','Find unused indexes','Usage counters reset when the service restarts, so check after a full business cycle.',`SELECT OBJECT_NAME(i.object_id) AS tbl, i.name, s.user_seeks, s.user_scans, s.user_updates
+FROM sys.indexes i
+LEFT JOIN sys.dm_db_index_usage_stats s
+  ON s.object_id = i.object_id AND s.index_id = i.index_id AND s.database_id = DB_ID()
+WHERE OBJECTPROPERTY(i.object_id,'IsUserTable') = 1 AND i.type_desc = 'NONCLUSTERED'
+  AND ISNULL(s.user_seeks,0) + ISNULL(s.user_scans,0) = 0
+ORDER BY s.user_updates DESC;`],
+
+['Oracle','Locks and deadlocks','Find who is locking an object','Shows session, object and lock mode.',`SELECT s.sid, s.serial#, s.username, o.object_name, l.locked_mode
+FROM v$locked_object l
+JOIN dba_objects o ON l.object_id = o.object_id
+JOIN v$session s ON l.session_id = s.sid;`],
+['Oracle','Locks and deadlocks','Find deadlocks (ORA-00060)','Oracle rolls back one statement automatically. The alert log names the trace file with the details.',`grep -B2 -A5 'ORA-00060' alert_<SID>.log`],
+['PostgreSQL','Locks and deadlocks','Locks that are waiting','Ungranted locks and the relation they are on.',`SELECT l.pid, l.locktype, l.mode, l.granted, c.relname
+FROM pg_locks l LEFT JOIN pg_class c ON l.relation = c.oid WHERE NOT l.granted;`],
+['PostgreSQL','Locks and deadlocks','Log lock waits and set timeouts','Logs any wait longer than deadlock_timeout.',`ALTER SYSTEM SET log_lock_waits = on;
+ALTER SYSTEM SET deadlock_timeout = '1s';
+SELECT pg_reload_conf();
+SET lock_timeout = '5s';`],
+['MySQL','Locks and deadlocks','Read the latest deadlock','Look for the LATEST DETECTED DEADLOCK section. Log every deadlock going forward.',`SHOW ENGINE INNODB STATUS\\G
+SET GLOBAL innodb_print_all_deadlocks = ON;`],
+['MySQL','Locks and deadlocks','Lock wait timeout exceeded (error 1205)','1. Find the blocker. 2. Kill it if appropriate. 3. Review the timeout.',`SELECT waiting_pid, blocking_pid, wait_age, blocking_query FROM sys.innodb_lock_waits;
+KILL 1234;
+SHOW VARIABLES LIKE 'innodb_lock_wait_timeout';`],
+['SQL Server','Locks and deadlocks','Read deadlocks from system_health','Open the XML and look for xml_deadlock_report.',`SELECT CAST(t.target_data AS xml) AS events
+FROM sys.dm_xe_session_targets t
+JOIN sys.dm_xe_sessions s ON s.address = t.event_session_address
+WHERE s.name = 'system_health' AND t.target_name = 'ring_buffer';`],
+['SQL Server','Locks and deadlocks','Reduce blocking with row versioning','Readers stop blocking writers. Uses more tempdb.',`SET LOCK_TIMEOUT 5000;
+ALTER DATABASE mydb SET READ_COMMITTED_SNAPSHOT ON WITH ROLLBACK IMMEDIATE;`],
+
+['Oracle','Partitioning','Create a table partitioned by month','Interval partitioning adds new partitions automatically. Needs the Partitioning option.',`CREATE TABLE sales (id NUMBER, sale_date DATE, amount NUMBER)
+PARTITION BY RANGE (sale_date) INTERVAL (NUMTOYMINTERVAL(1,'MONTH'))
+(PARTITION p0 VALUES LESS THAN (DATE '2026-01-01'));`],
+['Oracle','Partitioning','List and drop old partitions','Dropping a partition is far faster than deleting its rows.',`SELECT partition_name, high_value FROM user_tab_partitions WHERE table_name = 'SALES';
+ALTER TABLE sales DROP PARTITION FOR (DATE '2025-01-15') UPDATE GLOBAL INDEXES;`],
+['PostgreSQL','Partitioning','Create a range-partitioned table','1. Create the parent. 2. Create one partition per range.',`CREATE TABLE events (id bigint, created_at timestamptz NOT NULL, payload jsonb)
+  PARTITION BY RANGE (created_at);
+CREATE TABLE events_2026_09 PARTITION OF events
+  FOR VALUES FROM ('2026-09-01') TO ('2026-10-01');`],
+['PostgreSQL','Partitioning','Detach and drop an old partition','Detach first if you want to archive the data before dropping.',`ALTER TABLE events DETACH PARTITION events_2025_09 CONCURRENTLY;
+DROP TABLE events_2025_09;`],
+['MySQL','Partitioning','Create a range-partitioned table','The partition key must be part of every unique key.',`CREATE TABLE logs (id BIGINT NOT NULL, created DATE NOT NULL, msg VARCHAR(200),
+  PRIMARY KEY (id, created))
+PARTITION BY RANGE COLUMNS (created) (
+  PARTITION p2026_08 VALUES LESS THAN ('2026-09-01'),
+  PARTITION pmax VALUES LESS THAN (MAXVALUE));`],
+['MySQL','Partitioning','Add and drop partitions','Split the catch-all partition for a new month, then drop the oldest.',`ALTER TABLE logs REORGANIZE PARTITION pmax INTO (
+  PARTITION p2026_09 VALUES LESS THAN ('2026-10-01'),
+  PARTITION pmax VALUES LESS THAN (MAXVALUE));
+ALTER TABLE logs DROP PARTITION p2026_08;`],
+['SQL Server','Partitioning','Create a partitioned table','1. Partition function. 2. Partition scheme. 3. Table on the scheme.',`CREATE PARTITION FUNCTION pf_month (date) AS RANGE RIGHT FOR VALUES ('2026-09-01','2026-10-01');
+CREATE PARTITION SCHEME ps_month AS PARTITION pf_month ALL TO ([PRIMARY]);
+CREATE TABLE dbo.Sales (Id int, SaleDate date, Amount money) ON ps_month (SaleDate);`],
+['SQL Server','Partitioning','Switch out an old partition','The archive table needs the same structure and filegroup. Switching is a metadata change, so it is instant.',`ALTER TABLE dbo.Sales SWITCH PARTITION 1 TO dbo.Sales_Archive;
+SELECT partition_number, rows FROM sys.partitions
+WHERE object_id = OBJECT_ID('dbo.Sales') AND index_id IN (0,1);`],
+
+['Oracle','Import and export','Export a table with Data Pump','Parallel export of one table.',`expdp hr tables=employees directory=DATA_PUMP_DIR dumpfile=emp_%U.dmp logfile=emp.log parallel=4`],
+['Oracle','Import and export','Load a CSV with SQL*Loader','1. Write a control file. 2. Run sqlldr.',`-- emp.ctl
+LOAD DATA INFILE 'emp.csv' APPEND INTO TABLE employees
+FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '"'
+(employee_id, first_name, last_name)
+sqlldr hr control=emp.ctl log=emp.log`],
+['PostgreSQL','Import and export','Export to CSV with \\copy','Run inside psql. The file is written on your machine, not the server.',`\\copy (SELECT * FROM orders) TO 'orders.csv' WITH (FORMAT csv, HEADER)`],
+['PostgreSQL','Import and export','Import a CSV with \\copy','The table must already exist with matching columns.',`\\copy orders FROM 'orders.csv' WITH (FORMAT csv, HEADER)`],
+['MySQL','Import and export','Export to CSV','The path must be inside secure_file_priv.',`SHOW VARIABLES LIKE 'secure_file_priv';
+SELECT * FROM orders INTO OUTFILE '/var/lib/mysql-files/orders.csv'
+  FIELDS TERMINATED BY ',' ENCLOSED BY '"' LINES TERMINATED BY '\\n';`],
+['MySQL','Import and export','Load a CSV','LOCAL needs local_infile enabled on both client and server.',`LOAD DATA LOCAL INFILE '/tmp/orders.csv' INTO TABLE orders
+  FIELDS TERMINATED BY ',' ENCLOSED BY '"' IGNORE 1 LINES;`],
+['SQL Server','Import and export','Export a table with bcp','Command-line bulk copy. -T uses Windows authentication.',`bcp mydb.dbo.Orders out D:\\data\\orders.csv -S localhost -T -c -t,`],
+['SQL Server','Import and export','Import a CSV with BULK INSERT','FIRSTROW = 2 skips the header.',`BULK INSERT dbo.Orders FROM 'D:\\data\\orders.csv' WITH (FORMAT = 'CSV', FIRSTROW = 2);`]
 ];
 var ARCH={
 Oracle:{n:'An instance (memory and processes) works on a database (files). Changes are made in memory and logged as redo. LGWR writes redo at commit; DBWn writes the changed blocks later.',
@@ -709,9 +921,9 @@ l:[['Memory',['Buffer pool: cached data pages','Plan cache: compiled query plans
 ['Engine components',['SQLOS: schedulers and worker threads','Relational engine: parser and optimizer','Storage engine: access methods and transactions','Checkpoint and lazy writer','Log writer']],
 ['Files on disk',['.mdf primary data file','.ndf secondary data files','.ldf transaction log','System databases: master, model, msdb, tempdb','Backup files']]]}
 };
-var G=[['Learn',['Architecture']],['Set up and maintain',['Install','Patching','Upgrade','High availability']],['Daily work',['Sessions','Storage','Backup','Performance','Health','Security']],['More topics',['Troubleshooting','Maintenance','Automation','Migration']]];
-var TD={Install:'Set up a new database server from scratch.',Patching:'Apply security and bug-fix updates to an existing server.',Upgrade:'Move to a newer major version of the database.','High availability':'Replication, standby servers and failover.',Architecture:'How each database is built: memory, processes and files, plus queries to inspect them.',Troubleshooting:'Diagnose and fix common problems and errors.',Maintenance:'Routine jobs that keep tables, indexes and logs healthy.',Automation:'Schedule backups, jobs and scripts.',Migration:'Move databases and users to another server.',Sessions:'See who is connected, find blocked work and stop sessions.',Storage:'Check disk and data file space before it runs out.',Backup:'Take, verify and restore backups.',Performance:'Find slow queries and keep tables and indexes healthy.',Health:'Quick checks that the system is running normally.',Security:'Create users and give them the right access.'};
-var CHG=/\b(ALTER|KILL|CREATE|GRANT|DROP|SET GLOBAL|VACUUM|REBUILD|RESTORE|EXEC|BACKUP|pg_terminate_backend|pg_cancel_backend|shutdown|startup|install|apply|update|upgrade|expdp|pg_dump|mysqldump|rman|setup|initdb|stop|start|restart|patch|runInstaller|autoupgrade|reload|sp_configure|RECONFIGURE|xtrabackup --(backup|copy)|pg_basebackup|REVOKE|pg_restore|mysqlbinlog|ANALYZE TABLE|REINDEX|PURGE|crontab|adrci|impdp|mysqlsh|DELETE|DETACH|Copy-Dba|sqlcmd|cron\.schedule|DBMS_SCHEDULER|pg_drop_replication_slot|FAILOVER|PROMOTE|pg_promote|START REPLICA|REASSIGN|OPTIMIZE)\b/i;
+var G=[['Learn',['Architecture','Interview questions']],['Set up and maintain',['Install','Patching','Upgrade','High availability']],['Daily work',['Sessions','Storage','Backup','Performance','Health','Security']],['More topics',['Troubleshooting','Maintenance','Automation','Migration','Disaster recovery','Auditing','Cloud']],['Tuning and data',['Indexing','Locks and deadlocks','Partitioning','Import and export']]];
+var TD={Install:'Set up a new database server from scratch.',Patching:'Apply security and bug-fix updates to an existing server.',Upgrade:'Move to a newer major version of the database.','High availability':'Replication, standby servers and failover.',Architecture:'How each database is built: memory, processes and files, plus queries to inspect them.',Troubleshooting:'Diagnose and fix common problems and errors.',Maintenance:'Routine jobs that keep tables, indexes and logs healthy.',Automation:'Schedule backups, jobs and scripts.',Migration:'Move databases and users to another server.','Disaster recovery':'Recover from lost files, crashes and failed servers.',Auditing:'Track logins and changes, and encrypt data.',Cloud:'Run these databases on managed cloud services.','Interview questions':'Common DBA interview questions with short answers.',Indexing:'Create, check and remove indexes safely.','Locks and deadlocks':'Find blockers and deadlocks, and reduce them.',Partitioning:'Split large tables to speed up queries and clean-up.','Import and export':'Move data in and out with CSV and bulk tools.',Sessions:'See who is connected, find blocked work and stop sessions.',Storage:'Check disk and data file space before it runs out.',Backup:'Take, verify and restore backups.',Performance:'Find slow queries and keep tables and indexes healthy.',Health:'Quick checks that the system is running normally.',Security:'Create users and give them the right access.'};
+var CHG=/\b(ALTER|KILL|CREATE|GRANT|DROP|SET GLOBAL|VACUUM|REBUILD|RESTORE|EXEC|BACKUP|pg_terminate_backend|pg_cancel_backend|shutdown|startup|install|apply|update|upgrade|expdp|pg_dump|mysqldump|rman|setup|initdb|stop|start|restart|patch|runInstaller|autoupgrade|reload|sp_configure|RECONFIGURE|xtrabackup --(backup|copy)|pg_basebackup|REVOKE|pg_restore|mysqlbinlog|ANALYZE TABLE|REINDEX|PURGE|crontab|adrci|impdp|mysqlsh|DELETE|DETACH|Copy-Dba|sqlcmd|cron\.schedule|DBMS_SCHEDULER|pg_rewind|touch|INSERT|LOAD DATA|sqlldr|COPY|bcp|pg_drop_replication_slot|FAILOVER|PROMOTE|pg_promote|START REPLICA|REASSIGN|OPTIMIZE)\b/i;
 var st={e:'All',c:'All',q:''};
 var $=function(i){return document.getElementById(i)};
 function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
