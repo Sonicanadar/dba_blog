@@ -93,6 +93,13 @@ pre{font-size:.78rem;padding:12px;padding-top:34px}}
 .lane b{display:block;margin-bottom:4px}
 .lane ul{margin:0;padding-left:18px;font-size:.9rem;color:var(--mute)}
 .lane li{margin:3px 0}
+.pop{display:grid;gap:8px}
+@media(min-width:600px){.pop{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(min-width:1000px){.pop{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.pb{font:inherit;text-align:left;background:var(--bg);color:var(--ink);border:1px solid var(--line);border-left:4px solid var(--c);border-radius:8px;padding:10px 12px;cursor:pointer;min-height:48px;overflow-wrap:anywhere}
+.pb b{display:block;font-weight:600}
+.pb small{color:var(--mute)}
+.pb:hover{border-color:var(--c)}
 </style>
 </head>
 <body>
@@ -117,6 +124,7 @@ pre{font-size:.78rem;padding:12px;padding-top:34px}}
 </ol>
 <p class="note">Test on a non-production system first. Guides marked "Makes changes" modify the server or its data.</p>
 </div>
+<div class="card"><h2>Popular guides</h2><div class="pop" id="pop"></div></div>
 <details class="card check"><summary>Daily DBA checklist</summary>
 <ol>
 <li>Confirm the database and listener/service are up.</li>
@@ -897,7 +905,190 @@ SELECT * FROM orders INTO OUTFILE '/var/lib/mysql-files/orders.csv'
 ['MySQL','Import and export','Load a CSV','LOCAL needs local_infile enabled on both client and server.',`LOAD DATA LOCAL INFILE '/tmp/orders.csv' INTO TABLE orders
   FIELDS TERMINATED BY ',' ENCLOSED BY '"' IGNORE 1 LINES;`],
 ['SQL Server','Import and export','Export a table with bcp','Command-line bulk copy. -T uses Windows authentication.',`bcp mydb.dbo.Orders out D:\\data\\orders.csv -S localhost -T -c -t,`],
-['SQL Server','Import and export','Import a CSV with BULK INSERT','FIRSTROW = 2 skips the header.',`BULK INSERT dbo.Orders FROM 'D:\\data\\orders.csv' WITH (FORMAT = 'CSV', FIRSTROW = 2);`]
+['SQL Server','Import and export','Import a CSV with BULK INSERT','FIRSTROW = 2 skips the header.',`BULK INSERT dbo.Orders FROM 'D:\\data\\orders.csv' WITH (FORMAT = 'CSV', FIRSTROW = 2);`],
+
+['Oracle','Configuration','View and change a parameter','SCOPE = BOTH changes the running instance and the spfile.',`SHOW PARAMETER sga_target
+ALTER SYSTEM SET sga_target = 4G SCOPE = BOTH;
+SELECT name, value FROM v$parameter WHERE isdefault = 'FALSE';`],
+['Oracle','Configuration','Convert between spfile and pfile','Export to a text file before manual edits, then load it back.',`CREATE PFILE = '/tmp/init.ora' FROM SPFILE;
+-- edit /tmp/init.ora, then
+CREATE SPFILE FROM PFILE = '/tmp/init.ora';`],
+['PostgreSQL','Configuration','Settings changed from the default','Shows where each value came from.',`SELECT name, setting, source FROM pg_settings
+WHERE source NOT IN ('default','override') ORDER BY name;`],
+['PostgreSQL','Configuration','Change a setting and check if a restart is needed','1. Set it. 2. Reload. 3. See what still needs a restart.',`ALTER SYSTEM SET work_mem = '64MB';
+SELECT pg_reload_conf();
+SELECT name, pending_restart FROM pg_settings WHERE pending_restart;`],
+['MySQL','Configuration','Change a variable permanently','SET PERSIST changes it now and keeps it after a restart.',`SET PERSIST max_connections = 500;
+SELECT * FROM performance_schema.persisted_variables;
+RESET PERSIST max_connections;`],
+['MySQL','Configuration','Where each setting comes from','Shows every variable not left at its compiled default.',`SELECT variable_name, variable_source, variable_path
+FROM performance_schema.variables_info WHERE variable_source <> 'COMPILED';`],
+['SQL Server','Configuration','View and change server settings','Advanced options must be shown first.',`EXEC sp_configure 'show advanced options', 1; RECONFIGURE;
+EXEC sp_configure;
+EXEC sp_configure 'max degree of parallelism', 4; RECONFIGURE;`],
+['SQL Server','Configuration','Database-scoped settings','Per-database options such as MAXDOP.',`SELECT name, value FROM sys.database_scoped_configurations;
+ALTER DATABASE SCOPED CONFIGURATION SET MAXDOP = 4;`],
+
+['Oracle','Connectivity','Check the listener and registered services','Then test the connection from the client.',`lsnrctl status
+lsnrctl services
+tnsping ORCL`],
+['Oracle','Connectivity','Fix ORA-12514 (service not known)','1. Check the service names the database has. 2. Register with the listener. 3. Confirm.',`SELECT name, network_name FROM v$services;
+ALTER SYSTEM REGISTER;
+lsnrctl services`],
+['PostgreSQL','Connectivity','Connection refused: check listening and pg_hba','Confirm the address, port and which rules apply.',`SHOW listen_addresses;
+SHOW port;
+SELECT line_number, type, database, user_name, address, auth_method FROM pg_hba_file_rules;`],
+['PostgreSQL','Connectivity','Test a connection from the client','pg_isready checks the server. psql tests login and SSL.',`pg_isready -h db_host -p 5432
+psql "host=db_host dbname=mydb user=app sslmode=require" -c "SELECT 1"`],
+['MySQL','Connectivity','Check bind address and port','A bind_address of 127.0.0.1 only allows local connections.',`SHOW VARIABLES LIKE 'bind_address';
+SHOW VARIABLES LIKE 'port';
+SHOW VARIABLES LIKE 'skip_name_resolve';`],
+['MySQL','Connectivity','Fix access denied for a host','Accounts are per user and host. Check which hosts exist, then add the one you need.',`SELECT user, host, plugin FROM mysql.user WHERE user = 'app';
+CREATE USER 'app'@'10.0.0.%' IDENTIFIED BY '<pwd>';
+GRANT SELECT ON mydb.* TO 'app'@'10.0.0.%';`],
+['SQL Server','Connectivity','Check how you are connected','Address, port and encryption of your own session, then the port the server reports.',`SELECT local_net_address, local_tcp_port, net_transport, encrypt_option
+FROM sys.dm_exec_connections WHERE session_id = @@SPID;
+EXEC xp_readerrorlog 0, 1, N'Server is listening on';`],
+['SQL Server','Connectivity','Open the port and test remotely','Enable TCP/IP in SQL Server Configuration Manager first.',`REM open the port in Windows Firewall
+netsh advfirewall firewall add rule name="SQL Server" dir=in action=allow protocol=TCP localport=1433
+sqlcmd -S db_host,1433 -U app -Q "SELECT @@SERVERNAME"`],
+
+['Oracle','Capacity planning','Space used by each schema','Largest schemas first.',`SELECT owner, ROUND(SUM(bytes)/1073741824,1) AS gb FROM dba_segments
+GROUP BY owner ORDER BY gb DESC FETCH FIRST 10 ROWS ONLY;`],
+['Oracle','Capacity planning','Tablespace growth history from AWR','Assumes 8 KB blocks. Requires the Diagnostics Pack license.',`SELECT TRUNC(TO_DATE(s.rtime,'MM/DD/YYYY HH24:MI:SS')) AS day, ts.name,
+       ROUND(MAX(s.tablespace_usedsize)*8192/1073741824,1) AS used_gb
+FROM dba_hist_tbspc_space_usage s JOIN v$tablespace ts ON s.tablespace_id = ts.ts#
+GROUP BY TRUNC(TO_DATE(s.rtime,'MM/DD/YYYY HH24:MI:SS')), ts.name ORDER BY 1, 2;`],
+['PostgreSQL','Capacity planning','Record database size every day','Run the INSERT daily from cron or pg_cron, then chart the history.',`CREATE TABLE IF NOT EXISTS size_history (day date DEFAULT current_date, datname name, bytes bigint);
+INSERT INTO size_history (datname, bytes) SELECT datname, pg_database_size(datname) FROM pg_database;
+SELECT datname, day, pg_size_pretty(bytes) FROM size_history ORDER BY datname, day;`],
+['PostgreSQL','Capacity planning','Connection headroom','How close you are to max_connections.',`SELECT count(*) AS used, current_setting('max_connections')::int AS max FROM pg_stat_activity;`],
+['MySQL','Capacity planning','Record schema size every day','Run the INSERT daily from an event or cron, then chart the history.',`CREATE TABLE IF NOT EXISTS mydb.size_history (day DATE, table_schema VARCHAR(64), mb DECIMAL(12,1));
+INSERT INTO mydb.size_history
+SELECT CURDATE(), table_schema, SUM(data_length + index_length)/1024/1024
+FROM information_schema.tables GROUP BY table_schema;`],
+['MySQL','Capacity planning','Auto-increment headroom','INT columns stop at about 2.1 billion (4.3 billion unsigned). Plan to move to BIGINT well before.',`SELECT table_schema, table_name, auto_increment FROM information_schema.tables
+WHERE auto_increment IS NOT NULL ORDER BY auto_increment DESC LIMIT 10;`],
+['SQL Server','Capacity planning','Backup size history','Backup size is a good proxy for data growth.',`SELECT database_name, CONVERT(date, backup_start_date) AS day,
+       CAST(MAX(backup_size)/1073741824.0 AS decimal(10,2)) AS gb
+FROM msdb.dbo.backupset WHERE type = 'D'
+GROUP BY database_name, CONVERT(date, backup_start_date) ORDER BY database_name, day;`],
+['SQL Server','Capacity planning','Free disk space per volume','Only volumes that hold database files.',`SELECT DISTINCT vs.volume_mount_point, vs.total_bytes/1073741824 AS total_gb,
+       vs.available_bytes/1073741824 AS free_gb
+FROM sys.master_files f CROSS APPLY sys.dm_os_volume_stats(f.database_id, f.file_id) vs;`],
+
+['Oracle','Monitoring','Tablespaces over 85 percent full','Set your own threshold.',`SELECT tablespace_name, ROUND(used_percent,1) AS used_pct FROM dba_tablespace_usage_metrics
+WHERE used_percent > 85 ORDER BY used_percent DESC;`],
+['Oracle','Monitoring','Failed jobs and RMAN runs in the last day','Scheduler failures, then the RMAN history.',`SELECT job_name, status, actual_start_date, additional_info FROM dba_scheduler_job_run_details
+WHERE status <> 'SUCCEEDED' AND actual_start_date > SYSTIMESTAMP - INTERVAL '1' DAY;
+SELECT start_time, status, input_type FROM v$rman_status
+WHERE start_time > SYSDATE - 1 ORDER BY start_time;`],
+['PostgreSQL','Monitoring','Transactions open longer than 5 minutes','Long transactions hold back vacuum and can hold locks.',`SELECT pid, usename, now() - xact_start AS age, state FROM pg_stat_activity
+WHERE xact_start IS NOT NULL AND now() - xact_start > interval '5 minutes' ORDER BY age DESC;`],
+['PostgreSQL','Monitoring','Rollbacks, deadlocks and temp files per database','Rising numbers point to problems.',`SELECT datname, xact_commit, xact_rollback, deadlocks, temp_files,
+       pg_size_pretty(temp_bytes) AS temp
+FROM pg_stat_database WHERE datname IS NOT NULL;`],
+['MySQL','Monitoring','Key status counters','Take two readings a minute apart to see rates.',`SHOW GLOBAL STATUS WHERE variable_name IN
+  ('Threads_running','Slow_queries','Aborted_connects','Questions');`],
+['MySQL','Monitoring','Temporary tables written to disk','A high disk ratio means sorts or joins are spilling. Check indexes and memory settings.',`SHOW GLOBAL STATUS LIKE 'Created_tmp%tables';`],
+['SQL Server','Monitoring','Key performance counters','Page life expectancy, cache hit ratio, batch rate and connections.',`SELECT counter_name, cntr_value FROM sys.dm_os_performance_counters
+WHERE counter_name IN ('Page life expectancy','Buffer cache hit ratio','Batch Requests/sec','User Connections');`],
+['SQL Server','Monitoring','Queries waiting for a memory grant','A non-zero count for a long time means memory pressure.',`SELECT session_id, requested_memory_kb, wait_time_ms FROM sys.dm_exec_query_memory_grants
+WHERE grant_time IS NULL;`],
+
+['Oracle','Execution plans','Show the plan for a query','Estimated plan, without running the query.',`EXPLAIN PLAN FOR SELECT * FROM hr.employees WHERE department_id = 50;
+SELECT * FROM TABLE(DBMS_XPLAN.DISPLAY);`],
+['Oracle','Execution plans','Show the actual plan with row counts','Runs the query, then shows estimated versus actual rows for each step.',`SELECT /*+ GATHER_PLAN_STATISTICS */ * FROM hr.employees WHERE department_id = 50;
+SELECT * FROM TABLE(DBMS_XPLAN.DISPLAY_CURSOR(NULL, NULL, 'ALLSTATS LAST'));`],
+['PostgreSQL','Execution plans','Show the estimated plan','Does not run the query.',`EXPLAIN SELECT * FROM orders WHERE customer_id = 42;`],
+['PostgreSQL','Execution plans','Show the actual plan with EXPLAIN ANALYZE','ANALYZE runs the query. Wrap data-changing statements in BEGIN and ROLLBACK.',`BEGIN;
+EXPLAIN (ANALYZE, BUFFERS) UPDATE orders SET status = 'done' WHERE id = 1;
+ROLLBACK;`],
+['MySQL','Execution plans','Show the plan as a tree','Easier to read than the table format.',`EXPLAIN FORMAT=TREE SELECT * FROM orders WHERE customer_id = 42;`],
+['MySQL','Execution plans','Force or ignore an index to compare plans','Use for testing only. Do not leave hints in application code without a reason.',`SELECT * FROM orders FORCE INDEX (idx_customer) WHERE customer_id = 42;
+SELECT * FROM orders IGNORE INDEX (idx_customer) WHERE customer_id = 42;`],
+['SQL Server','Execution plans','Show the estimated plan as text','Does not run the query. In SSMS, Ctrl+L shows the graphical plan.',`SET SHOWPLAN_TEXT ON;
+GO
+SELECT * FROM dbo.Orders WHERE CustomerId = 42;
+GO
+SET SHOWPLAN_TEXT OFF;`],
+['SQL Server','Execution plans','Show reads and CPU time for a query','Look at logical reads per table.',`SET STATISTICS IO ON;
+SET STATISTICS TIME ON;
+SELECT * FROM dbo.Orders WHERE CustomerId = 42;`],
+
+['Oracle','Temp and memory','Temp space used by each session','Find sessions filling the temporary tablespace.',`SELECT s.sid, s.username, ROUND(SUM(u.blocks)*t.block_size/1048576) AS temp_mb
+FROM v$tempseg_usage u
+JOIN v$session s ON u.session_addr = s.saddr
+JOIN dba_tablespaces t ON u.tablespace = t.tablespace_name
+GROUP BY s.sid, s.username, t.block_size ORDER BY temp_mb DESC;`],
+['Oracle','Temp and memory','PGA use and SGA sizing advice','Estimated database time at different SGA sizes.',`SELECT name, ROUND(value/1048576) AS mb FROM v$pgastat
+WHERE name IN ('total PGA allocated','maximum PGA allocated','aggregate PGA target parameter');
+SELECT sga_size, sga_size_factor, estd_db_time FROM v$sga_target_advice;`],
+['PostgreSQL','Temp and memory','Queries spilling to temp files','Needs pg_stat_statements. Also log every temp file.',`SELECT left(query,80) AS query, temp_blks_written FROM pg_stat_statements
+ORDER BY temp_blks_written DESC LIMIT 5;
+ALTER SYSTEM SET log_temp_files = 0;`],
+['PostgreSQL','Temp and memory','Raise work_mem for one session','It applies per sort or hash step, per query. Avoid raising it globally without checking connection counts.',`SHOW work_mem;
+SET work_mem = '256MB';`],
+['MySQL','Temp and memory','Memory used by the server','Biggest memory consumers first.',`SELECT event_name, current_alloc FROM sys.memory_global_by_current_bytes LIMIT 10;`],
+['MySQL','Temp and memory','Temporary table settings','In-memory temp tables spill to disk above these limits.',`SHOW VARIABLES LIKE 'tmp_table_size';
+SHOW VARIABLES LIKE 'max_heap_table_size';
+SHOW GLOBAL STATUS LIKE 'Created_tmp_disk_tables';`],
+['SQL Server','Temp and memory','tempdb use by session','Sessions allocating the most tempdb space.',`SELECT TOP 10 session_id,
+  (user_objects_alloc_page_count - user_objects_dealloc_page_count)*8/1024 AS user_mb,
+  (internal_objects_alloc_page_count - internal_objects_dealloc_page_count)*8/1024 AS internal_mb
+FROM sys.dm_db_session_space_usage
+ORDER BY (user_objects_alloc_page_count + internal_objects_alloc_page_count) DESC;`],
+['SQL Server','Temp and memory','Memory clerks using the most memory','Shows where SQL Server memory is going.',`SELECT TOP 10 type, SUM(pages_kb)/1024 AS mb FROM sys.dm_os_memory_clerks
+GROUP BY type ORDER BY mb DESC;`],
+
+['Oracle','Schema objects','Create a tablespace and a table','Table with an identity column.',`CREATE TABLESPACE app_data DATAFILE SIZE 1G AUTOEXTEND ON NEXT 128M MAXSIZE 20G;
+CREATE TABLE hr.audit_log (
+  id NUMBER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  created TIMESTAMP DEFAULT SYSTIMESTAMP,
+  msg VARCHAR2(200)) TABLESPACE app_data;`],
+['Oracle','Schema objects','Extract the DDL of an object','Useful for copying a table definition to another environment.',`SET LONG 100000
+SELECT DBMS_METADATA.GET_DDL('TABLE', 'EMPLOYEES', 'HR') FROM dual;`],
+['PostgreSQL','Schema objects','Add a column and constraint with little locking','NOT VALID then VALIDATE avoids holding a long lock on a big table.',`ALTER TABLE orders ADD COLUMN status text NOT NULL DEFAULT 'new';
+ALTER TABLE orders ADD CONSTRAINT status_chk
+  CHECK (status IN ('new','paid','done')) NOT VALID;
+ALTER TABLE orders VALIDATE CONSTRAINT status_chk;`],
+['PostgreSQL','Schema objects','Show a table definition','Inside psql, or as a schema-only dump.',`\\d+ orders
+pg_dump -s -t orders mydb`],
+['MySQL','Schema objects','Create a database and a table','Use utf8mb4 for full Unicode.',`CREATE DATABASE app CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;
+CREATE TABLE app.audit_log (
+  id BIGINT AUTO_INCREMENT PRIMARY KEY,
+  created DATETIME DEFAULT CURRENT_TIMESTAMP,
+  msg VARCHAR(200));`],
+['MySQL','Schema objects','Show the DDL of a table or view','Full definition including indexes and engine.',`SHOW CREATE TABLE app.audit_log\\G
+SHOW CREATE VIEW app.my_view\\G`],
+['SQL Server','Schema objects','Create a database with sized files','Set sensible sizes and fixed growth to avoid many small growths.',`CREATE DATABASE app ON PRIMARY
+  (NAME = app, FILENAME = 'D:\\data\\app.mdf', SIZE = 1GB, FILEGROWTH = 256MB)
+LOG ON
+  (NAME = app_log, FILENAME = 'E:\\log\\app_log.ldf', SIZE = 512MB, FILEGROWTH = 256MB);`],
+['SQL Server','Schema objects','Find recently changed objects and read a definition','Newest changes first.',`SELECT s.name AS schema_name, o.name, o.type_desc, o.modify_date
+FROM sys.objects o JOIN sys.schemas s ON o.schema_id = s.schema_id
+WHERE o.is_ms_shipped = 0 ORDER BY o.modify_date DESC;
+SELECT OBJECT_DEFINITION(OBJECT_ID('dbo.MyProc'));`],
+
+['Oracle','Logs and diagnostics','Read the alert log and incidents with ADRCI','Tail the alert log and list incidents.',`adrci
+adrci> SHOW ALERT -TAIL 50
+adrci> SHOW INCIDENT`],
+['Oracle','Logs and diagnostics','Package an incident for Oracle Support','Creates a zip of the diagnostic files for one incident.',`adrci
+adrci> IPS PACK INCIDENT 12345 IN /tmp`],
+['PostgreSQL','Logs and diagnostics','Find the current server log','Then read it with tail.',`SHOW logging_collector;
+SHOW log_directory;
+SELECT pg_current_logfile();`],
+['PostgreSQL','Logs and diagnostics','Log slow queries','Logs any statement that takes longer than 1000 ms.',`ALTER SYSTEM SET log_min_duration_statement = '1000';
+SELECT pg_reload_conf();`],
+['MySQL','Logs and diagnostics','Summarize the slow query log','Top 10 patterns by total time.',`mysqldumpslow -s t -t 10 /var/lib/mysql/slow.log`],
+['MySQL','Logs and diagnostics','Find and rotate the error log','Closes and reopens the file after you move it.',`SHOW VARIABLES LIKE 'log_error';
+FLUSH ERROR LOGS;`],
+['SQL Server','Logs and diagnostics','Read and cycle the error log','Log 0 is the current one.',`EXEC xp_readerrorlog 0, 1;
+EXEC sp_cycle_errorlog;`],
+['SQL Server','Logs and diagnostics','Recent object changes from the default trace','Who created, dropped or altered objects.',`SELECT TOP 20 StartTime, LoginName, ObjectName, EventClass
+FROM sys.fn_trace_gettable(CONVERT(varchar(260),
+  (SELECT path FROM sys.traces WHERE is_default = 1)), DEFAULT)
+WHERE EventClass IN (46, 47, 164) ORDER BY StartTime DESC;`]
 ];
 var ARCH={
 Oracle:{n:'An instance (memory and processes) works on a database (files). Changes are made in memory and logged as redo. LGWR writes redo at commit; DBWn writes the changed blocks later.',
@@ -921,11 +1112,24 @@ l:[['Memory',['Buffer pool: cached data pages','Plan cache: compiled query plans
 ['Engine components',['SQLOS: schedulers and worker threads','Relational engine: parser and optimizer','Storage engine: access methods and transactions','Checkpoint and lazy writer','Log writer']],
 ['Files on disk',['.mdf primary data file','.ndf secondary data files','.ldf transaction log','System databases: master, model, msdb, tempdb','Backup files']]]}
 };
-var G=[['Learn',['Architecture','Interview questions']],['Set up and maintain',['Install','Patching','Upgrade','High availability']],['Daily work',['Sessions','Storage','Backup','Performance','Health','Security']],['More topics',['Troubleshooting','Maintenance','Automation','Migration','Disaster recovery','Auditing','Cloud']],['Tuning and data',['Indexing','Locks and deadlocks','Partitioning','Import and export']]];
-var TD={Install:'Set up a new database server from scratch.',Patching:'Apply security and bug-fix updates to an existing server.',Upgrade:'Move to a newer major version of the database.','High availability':'Replication, standby servers and failover.',Architecture:'How each database is built: memory, processes and files, plus queries to inspect them.',Troubleshooting:'Diagnose and fix common problems and errors.',Maintenance:'Routine jobs that keep tables, indexes and logs healthy.',Automation:'Schedule backups, jobs and scripts.',Migration:'Move databases and users to another server.','Disaster recovery':'Recover from lost files, crashes and failed servers.',Auditing:'Track logins and changes, and encrypt data.',Cloud:'Run these databases on managed cloud services.','Interview questions':'Common DBA interview questions with short answers.',Indexing:'Create, check and remove indexes safely.','Locks and deadlocks':'Find blockers and deadlocks, and reduce them.',Partitioning:'Split large tables to speed up queries and clean-up.','Import and export':'Move data in and out with CSV and bulk tools.',Sessions:'See who is connected, find blocked work and stop sessions.',Storage:'Check disk and data file space before it runs out.',Backup:'Take, verify and restore backups.',Performance:'Find slow queries and keep tables and indexes healthy.',Health:'Quick checks that the system is running normally.',Security:'Create users and give them the right access.'};
-var CHG=/\b(ALTER|KILL|CREATE|GRANT|DROP|SET GLOBAL|VACUUM|REBUILD|RESTORE|EXEC|BACKUP|pg_terminate_backend|pg_cancel_backend|shutdown|startup|install|apply|update|upgrade|expdp|pg_dump|mysqldump|rman|setup|initdb|stop|start|restart|patch|runInstaller|autoupgrade|reload|sp_configure|RECONFIGURE|xtrabackup --(backup|copy)|pg_basebackup|REVOKE|pg_restore|mysqlbinlog|ANALYZE TABLE|REINDEX|PURGE|crontab|adrci|impdp|mysqlsh|DELETE|DETACH|Copy-Dba|sqlcmd|cron\.schedule|DBMS_SCHEDULER|pg_rewind|touch|INSERT|LOAD DATA|sqlldr|COPY|bcp|pg_drop_replication_slot|FAILOVER|PROMOTE|pg_promote|START REPLICA|REASSIGN|OPTIMIZE)\b/i;
+var G=[['Learn',['Architecture','Interview questions']],['Set up and maintain',['Install','Patching','Upgrade','High availability']],['Daily work',['Sessions','Storage','Backup','Performance','Health','Security']],['More topics',['Troubleshooting','Maintenance','Automation','Migration','Disaster recovery','Auditing','Cloud']],['Tuning and data',['Indexing','Locks and deadlocks','Partitioning','Import and export','Execution plans','Temp and memory']],['Operations',['Configuration','Connectivity','Capacity planning','Monitoring','Schema objects','Logs and diagnostics']]];
+var TD={Install:'Set up a new database server from scratch.',Patching:'Apply security and bug-fix updates to an existing server.',Upgrade:'Move to a newer major version of the database.','High availability':'Replication, standby servers and failover.',Architecture:'How each database is built: memory, processes and files, plus queries to inspect them.',Troubleshooting:'Diagnose and fix common problems and errors.',Maintenance:'Routine jobs that keep tables, indexes and logs healthy.',Automation:'Schedule backups, jobs and scripts.',Migration:'Move databases and users to another server.','Disaster recovery':'Recover from lost files, crashes and failed servers.',Auditing:'Track logins and changes, and encrypt data.',Cloud:'Run these databases on managed cloud services.','Interview questions':'Common DBA interview questions with short answers.',Indexing:'Create, check and remove indexes safely.','Locks and deadlocks':'Find blockers and deadlocks, and reduce them.',Partitioning:'Split large tables to speed up queries and clean-up.','Import and export':'Move data in and out with CSV and bulk tools.',Configuration:'View and change settings and parameters.',Connectivity:'Fix connection problems and check network settings.','Capacity planning':'Track growth and see how much room is left.',Monitoring:'Checks and thresholds to watch every day.','Execution plans':'See how the database runs a query and why it is slow.','Temp and memory':'Find what uses temporary space and memory.','Schema objects':'Create and inspect databases, tables and constraints.','Logs and diagnostics':'Find and read the logs that explain problems.',Sessions:'See who is connected, find blocked work and stop sessions.',Storage:'Check disk and data file space before it runs out.',Backup:'Take, verify and restore backups.',Performance:'Find slow queries and keep tables and indexes healthy.',Health:'Quick checks that the system is running normally.',Security:'Create users and give them the right access.'};
+var CHG=/\b(ALTER|KILL|CREATE|GRANT|DROP|SET GLOBAL|VACUUM|REBUILD|RESTORE|EXEC|BACKUP|pg_terminate_backend|pg_cancel_backend|shutdown|startup|install|apply|update|upgrade|expdp|pg_dump|mysqldump|rman|setup|initdb|stop|start|restart|patch|runInstaller|autoupgrade|reload|sp_configure|RECONFIGURE|xtrabackup --(backup|copy)|pg_basebackup|REVOKE|pg_restore|mysqlbinlog|ANALYZE TABLE|REINDEX|PURGE|crontab|adrci|impdp|mysqlsh|DELETE|DETACH|Copy-Dba|sqlcmd|cron\.schedule|DBMS_SCHEDULER|pg_rewind|touch|INSERT|LOAD DATA|sqlldr|COPY|bcp|PERSIST|netsh|OUTFILE|FLUSH|pg_drop_replication_slot|FAILOVER|PROMOTE|pg_promote|START REPLICA|REASSIGN|OPTIMIZE)\b/i;
 var st={e:'All',c:'All',q:''};
 var $=function(i){return document.getElementById(i)};
+var POP=[['Oracle','Active user sessions'],['Oracle','RMAN full backup'],['Oracle','Apply a Release Update with OPatch'],
+['PostgreSQL','Running queries'],['PostgreSQL','pg_dump backup and restore'],['PostgreSQL','Set up streaming replication'],
+['MySQL','Process list and kill'],['MySQL','mysqldump backup and restore'],['MySQL','Set up GTID replication'],
+['SQL Server','Active requests and blocking'],['SQL Server','Full backup and verify'],['SQL Server','Top 10 queries by CPU']];
+function pop(){
+  $('pop').innerHTML=POP.map(function(p){
+    var i=-1;D.forEach(function(d,k){if(d[0]===p[0]&&d[2]===p[1])i=k});
+    return i<0?'':'<button class="pb" style="--c:'+E[p[0]]+'" data-i="'+i+'"><b>'+esc(p[1])+'</b><small>'+p[0]+' · '+D[i][1]+'</small></button>'}).join('');
+}
+$('pop').addEventListener('click',function(e){
+  var b=e.target.closest('.pb');if(!b)return;
+  var i=+b.dataset.i;st.e=D[i][0];st.c=D[i][1];st.q='';st.o=i;$('q').value='';render();
+});
 function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
 function match(d,anyCat){return (st.e==='All'||d[0]===st.e)&&(anyCat||st.c==='All'||d[1]===st.c)&&(!st.q||d.join(' ').toLowerCase().indexOf(st.q)>-1)}
 function chip(label,n,on,attr,off){return '<button class="chip" '+attr+' aria-pressed="'+on+'"'+(off?' disabled':'')+'><span>'+label+'</span>'+(n===null?'':'<small>'+n+'</small>')+'</button>'}
@@ -947,7 +1151,7 @@ function item(d,open){
   var risk=CHG.test(d[4])?['chg','Makes changes']:['ro','Read-only'];
   var sum=steps?steps.length+' steps':d[3];
   var body=steps?'<ol>'+steps.map(function(s){return '<li>'+esc(s)+'</li>'}).join('')+'</ol>':'<p>'+esc(d[3])+'</p>';
-  return '<details class="item" style="--c:'+E[d[0]]+'"'+(open?' open':'')+'><summary><span class="t">'+esc(d[2])+'</span>'+
+  return '<details class="item" id="g'+D.indexOf(d)+'" style="--c:'+E[d[0]]+'"'+(open?' open':'')+'><summary><span class="t">'+esc(d[2])+'</span>'+
     '<span class="badges"><span class="eng">'+d[0]+'</span><span>'+d[1]+'</span><span class="'+risk[0]+'">'+risk[1]+'</span></span>'+
     '<span class="s">'+esc(sum)+'</span></summary><div class="body">'+body+
     '<div class="cw"><pre>'+esc(d[4])+'</pre><button class="copy" data-i="'+D.indexOf(d)+'">Copy</button></div></div></details>';
@@ -959,11 +1163,12 @@ function render(){
   $('head').innerHTML=f?'<h2>'+(st.c==='All'?(st.q?'Search results':'All topics'):st.c)+(st.e==='All'?'':' for '+st.e)+'</h2>'+(TD[st.c]?'<p>'+TD[st.c]+'</p>':''):'';
   $('count').textContent=f?r.length+(r.length===1?' guide':' guides'):D.length+' guides in total';
   $('clear').hidden=!f;
-  $('list').innerHTML=r.length?r.map(function(d){return item(d,r.length<=3&&f)}).join(''):'<div class="empty">No guides match. Clear the filters or try a different word.</div>';
+  $('list').innerHTML=r.length?r.map(function(d){return item(d,(r.length<=3&&f)||D.indexOf(d)===st.o)}).join(''):'<div class="empty">No guides match. Clear the filters or try a different word.</div>';
   var A='';
   if(st.c==='Architecture'&&!st.q)Object.keys(ARCH).forEach(function(e){if(st.e==='All'||st.e===e)A+=arch(e)});
   $('arch').innerHTML=A;
   nav();
+  if(st.o!=null){var g=$('g'+st.o);if(g&&g.scrollIntoView)g.scrollIntoView({block:'start'})}
 }
 function arch(e){
   var a=ARCH[e];
@@ -971,9 +1176,9 @@ function arch(e){
     a.f.map(function(x){return '<span>'+x+'</span>'}).join('')+'</div><div class="lanes">'+
     a.l.map(function(l){return '<div class="lane"><b>'+l[0]+'</b><ul>'+l[1].map(function(i){return '<li>'+i+'</li>'}).join('')+'</ul></div>'}).join('')+'</div></section>';
 }
-$('engines').addEventListener('click',function(e){var b=e.target.closest('[data-e]');if(b){st.e=b.dataset.e;render()}});
-$('topics').addEventListener('click',function(e){var b=e.target.closest('[data-c]');if(b&&!b.disabled){st.c=b.dataset.c;render()}});
-$('q').addEventListener('input',function(e){st.q=e.target.value.trim().toLowerCase();render()});
+$('engines').addEventListener('click',function(e){var b=e.target.closest('[data-e]');if(b){st.e=b.dataset.e;st.o=null;render()}});
+$('topics').addEventListener('click',function(e){var b=e.target.closest('[data-c]');if(b&&!b.disabled){st.c=b.dataset.c;st.o=null;render()}});
+$('q').addEventListener('input',function(e){st.q=e.target.value.trim().toLowerCase();st.o=null;render()});
 $('clear').addEventListener('click',function(){st={e:'All',c:'All',q:''};$('q').value='';render()});
 $('list').addEventListener('click',function(e){
   var i=e.target.dataset.i;if(i===undefined)return;
@@ -981,6 +1186,7 @@ $('list').addEventListener('click',function(e){
   try{navigator.clipboard.writeText(D[i][4]).then(function(){b.textContent='Copied';setTimeout(function(){b.textContent='Copy'},1500)},function(){b.textContent='Select and copy'})}
   catch(x){b.textContent='Select and copy'}
 });
+pop();
 render();
 </script>
 </body>
