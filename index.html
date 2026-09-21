@@ -1,53 +1,775 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Oracle DBA Logbook</title>
-    <link rel="stylesheet" href="style.css">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>DBAMyWorld: DBA Guides and Queries</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600;700&family=IBM+Plex+Mono&display=swap">
+<style>
+:root{--bg:#f4f6f9;--panel:#fff;--ink:#16202a;--mute:#566574;--line:#dbe2ea;--brand:#16407a;--brandfg:#fff;--code:#101c27;--codefg:#d6e6ee;
+--ora:#b93c0a;--pg:#1f5fa8;--my:#0b7085;--ms:#6d33d4;--okbg:#dcfce7;--ok:#166534;--wbg:#fef3c7;--w:#8a3b0a;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f1720;--panel:#16212c;--ink:#e6edf3;--mute:#93a4b3;--line:#2a3947;--brand:#1c3d68;--code:#0a121a;--ora:#fb923c;--pg:#7cb4ec;--my:#5fd0e8;--ms:#b79bff;--okbg:#12361f;--ok:#86efac;--wbg:#3a2a0d;--w:#fcd34d}}
+:root[data-theme="dark"]{--bg:#0f1720;--panel:#16212c;--ink:#e6edf3;--mute:#93a4b3;--line:#2a3947;--brand:#1c3d68;--code:#0a121a;--ora:#fb923c;--pg:#7cb4ec;--my:#5fd0e8;--ms:#b79bff;--okbg:#12361f;--ok:#86efac;--wbg:#3a2a0d;--w:#fcd34d}
+html{scroll-padding-top:env(safe-area-inset-top,0px);-webkit-text-size-adjust:100%;text-size-adjust:100%}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 "IBM Plex Sans",system-ui,sans-serif}
+.top{background:var(--brand);color:var(--brandfg);padding:22px max(16px,env(safe-area-inset-right)) 22px max(16px,env(safe-area-inset-left))}
+.in,.layout{max-width:1160px;margin:0 auto}
+.layout>*{min-width:0}
+.logo{font-size:clamp(1.4rem,5vw,1.9rem);font-weight:700;letter-spacing:-.01em}
+.tag{opacity:.85;font-size:.95rem}
+.layout{display:grid;grid-template-columns:minmax(0,1fr);gap:16px;padding:16px max(16px,env(safe-area-inset-right)) 48px max(16px,env(safe-area-inset-left))}
+input[type=search]{width:100%;font:inherit;padding:11px 12px;border:1px solid var(--line);border-radius:8px;background:var(--panel);color:var(--ink)}
+.filters h3{font-size:.85rem;font-weight:600;color:var(--mute);margin:18px 0 8px}
+.chips,#topics{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none;-webkit-mask-image:linear-gradient(90deg,#000 88%,transparent);mask-image:linear-gradient(90deg,#000 88%,transparent)}
+.chips::-webkit-scrollbar,#topics::-webkit-scrollbar{display:none}
+#topics .chips{display:contents}
+.gl{display:none}
+@media(min-width:600px){.chips,#topics{flex-wrap:wrap;overflow:visible;-webkit-mask-image:none;mask-image:none}}
+@media(min-width:900px){
+.layout{grid-template-columns:250px minmax(0,1fr);gap:28px;padding-top:24px}
+.filters{position:sticky;top:calc(env(safe-area-inset-top,0px) + 12px);align-self:start;max-height:calc(100vh - 24px);overflow:auto}
+.chips{flex-direction:column;flex-wrap:nowrap}
+#topics{display:block}
+#topics .chips{display:flex}
+.gl{display:block}}
+.chip{font:inherit;font-size:.92rem;display:flex;justify-content:space-between;gap:10px;align-items:center;padding:8px 12px;border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:8px;cursor:pointer;white-space:nowrap;text-align:left}
+.chip small{color:var(--mute)}
+.chip[aria-pressed=true]{background:var(--brand);color:var(--brandfg);border-color:var(--brand)}
+.chip[aria-pressed=true] small{color:inherit;opacity:.8}
+.chip:disabled{opacity:.45;cursor:default}
+:focus-visible{outline:3px solid var(--pg);outline-offset:2px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px 18px;margin-bottom:16px}
+.card h2{font-size:1.15rem;margin:0 0 10px}
+.how{display:grid;gap:12px;margin:0;padding:0;list-style:none;counter-reset:n}
+@media(min-width:700px){.how{grid-template-columns:repeat(3,1fr)}}
+.how li{counter-increment:n;padding-left:36px;position:relative;color:var(--mute);font-size:.95rem}
+.how li:before{content:counter(n);position:absolute;left:0;top:0;width:26px;height:26px;border-radius:50%;background:var(--brand);color:var(--brandfg);display:grid;place-items:center;font-weight:600;font-size:.85rem}
+.how b{display:block;color:var(--ink)}
+.note{margin:14px 0 0;padding:10px 12px;background:var(--wbg);color:var(--w);border-radius:8px;font-size:.92rem}
+.check summary{cursor:pointer;font-weight:600}
+.check ol{margin:10px 0 0;padding-left:22px}
+.head h2{font-size:1.4rem;margin:0}
+.head p{margin:4px 0 0;color:var(--mute)}
+.bar{display:flex;flex-wrap:wrap;gap:6px 12px;justify-content:space-between;align-items:center;margin:14px 0 10px;color:var(--mute);font-size:.9rem}
+.link{font:inherit;background:none;border:0;color:var(--pg);cursor:pointer;text-decoration:underline}
+.item{background:var(--panel);border:1px solid var(--line);border-left:5px solid var(--c);border-radius:8px;margin-bottom:10px}
+.item summary{list-style:none;cursor:pointer;padding:12px 16px;display:grid;grid-template-columns:1fr 20px;gap:2px 8px}
+.item summary::-webkit-details-marker{display:none}
+.item summary:after{content:"";grid-column:2;grid-row:1/4;align-self:center;width:8px;height:8px;border-right:2px solid var(--mute);border-bottom:2px solid var(--mute);transform:rotate(45deg)}
+.item[open] summary:after{transform:rotate(-135deg)}
+.t{font-weight:600;overflow-wrap:anywhere}
+.badges{display:flex;flex-wrap:wrap;gap:6px;font-size:.78rem;margin:2px 0}
+.badges span{padding:1px 8px;border-radius:999px;border:1px solid var(--line);color:var(--mute)}
+.badges .eng{color:var(--c);border-color:var(--c);font-weight:600}
+.badges .ro{background:var(--okbg);color:var(--ok);border-color:transparent}
+.badges .chg{background:var(--wbg);color:var(--w);border-color:transparent}
+.s{color:var(--mute);font-size:.92rem}
+.body{padding:0 16px 16px}
+.body ol{margin:0 0 12px;padding-left:22px}
+.body li{margin:4px 0}
+.body p{margin:0 0 12px}
+.cw{position:relative}
+pre{margin:0;background:var(--code);color:var(--codefg);padding:14px;padding-top:34px;border-radius:6px;overflow-x:auto;font:.85rem/1.5 "IBM Plex Mono",ui-monospace,monospace}
+.copy{position:absolute;top:6px;right:6px;font:inherit;font-size:.8rem;padding:3px 10px;border-radius:6px;border:1px solid #3a5566;background:#1b3140;color:#d8e9ee;cursor:pointer}
+.empty{padding:32px 0;text-align:center;color:var(--mute)}
+footer{color:var(--mute);font-size:.85rem;margin-top:24px}
+.chip{flex:0 0 auto;min-height:40px}
+@media(max-width:480px){
+.card{padding:14px}
+.item summary{padding:12px}
+.body{padding:0 12px 12px}
+pre{font-size:.78rem;padding:12px;padding-top:34px}}
+@media(pointer:coarse){.copy{padding:6px 12px;font-size:.85rem}.item summary{min-height:48px}}
+.arch{border-top:4px solid var(--c)}
+.arch p{margin:0;color:var(--mute)}
+.flow{display:flex;flex-wrap:wrap;gap:8px 22px;margin:14px 0}
+.flow span{position:relative;padding:4px 10px;border:1px solid var(--c);border-radius:6px;font-size:.85rem;background:var(--bg)}
+.flow span+span:before{content:"\203A";position:absolute;left:-15px;top:50%;transform:translateY(-52%);color:var(--c);font-weight:700}
+.lanes{display:grid;gap:10px}
+@media(min-width:700px){.lanes{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.lane{background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px 12px}
+.lane b{display:block;margin-bottom:4px}
+.lane ul{margin:0;padding-left:18px;font-size:.9rem;color:var(--mute)}
+.lane li{margin:3px 0}
+</style>
 </head>
-<body >
+<body>
+<header class="top"><div class="in">
+<div class="logo">DBAMyWorld</div>
+<div class="tag">Step-by-step DBA guides for Oracle, PostgreSQL, MySQL and SQL Server</div>
+</div></header>
+<div class="layout">
+<aside class="filters">
+<input type="search" id="q" placeholder="Search, e.g. backup, lock, upgrade" aria-label="Search guides">
+<h3>Database</h3><div class="chips" id="engines"></div>
+<h3>Topic</h3><div id="topics"></div>
+</aside>
+<main>
+<section id="intro">
+<div class="card">
+<h2>How to use this guide</h2>
+<ol class="how">
+<li><b>Pick your database</b>Oracle, PostgreSQL, MySQL or SQL Server.</li>
+<li><b>Pick a topic</b>Architecture, install, patching, backup and more.</li>
+<li><b>Open a guide</b>Follow the steps, then copy the commands.</li>
+</ol>
+<p class="note">Test on a non-production system first. Guides marked "Makes changes" modify the server or its data.</p>
+</div>
+<details class="card check"><summary>Daily DBA checklist</summary>
+<ol>
+<li>Confirm the database and listener/service are up.</li>
+<li>Check last night's backup finished and passed verification.</li>
+<li>Review free space on data files, logs and disks.</li>
+<li>Look for long-running, blocked or failed sessions and jobs.</li>
+<li>Scan the error log and alerts for new warnings.</li>
+<li>Check replication or standby lag.</li>
+</ol></details>
+</section>
+<div class="head" id="head"></div>
+<div class="bar"><span id="count" aria-live="polite"></span><button class="link" id="clear" hidden>Clear filters</button></div>
+<div id="arch"></div>
+<div id="list"></div>
+<footer>Version numbers, paths and passwords are examples. Check the vendor documentation for your release.</footer>
+</main>
+</div>
+<script>
+var E={Oracle:'var(--ora)',PostgreSQL:'var(--pg)',MySQL:'var(--my)','SQL Server':'var(--ms)'};
+// [engine, category, title, note, code]
+var D=[
+['Oracle','Sessions','Active user sessions','See who is connected and from where.',`SELECT sid, serial#, username, status, machine, program
+FROM v$session WHERE type = 'USER' ORDER BY logon_time;`],
+['Oracle','Sessions','Kill a session','Get sid and serial# from the query above, then run:',`ALTER SYSTEM KILL SESSION 'sid,serial#' IMMEDIATE;`],
+['Oracle','Storage','Tablespace usage','Total and used MB per tablespace.',`SELECT df.tablespace_name, ROUND(df.b/1048576) total_mb,
+       ROUND((df.b - NVL(fs.b,0))/1048576) used_mb
+FROM (SELECT tablespace_name, SUM(bytes) b FROM dba_data_files GROUP BY tablespace_name) df
+LEFT JOIN (SELECT tablespace_name, SUM(bytes) b FROM dba_free_space GROUP BY tablespace_name) fs
+  ON df.tablespace_name = fs.tablespace_name;`],
+['Oracle','Performance','Top 10 SQL by elapsed time','Start tuning with the costliest statements.',`SELECT sql_id, ROUND(elapsed_time/1e6) sec, executions, SUBSTR(sql_text,1,80) txt
+FROM v$sql ORDER BY elapsed_time DESC FETCH FIRST 10 ROWS ONLY;`],
+['Oracle','Backup','RMAN full backup','1. Connect. 2. Back up database and archive logs. 3. Verify.',`rman target /
+RMAN> BACKUP DATABASE PLUS ARCHIVELOG;
+RMAN> LIST BACKUP SUMMARY;
+RMAN> RESTORE DATABASE VALIDATE;`],
+['Oracle','Backup','Data Pump schema export','Export one schema to the DATA_PUMP_DIR directory.',`expdp system schemas=HR directory=DATA_PUMP_DIR dumpfile=hr.dmp logfile=hr.log`],
+['Oracle','Security','Create user and grant access','1. Create the user. 2. Grant the minimum privileges.',`CREATE USER app_user IDENTIFIED BY "ChangeMe#1"
+  DEFAULT TABLESPACE users QUOTA 500M ON users;
+GRANT CREATE SESSION, CREATE TABLE TO app_user;`],
+['Oracle','Health','Invalid objects and recompile','List invalid objects, then recompile them.',`SELECT owner, object_type, object_name FROM dba_objects WHERE status = 'INVALID';
+EXEC UTL_RECOMP.RECOMP_PARALLEL(4);`],
 
-    <!-- 1. Left completely empty; components.js handles generation -->
-    <header></header>
+['PostgreSQL','Sessions','Running queries','Non-idle sessions, longest first.',`SELECT pid, usename, state, now() - query_start AS runtime, left(query,80) AS query
+FROM pg_stat_activity WHERE state <> 'idle' ORDER BY runtime DESC;`],
+['PostgreSQL','Sessions','Blocked sessions and blockers','Who is waiting, and on whom.',`SELECT pid, pg_blocking_pids(pid) AS blocked_by, left(query,60) AS query
+FROM pg_stat_activity WHERE cardinality(pg_blocking_pids(pid)) > 0;`],
+['PostgreSQL','Sessions','Stop a backend','Cancel first; terminate if it does not stop.',`SELECT pg_cancel_backend(12345);
+SELECT pg_terminate_backend(12345);`],
+['PostgreSQL','Storage','Database sizes','Largest databases first.',`SELECT datname, pg_size_pretty(pg_database_size(datname)) AS size
+FROM pg_database ORDER BY pg_database_size(datname) DESC;`],
+['PostgreSQL','Performance','Dead tuples and vacuum','Find tables that need vacuuming.',`SELECT relname, n_dead_tup, last_autovacuum
+FROM pg_stat_user_tables ORDER BY n_dead_tup DESC LIMIT 10;
+VACUUM (ANALYZE, VERBOSE) my_table;`],
+['PostgreSQL','Backup','pg_dump backup and restore','1. Dump in custom format. 2. Create target DB. 3. Restore in parallel.',`pg_dump -Fc -d mydb -f mydb.dump
+createdb mydb_new
+pg_restore -d mydb_new -j 4 mydb.dump`],
+['PostgreSQL','Health','Replication lag','Run on the primary.',`SELECT client_addr, state, replay_lag FROM pg_stat_replication;`],
+['PostgreSQL','Security','Create role and grant access','Login role with connect and read access.',`CREATE ROLE app_user LOGIN PASSWORD 'ChangeMe#1';
+GRANT CONNECT ON DATABASE mydb TO app_user;
+GRANT USAGE ON SCHEMA public TO app_user;
+GRANT SELECT ON ALL TABLES IN SCHEMA public TO app_user;`],
 
-    <div class="container">
-        <div class="feed-grid">
-            <aside class="sidebar">
-                <input type="text" id="searchBar" class="search-box" placeholder="Search concepts or error codes...">
-                <div class="filter-title">Filter by Domain</div>
-                <button class="tag-btn active" id="btn-all">All Concepts</button>
-                <button class="tag-btn" id="btn-architecture">Architecture</button>
-                <button class="tag-btn" id="btn-performance">Performance Tuning</button>
-                <button class="tag-btn" id="btn-backup">Backup & Recovery</button>
-                <button class="tag-btn" id="btn-multitenant">Multitenant (CDB/PDB)</button>
-                <button class="tag-btn" id="btn-troubleshooting">Troubleshooting</button>
-                <button class="tag-btn" id="btn-patching">Patch Application</button>
-                <button class="tag-btn" id="btn-storage">Storage Capacity</button>
-                <button class="tag-btn" id="btn-archiver">Archiver Errors</button>
-                <button class="tag-btn" id="btn-prechecks">Health Pre-Checks</button>
-                <button class="tag-btn" id="btn-security">Database Security</button>
-                <button class="tag-btn" id="btn-rac">RAC Clustering</button>
-                <button class="tag-btn" id="btn-automation">Shell Automation</button>
-                <button class="tag-btn" id="btn-cloud">Cloud Systems</button>
-                <button class="tag-btn" id="btn-datapump">Data Pump</button>
-                <button class="tag-btn" id="btn-baselines">SQL Baselines</button>
-                <button class="tag-btn" id="btn-pinning">SQL Pinning</button>
-                <button class="tag-btn" id="btn-auditing">Audit & Compliance</button>
-            </aside>
+['MySQL','Sessions','Process list and kill','Find the id, then kill the connection.',`SHOW FULL PROCESSLIST;
+KILL 1234;`],
+['MySQL','Sessions','InnoDB lock waits','Shows who blocks whom.',`SELECT * FROM sys.innodb_lock_waits\\G`],
+['MySQL','Storage','Largest tables','Data plus index size in MB.',`SELECT table_schema, table_name,
+       ROUND((data_length + index_length)/1024/1024) AS mb
+FROM information_schema.tables ORDER BY mb DESC LIMIT 10;`],
+['MySQL','Performance','Enable slow query log','Log statements slower than 1 second.',`SET GLOBAL slow_query_log = 1;
+SET GLOBAL long_query_time = 1;
+SHOW VARIABLES LIKE 'slow_query_log_file';`],
+['MySQL','Backup','mysqldump backup and restore','Consistent InnoDB dump, then restore.',`mysqldump --single-transaction --routines --triggers -u root -p mydb > mydb.sql
+mysql -u root -p mydb < mydb.sql`],
+['MySQL','Health','Replica status','Check Seconds_Behind_Source and both thread states.',`SHOW REPLICA STATUS\\G`],
+['MySQL','Security','Create user and grant access','Least privilege on one schema.',`CREATE USER 'app'@'%' IDENTIFIED BY 'ChangeMe#1';
+GRANT SELECT, INSERT, UPDATE ON mydb.* TO 'app'@'%';`],
 
-            <main class="content-area" id="logContainer">
-                <!-- JavaScript renders items dynamically here -->
-            </main>
-        </div>
-    </div>
+['SQL Server','Sessions','Active requests and blocking','Look at blocking_session_id and wait_type.',`SELECT session_id, status, command, wait_type, blocking_session_id,
+       total_elapsed_time/1000 AS sec
+FROM sys.dm_exec_requests WHERE session_id > 50;`],
+['SQL Server','Storage','File size and used space','Per file, in MB.',`SELECT name, size*8/1024 AS size_mb,
+       FILEPROPERTY(name,'SpaceUsed')*8/1024 AS used_mb
+FROM sys.database_files;`],
+['SQL Server','Performance','Top 10 queries by CPU','Average CPU per execution.',`SELECT TOP 10 qs.total_worker_time/qs.execution_count AS avg_cpu,
+       qs.execution_count, SUBSTRING(st.text,1,80) AS query
+FROM sys.dm_exec_query_stats qs
+CROSS APPLY sys.dm_exec_sql_text(qs.sql_handle) st
+ORDER BY avg_cpu DESC;`],
+['SQL Server','Performance','Fragmented indexes','Find, then rebuild indexes above 30%.',`SELECT OBJECT_NAME(object_id) AS tbl, index_id, avg_fragmentation_in_percent
+FROM sys.dm_db_index_physical_stats(DB_ID(),NULL,NULL,NULL,'LIMITED')
+WHERE avg_fragmentation_in_percent > 30;
+ALTER INDEX ALL ON dbo.MyTable REBUILD;`],
+['SQL Server','Backup','Full backup and verify','1. Back up with checksum. 2. Verify the file.',`BACKUP DATABASE mydb TO DISK = 'D:\\bak\\mydb.bak' WITH COMPRESSION, CHECKSUM;
+RESTORE VERIFYONLY FROM DISK = 'D:\\bak\\mydb.bak' WITH CHECKSUM;`],
+['SQL Server','Health','Last backup per database','Spot databases with no recent backup.',`SELECT database_name, MAX(backup_finish_date) AS last_backup
+FROM msdb.dbo.backupset GROUP BY database_name;`],
+['SQL Server','Security','Create login and user','Login, database user, read role.',`CREATE LOGIN app WITH PASSWORD = 'ChangeMe#1';
+USE mydb;
+CREATE USER app FOR LOGIN app;
+ALTER ROLE db_datareader ADD MEMBER app;`],
 
-    <!-- 2. Left completely empty; components.js handles generation -->
-    <footer></footer>
+['Oracle','Install','Install Oracle 19c on Linux (silent)','1. Prepare OS. 2. Unzip software. 3. Install binaries. 4. Run root scripts. 5. Create listener and database.',`# as root
+dnf install -y oracle-database-preinstall-19c
+mkdir -p /u01/app/oracle/product/19.0.0/dbhome_1 && chown -R oracle:oinstall /u01
+# as oracle
+cd $ORACLE_HOME && unzip -q /stage/LINUX.X64_193000_db_home.zip
+./runInstaller -silent -responseFile /stage/db_install.rsp
+# as root
+/u01/app/oraInventory/orainstRoot.sh
+$ORACLE_HOME/root.sh
+# as oracle
+netca -silent -responsefile $ORACLE_HOME/assistants/netca/netca.rsp
+dbca -silent -createDatabase -templateName General_Purpose.dbc \\
+  -gdbName ORCL -sid ORCL -characterSet AL32UTF8 \\
+  -sysPassword <pwd> -systemPassword <pwd>`],
+['Oracle','Patching','Apply a Release Update with OPatch','1. Back up home. 2. Stop services. 3. Update OPatch. 4. Check conflicts. 5. Apply. 6. Start and run datapatch.',`tar czf /backup/oh_$(date +%F).tgz $ORACLE_HOME
+lsnrctl stop
+sqlplus / as sysdba <<< "shutdown immediate"
+cd $ORACLE_HOME && mv OPatch OPatch.old && unzip /stage/p6880880*.zip
+cd /stage/<patch_id>
+$ORACLE_HOME/OPatch/opatch prereq CheckConflictAgainstOHWithDetail -ph ./
+$ORACLE_HOME/OPatch/opatch apply
+sqlplus / as sysdba <<< "startup"
+lsnrctl start
+$ORACLE_HOME/OPatch/datapatch -verbose
+$ORACLE_HOME/OPatch/opatch lspatches`],
+['Oracle','Upgrade','Upgrade with AutoUpgrade','1. Install target home. 2. Write config. 3. Analyze. 4. Fix. 5. Deploy. AutoUpgrade sets a restore point by default.',`java -jar autoupgrade.jar -create_sample_file config
+# edit: source_home, target_home, sid, target_version
+java -jar autoupgrade.jar -config upg.cfg -mode analyze
+java -jar autoupgrade.jar -config upg.cfg -mode fixups
+java -jar autoupgrade.jar -config upg.cfg -mode deploy
+-- after: check version and invalid objects
+SELECT version_full FROM v$instance;`],
 
-    <!-- 3. SCRIPT LINKING TRACES (Crucial order sequencing rule) -->
-    <script src="posts.js"></script>
-    <script src="components.js"></script> <!-- ⬅️ Load components file before application rules -->
-    <script src="script.js"></script>
+['PostgreSQL','Install','Install PostgreSQL on Debian/Ubuntu and RHEL','Replace 17 with the major version you need.',`# Debian / Ubuntu
+sudo apt install -y postgresql-common
+sudo /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh
+sudo apt install -y postgresql-17
+# RHEL / Rocky (after adding the PGDG repo)
+sudo dnf install -y postgresql17-server
+sudo /usr/pgsql-17/bin/postgresql-17-setup initdb
+sudo systemctl enable --now postgresql-17
+sudo -u postgres psql -c "SELECT version();"`],
+['PostgreSQL','Patching','Minor version update','No dump or restore needed within a major version. On replicas, patch standbys first, then the primary.',`pg_dumpall -U postgres > /backup/all.sql
+sudo apt update && sudo apt install --only-upgrade postgresql-17
+# RHEL: sudo dnf update postgresql17-server
+sudo systemctl restart postgresql
+sudo -u postgres psql -c "SELECT version();"`],
+['PostgreSQL','Upgrade','Major upgrade with pg_upgrade','1. Install new binaries. 2. Init new cluster. 3. Stop old. 4. Check. 5. Upgrade. 6. Start and analyze.',`/usr/pgsql-18/bin/postgresql-18-setup initdb
+sudo systemctl stop postgresql-17
+/usr/pgsql-18/bin/pg_upgrade -b /usr/pgsql-17/bin -B /usr/pgsql-18/bin \\
+  -d /var/lib/pgsql/17/data -D /var/lib/pgsql/18/data --check
+# same command without --check to run it (add --link for speed)
+sudo systemctl start postgresql-18
+vacuumdb --all --analyze-in-stages`],
+
+['MySQL','Install','Install MySQL Server on Linux','Add the MySQL repo first for the release you want.',`# RHEL / Rocky
+sudo dnf install -y mysql-community-server
+sudo systemctl enable --now mysqld
+sudo grep 'temporary password' /var/log/mysqld.log
+# Ubuntu
+sudo apt install -y mysql-server
+# both
+sudo mysql_secure_installation
+mysql -u root -p -e "SELECT VERSION();"`],
+['MySQL','Patching','Minor version update','Since 8.0.16 the server upgrades system tables at start, so mysql_upgrade is not needed. Update replicas first.',`mysqldump --single-transaction --all-databases --routines --events -u root -p > full.sql
+sudo dnf update mysql-community-server
+# Ubuntu: sudo apt install --only-upgrade mysql-server
+sudo systemctl restart mysqld
+mysql -u root -p -e "SELECT VERSION();"
+sudo tail -50 /var/log/mysqld.log`],
+['MySQL','Upgrade','Major upgrade (for example 8.0 to 8.4)','1. Run the upgrade checker. 2. Back up. 3. Slow shutdown. 4. Install new binaries. 5. Start and check the log. Do not skip LTS releases.',`mysqlsh -- util checkForServerUpgrade root@localhost:3306 --target-version=8.4.0
+mysqldump --single-transaction --all-databases --routines --events -u root -p > full.sql
+mysql -u root -p -e "SET GLOBAL innodb_fast_shutdown = 0;"
+sudo systemctl stop mysqld
+# install the new server packages, then
+sudo systemctl start mysqld
+mysql -u root -p -e "SELECT VERSION();"`],
+
+['SQL Server','Install','Unattended install (Windows) or Linux setup','Run from the media folder in an elevated prompt.',`REM Windows
+setup.exe /Q /ACTION=Install /FEATURES=SQLENGINE /INSTANCENAME=MSSQLSERVER ^
+  /SQLSYSADMINACCOUNTS="DOMAIN\\dbadmin" /SQLSVCACCOUNT="DOMAIN\\svc_sql" ^
+  /SQLSVCPASSWORD="<pwd>" /IACCEPTSQLSERVERLICENSETERMS /UPDATEENABLED=0
+# Linux (after adding the Microsoft repo)
+sudo apt install -y mssql-server
+sudo /opt/mssql/bin/mssql-conf setup
+-- verify
+SELECT @@VERSION;`],
+['SQL Server','Patching','Apply a Cumulative Update','In an Availability Group, patch secondaries first, fail over, then patch the old primary.',`SELECT @@VERSION, SERVERPROPERTY('ProductUpdateLevel') AS cu;
+BACKUP DATABASE master TO DISK = 'D:\\bak\\master.bak' WITH CHECKSUM;
+REM from an elevated prompt
+SQLServer2022-KBxxxxxxx-x64.exe /qs /IAcceptSQLServerLicenseTerms /Action=Patch /AllInstances
+-- after reboot
+SELECT @@VERSION;`],
+['SQL Server','Upgrade','Side-by-side upgrade to a new version','1. Back up on old server. 2. Restore on new. 3. Raise compatibility level. 4. Update stats. 5. Copy logins and jobs. 6. Test, then cut over.',`BACKUP DATABASE mydb TO DISK = 'D:\\bak\\mydb.bak' WITH COMPRESSION, CHECKSUM;
+-- on the new server
+RESTORE DATABASE mydb FROM DISK = 'D:\\bak\\mydb.bak'
+  WITH MOVE 'mydb' TO 'D:\\data\\mydb.mdf', MOVE 'mydb_log' TO 'E:\\log\\mydb_log.ldf', RECOVERY;
+ALTER DATABASE mydb SET COMPATIBILITY_LEVEL = 160;  -- 160 = SQL Server 2022
+EXEC sp_updatestats;`],
+
+['Oracle','Install','Verify a new Oracle install','Confirm the listener, database and patch level after installing.',`lsnrctl status
+sqlplus / as sysdba <<< "SELECT name, open_mode FROM v\\$database;"
+$ORACLE_HOME/OPatch/opatch lsinventory | head -20`],
+['Oracle','Patching','Roll back a patch with OPatch','1. Stop services. 2. Roll back the patch. 3. Start the database. 4. Run datapatch.',`lsnrctl stop
+sqlplus / as sysdba <<< "shutdown immediate"
+$ORACLE_HOME/OPatch/opatch rollback -id <patch_id>
+sqlplus / as sysdba <<< "startup"
+$ORACLE_HOME/OPatch/datapatch -verbose`],
+['Oracle','Upgrade','Post-upgrade checks','Confirm version, component status and invalid objects.',`SELECT version_full FROM v$instance;
+SELECT comp_name, status, version FROM dba_registry ORDER BY comp_name;
+SELECT COUNT(*) AS invalid_objects FROM dba_objects WHERE status = 'INVALID';`],
+['Oracle','Sessions','Find blocking sessions','Shows sessions that are waiting on another session.',`SELECT blocking_session, sid, serial#, wait_class, seconds_in_wait
+FROM v$session WHERE blocking_session IS NOT NULL;`],
+['Oracle','Storage','Fast Recovery Area usage','If this fills up, the database can stop archiving.',`SELECT ROUND(space_limit/1048576) limit_mb, ROUND(space_used/1048576) used_mb,
+       ROUND(space_reclaimable/1048576) reclaimable_mb
+FROM v$recovery_file_dest;`],
+['Oracle','Backup','Restore and recover one datafile','1. Take it offline. 2. Restore. 3. Recover. 4. Bring it online.',`RMAN> SQL 'ALTER DATABASE DATAFILE 5 OFFLINE';
+RMAN> RESTORE DATAFILE 5;
+RMAN> RECOVER DATAFILE 5;
+RMAN> SQL 'ALTER DATABASE DATAFILE 5 ONLINE';`],
+['Oracle','Performance','Generate an AWR report','Requires the Diagnostics Pack license. Enter begin and end snapshots when asked.',`sqlplus / as sysdba
+SQL> @?/rdbms/admin/awrrpt.sql`],
+['Oracle','Health','Read the alert log','Find the trace directory, then read the latest entries.',`-- find the directory
+SELECT value FROM v$diag_info WHERE name = 'Diag Trace';
+# then, in that directory
+tail -100 alert_<SID>.log`],
+['Oracle','Security','Lock a user and expire its password','Then confirm the account status.',`ALTER USER app_user ACCOUNT LOCK;
+ALTER USER app_user PASSWORD EXPIRE;
+SELECT username, account_status FROM dba_users WHERE username = 'APP_USER';`],
+
+['PostgreSQL','Install','Allow remote connections','1. Edit postgresql.conf. 2. Add a rule to pg_hba.conf. 3. Reload.',`# postgresql.conf
+listen_addresses = '*'
+# pg_hba.conf
+host  all  all  10.0.0.0/24  scram-sha-256
+sudo systemctl reload postgresql`],
+['PostgreSQL','Patching','Check for pending minor updates','Compare the running version with what the package manager offers.',`SELECT version();
+apt list --upgradable | grep postgresql   # Debian / Ubuntu
+dnf check-update 'postgresql*'            # RHEL / Rocky`],
+['PostgreSQL','Upgrade','Pre-upgrade checks','Review extensions, encoding and checksums before pg_upgrade.',`SELECT extname, extversion FROM pg_extension;
+SELECT datname, datcollate, datctype FROM pg_database;
+SHOW data_checksums;`],
+['PostgreSQL','Sessions','Connections by state','Compare current connections with the limit.',`SELECT state, count(*) FROM pg_stat_activity GROUP BY state ORDER BY count(*) DESC;
+SHOW max_connections;`],
+['PostgreSQL','Storage','Largest tables including indexes','Total size of each table with its indexes and TOAST data.',`SELECT relname, pg_size_pretty(pg_total_relation_size(relid)) AS total
+FROM pg_stat_user_tables ORDER BY pg_total_relation_size(relid) DESC LIMIT 10;`],
+['PostgreSQL','Backup','Base backup for point-in-time recovery','Needs WAL archiving turned on.',`# postgresql.conf
+archive_mode = on
+archive_command = 'cp %p /archive/%f'
+pg_basebackup -D /backup/base -Ft -z -P -X stream`],
+['PostgreSQL','Performance','Slowest queries with pg_stat_statements','Add pg_stat_statements to shared_preload_libraries and restart first.',`CREATE EXTENSION pg_stat_statements;
+SELECT calls, round(mean_exec_time) AS avg_ms, left(query,80) AS query
+FROM pg_stat_statements ORDER BY mean_exec_time DESC LIMIT 10;`],
+['PostgreSQL','Health','Cache hit ratio and wraparound risk','Hit ratio should stay high; transaction age should stay well below 2 billion.',`SELECT round(100*sum(blks_hit)/nullif(sum(blks_hit+blks_read),0),1) AS cache_hit_pct
+FROM pg_stat_database;
+SELECT datname, age(datfrozenxid) FROM pg_database ORDER BY 2 DESC;`],
+['PostgreSQL','Security','Review roles and privileges','See who can log in and who is a superuser.',`SELECT rolname, rolsuper, rolcreatedb, rolcanlogin FROM pg_roles ORDER BY rolname;`],
+
+['MySQL','Install','Verify a new MySQL install','Check version, data directory and service state.',`mysql -u root -p -e "SELECT VERSION(); SHOW VARIABLES LIKE 'datadir'; SHOW DATABASES;"
+sudo systemctl status mysqld`],
+['MySQL','Patching','Check version and available updates','Compare the running version with what the package manager offers.',`SELECT VERSION();
+sudo dnf check-update mysql-community-server
+sudo apt list --upgradable | grep mysql`],
+['MySQL','Upgrade','Post-upgrade checks','Check version, error log and table compatibility.',`SELECT VERSION();
+sudo grep -i -E "error|warning" /var/log/mysqld.log | tail -20
+mysqlcheck -u root -p --all-databases --check-upgrade`],
+['MySQL','Sessions','Connections by user and host','Compare with max_connections.',`SELECT user, host, COUNT(*) AS conns FROM information_schema.processlist
+GROUP BY user, host ORDER BY conns DESC;
+SHOW STATUS LIKE 'Threads_connected';
+SHOW VARIABLES LIKE 'max_connections';`],
+['MySQL','Storage','Schema sizes and binary logs','Binary logs can use a lot of disk if not purged.',`SELECT table_schema, ROUND(SUM(data_length+index_length)/1024/1024) AS mb
+FROM information_schema.tables GROUP BY table_schema ORDER BY mb DESC;
+SHOW BINARY LOGS;`],
+['MySQL','Backup','Physical backup and restore with XtraBackup','1. Back up. 2. Prepare. 3. Stop MySQL and empty the data directory. 4. Copy back. 5. Fix ownership and start.',`xtrabackup --backup --target-dir=/backup/full --user=root --password
+xtrabackup --prepare --target-dir=/backup/full
+sudo systemctl stop mysqld
+xtrabackup --copy-back --target-dir=/backup/full
+sudo chown -R mysql:mysql /var/lib/mysql
+sudo systemctl start mysqld`],
+['MySQL','Performance','Top statements by total time','Uses the sys schema. Then check the plan of a slow query.',`SELECT * FROM sys.statement_analysis ORDER BY total_latency DESC LIMIT 10;
+EXPLAIN ANALYZE SELECT * FROM mydb.orders WHERE customer_id = 42;`],
+['MySQL','Health','InnoDB status and buffer pool reads','Reads from disk should be small compared with reads from memory.',`SHOW ENGINE INNODB STATUS\\G
+SHOW GLOBAL STATUS LIKE 'Innodb_buffer_pool_read%';`],
+['MySQL','Security','Review and revoke privileges','Check what a user can do, then remove what is not needed.',`SHOW GRANTS FOR 'app'@'%';
+REVOKE INSERT, UPDATE ON mydb.* FROM 'app'@'%';
+SELECT user, host, account_locked FROM mysql.user;`],
+
+['SQL Server','Install','Post-install settings','Cap memory so the OS keeps some, then confirm edition and version.',`EXEC sp_configure 'show advanced options', 1; RECONFIGURE;
+EXEC sp_configure 'max server memory (MB)', 12288; RECONFIGURE;
+SELECT SERVERPROPERTY('Edition') AS edition, SERVERPROPERTY('ProductVersion') AS version;`],
+['SQL Server','Patching','Check build and patch level','Compare with the latest Cumulative Update for your version.',`SELECT SERVERPROPERTY('ProductVersion') AS build,
+       SERVERPROPERTY('ProductLevel') AS level,
+       SERVERPROPERTY('ProductUpdateLevel') AS cu;`],
+['SQL Server','Upgrade','Check compatibility levels and deprecated features','Run before an upgrade to spot risks.',`SELECT name, compatibility_level FROM sys.databases;
+SELECT instance_name, cntr_value FROM sys.dm_os_performance_counters
+WHERE object_name LIKE '%Deprecated Features%' AND cntr_value > 0;`],
+['SQL Server','Sessions','Find the head blocker','Confirm with the application owner before killing a session.',`SELECT session_id, blocking_session_id, wait_type, wait_time
+FROM sys.dm_exec_requests WHERE blocking_session_id <> 0;
+KILL 55;`],
+['SQL Server','Storage','Database sizes and tempdb free space','Largest databases first.',`SELECT DB_NAME(database_id) AS db, SUM(size)*8/1024 AS size_mb
+FROM sys.master_files GROUP BY database_id ORDER BY size_mb DESC;
+SELECT SUM(unallocated_extent_page_count)*8/1024 AS tempdb_free_mb
+FROM tempdb.sys.dm_db_file_space_usage;`],
+['SQL Server','Backup','Point-in-time restore','Needs the full recovery model and log backups. 1. Restore the full backup. 2. Restore the log up to the time. 3. Recover.',`RESTORE DATABASE mydb FROM DISK = 'D:\\bak\\mydb.bak' WITH NORECOVERY, REPLACE;
+RESTORE LOG mydb FROM DISK = 'D:\\bak\\mydb.trn'
+  WITH STOPAT = '2026-09-20T14:30:00', RECOVERY;`],
+['SQL Server','Performance','Top wait types','Ignore harmless waits such as SLEEP_TASK. Look at what dominates.',`SELECT TOP 10 wait_type, wait_time_ms FROM sys.dm_os_wait_stats
+ORDER BY wait_time_ms DESC;`],
+['SQL Server','Health','Check database integrity','Run regularly, at least weekly, on every database.',`DBCC CHECKDB (mydb) WITH NO_INFOMSGS;`],
+['SQL Server','Security','Find sysadmin members','Review the list and remove anyone who does not need it.',`SELECT m.name FROM sys.server_role_members r
+JOIN sys.server_principals m ON r.member_principal_id = m.principal_id
+JOIN sys.server_principals p ON r.role_principal_id = p.principal_id
+WHERE p.name = 'sysadmin';`],
+
+['Oracle','High availability','Check Data Guard status','Run on the primary or standby.',`SELECT database_role, protection_mode, open_mode FROM v$database;
+SELECT name, value FROM v$dataguard_stats;
+SELECT process, status, sequence# FROM v$managed_standby;`],
+['Oracle','High availability','Create a physical standby with RMAN','1. Enable force logging on the primary. 2. Start the standby in NOMOUNT. 3. Duplicate from the active database. 4. Start redo apply.',`-- on the primary
+ALTER DATABASE FORCE LOGGING;
+rman target sys@PRIMARY auxiliary sys@STANDBY
+RMAN> DUPLICATE TARGET DATABASE FOR STANDBY FROM ACTIVE DATABASE DORECOVER
+  SPFILE SET db_unique_name='STBY' NOFILENAMECHECK;
+-- on the standby
+ALTER DATABASE RECOVER MANAGED STANDBY DATABASE DISCONNECT FROM SESSION;`],
+['Oracle','Sessions','Long-running operations','Progress of long jobs such as full scans and backups.',`SELECT sid, opname, sofar, totalwork, ROUND(sofar/totalwork*100,1) AS pct
+FROM v$session_longops WHERE totalwork > 0 AND sofar <> totalwork;`],
+['Oracle','Storage','Add or resize a datafile','Add space before a tablespace fills up.',`ALTER TABLESPACE users ADD DATAFILE '/u01/oradata/ORCL/users02.dbf'
+  SIZE 2G AUTOEXTEND ON NEXT 256M MAXSIZE 20G;
+ALTER DATABASE DATAFILE '/u01/oradata/ORCL/users01.dbf' RESIZE 4G;`],
+['Oracle','Backup','Check and clean up RMAN backups','Crosscheck first so RMAN knows which files exist.',`RMAN> CROSSCHECK BACKUP;
+RMAN> LIST BACKUP SUMMARY;
+RMAN> REPORT OBSOLETE;
+RMAN> DELETE OBSOLETE;`],
+['Oracle','Performance','Gather optimizer statistics','Refresh statistics, then check when they were last collected.',`EXEC DBMS_STATS.GATHER_SCHEMA_STATS('HR', options => 'GATHER AUTO');
+SELECT table_name, last_analyzed FROM dba_tables WHERE owner = 'HR' ORDER BY last_analyzed;`],
+['Oracle','Health','Archive mode and redo log status','Confirm archiving is on and redo groups are healthy.',`SELECT log_mode, open_mode, database_role FROM v$database;
+SELECT group#, status, ROUND(bytes/1048576) AS mb FROM v$log;`],
+['Oracle','Security','Failed login attempts','Uses unified auditing.',`SELECT dbusername, event_timestamp, return_code FROM unified_audit_trail
+WHERE action_name = 'LOGON' AND return_code <> 0
+ORDER BY event_timestamp DESC FETCH FIRST 20 ROWS ONLY;`],
+
+['PostgreSQL','High availability','Set up streaming replication','1. Create a replication role. 2. Allow it in pg_hba.conf. 3. Clone the primary onto the standby (empty data directory). 4. Start the standby.',`-- on the primary
+CREATE ROLE repl REPLICATION LOGIN PASSWORD '<pwd>';
+# pg_hba.conf on the primary
+host  replication  repl  10.0.0.0/24  scram-sha-256
+# on the standby
+pg_basebackup -h primary_host -U repl -D /var/lib/pgsql/17/data -R -X stream -P
+sudo systemctl start postgresql-17`],
+['PostgreSQL','High availability','Promote a standby','Check that the server is a standby, then promote it.',`SELECT pg_is_in_recovery();
+SELECT pg_promote();`],
+['PostgreSQL','Sessions','Idle in transaction sessions','These hold locks and block vacuum.',`SELECT pid, usename, now() - xact_start AS xact_age, left(query,60) AS query
+FROM pg_stat_activity WHERE state = 'idle in transaction' ORDER BY xact_age DESC;`],
+['PostgreSQL','Storage','Tablespace and WAL directory size','WAL growth often points to a stuck replication slot.',`SELECT spcname, pg_size_pretty(pg_tablespace_size(spcname)) FROM pg_tablespace;
+SELECT pg_size_pretty(sum(size)) AS wal_size FROM pg_ls_waldir();`],
+['PostgreSQL','Backup','Restore a single table from a dump','List the dump contents, then restore one table.',`pg_restore -l mydb.dump | grep orders
+pg_restore -d mydb -t orders mydb.dump`],
+['PostgreSQL','Performance','Unused indexes','Indexes never scanned still cost space and write time. Confirm over a full business cycle first.',`SELECT relname, indexrelname, idx_scan, pg_size_pretty(pg_relation_size(indexrelid)) AS size
+FROM pg_stat_user_indexes WHERE idx_scan = 0
+ORDER BY pg_relation_size(indexrelid) DESC LIMIT 10;`],
+['PostgreSQL','Health','Replication slots and retained WAL','An inactive slot keeps WAL on disk until it is used or dropped.',`SELECT slot_name, active,
+  pg_size_pretty(pg_wal_lsn_diff(pg_current_wal_lsn(), restart_lsn)) AS retained_wal
+FROM pg_replication_slots;`],
+['PostgreSQL','Security','Remove a role safely','Reassign what it owns before dropping it.',`REVOKE ALL ON ALL TABLES IN SCHEMA public FROM app_user;
+REASSIGN OWNED BY app_user TO postgres;
+DROP OWNED BY app_user;
+DROP ROLE app_user;`],
+
+['MySQL','High availability','Set up GTID replication','1. Enable GTID on both servers. 2. Create the replication user. 3. Seed the replica from a backup. 4. Point the replica at the source. 5. Start and check.',`# my.cnf on both servers (unique server_id on each)
+gtid_mode = ON
+enforce_gtid_consistency = ON
+server_id = 2
+-- on the source
+CREATE USER 'repl'@'%' IDENTIFIED BY '<pwd>';
+GRANT REPLICATION SLAVE ON *.* TO 'repl'@'%';
+-- on the replica
+CHANGE REPLICATION SOURCE TO SOURCE_HOST='source_host', SOURCE_USER='repl',
+  SOURCE_PASSWORD='<pwd>', SOURCE_AUTO_POSITION=1;
+START REPLICA;
+SHOW REPLICA STATUS\\G`],
+['MySQL','High availability','Skip a failing replication transaction (GTID)','Skipping can leave the replica different from the source. Only do it once you know the cause.',`SHOW REPLICA STATUS\\G   -- note the failing GTID
+STOP REPLICA;
+SET GTID_NEXT = '<uuid:number>';
+BEGIN; COMMIT;
+SET GTID_NEXT = 'AUTOMATIC';
+START REPLICA;`],
+['MySQL','Sessions','Long-running queries','Find queries running over 60 seconds, then stop one.',`SELECT id, user, time, LEFT(info,60) AS query FROM information_schema.processlist
+WHERE command <> 'Sleep' AND time > 60 ORDER BY time DESC;
+KILL QUERY 1234;`],
+['MySQL','Storage','Reclaim space after large deletes','Heavy on I/O. Run off-peak.',`OPTIMIZE TABLE mydb.orders;
+-- or rebuild in place
+ALTER TABLE mydb.orders ENGINE = InnoDB;`],
+['MySQL','Backup','Point-in-time recovery with binary logs','1. Restore the last full backup. 2. Replay binary logs up to the time you want.',`mysql -u root -p < full.sql
+mysqlbinlog --start-datetime="2026-09-20 02:00:00" --stop-datetime="2026-09-20 14:30:00" \\
+  /var/lib/mysql/binlog.000012 | mysql -u root -p`],
+['MySQL','Performance','Unused and redundant indexes','Uses the sys schema. Review before dropping anything.',`SELECT * FROM sys.schema_unused_indexes;
+SELECT * FROM sys.schema_redundant_indexes;`],
+['MySQL','Health','Uptime, aborted connections and error log','Check the recent error log without opening the file.',`SHOW GLOBAL STATUS LIKE 'Uptime';
+SHOW GLOBAL STATUS LIKE 'Aborted_connects';
+SELECT logged, prio, error_code, LEFT(data,100) AS message
+FROM performance_schema.error_log ORDER BY logged DESC LIMIT 20;`],
+['MySQL','Security','Expire or lock an account','Force a password change or block logins.',`ALTER USER 'app'@'%' PASSWORD EXPIRE INTERVAL 90 DAY;
+ALTER USER 'app'@'%' ACCOUNT LOCK;`],
+
+['SQL Server','High availability','Check Always On availability group health','Role and sync state of every replica.',`SELECT ag.name AS ag, ar.replica_server_name, rs.role_desc,
+       rs.synchronization_health_desc, rs.connected_state_desc
+FROM sys.availability_groups ag
+JOIN sys.availability_replicas ar ON ag.group_id = ar.group_id
+JOIN sys.dm_hadr_availability_replica_states rs ON ar.replica_id = rs.replica_id;`],
+['SQL Server','High availability','Manual failover of an availability group','1. Confirm the secondary is synchronized. 2. Connect to that secondary. 3. Fail over. 4. Verify the new role.',`ALTER AVAILABILITY GROUP [AG1] FAILOVER;
+SELECT role_desc FROM sys.dm_hadr_availability_replica_states WHERE is_local = 1;`],
+['SQL Server','Sessions','Oldest open transactions','Long transactions block log truncation and other sessions.',`DBCC OPENTRAN;
+SELECT s.session_id, s.login_name, t.transaction_begin_time
+FROM sys.dm_tran_active_transactions t
+JOIN sys.dm_tran_session_transactions st ON t.transaction_id = st.transaction_id
+JOIN sys.dm_exec_sessions s ON st.session_id = s.session_id
+ORDER BY t.transaction_begin_time;`],
+['SQL Server','Storage','Transaction log usage','If the log will not shrink, check log_reuse_wait_desc.',`DBCC SQLPERF(LOGSPACE);
+SELECT name, log_reuse_wait_desc FROM sys.databases;`],
+['SQL Server','Backup','Transaction log backup','Needs the full or bulk-logged recovery model.',`SELECT name, recovery_model_desc FROM sys.databases;
+BACKUP LOG mydb TO DISK = 'D:\\bak\\mydb.trn' WITH COMPRESSION, CHECKSUM;`],
+['SQL Server','Performance','Missing index suggestions','Treat as hints and review before creating any index.',`SELECT TOP 10 mid.statement, mid.equality_columns, mid.inequality_columns,
+       migs.avg_user_impact, migs.user_seeks
+FROM sys.dm_db_missing_index_details mid
+JOIN sys.dm_db_missing_index_groups mig ON mid.index_handle = mig.index_handle
+JOIN sys.dm_db_missing_index_group_stats migs ON mig.index_group_handle = migs.group_handle
+ORDER BY migs.avg_user_impact * migs.user_seeks DESC;`],
+['SQL Server','Health','Failed SQL Agent jobs','Job-level failures, newest first.',`SELECT j.name, h.run_date, h.run_time, h.message
+FROM msdb.dbo.sysjobhistory h JOIN msdb.dbo.sysjobs j ON h.job_id = j.job_id
+WHERE h.run_status = 0 AND h.step_id = 0 ORDER BY h.instance_id DESC;`],
+['SQL Server','Security','Failed logins in the error log','Search the current error log.',`EXEC xp_readerrorlog 0, 1, N'Login failed';`],
+
+['Oracle','Architecture','Instance and memory sizes','See the instance, SGA components and PGA in use.',`SELECT instance_name, version, startup_time FROM v$instance;
+SELECT name, ROUND(value/1048576) AS mb FROM v$sga;
+SELECT ROUND(value/1048576) AS pga_mb FROM v$pgastat WHERE name = 'total PGA allocated';`],
+['Oracle','Architecture','Background processes and file locations','Running background processes, then every datafile, redo log and control file.',`SELECT name, description FROM v$bgprocess WHERE paddr <> '00' ORDER BY name;
+SELECT name FROM v$datafile UNION ALL SELECT member FROM v$logfile
+UNION ALL SELECT name FROM v$controlfile;`],
+['PostgreSQL','Architecture','Memory settings','The main memory areas and how large they are.',`SELECT name, setting, unit FROM pg_settings
+WHERE name IN ('shared_buffers','work_mem','maintenance_work_mem','effective_cache_size','wal_buffers');`],
+['PostgreSQL','Architecture','Server processes and file locations','Every process type, the data directory and the file behind a table.',`SELECT pid, backend_type FROM pg_stat_activity ORDER BY backend_type;
+SHOW data_directory;
+SELECT pg_relation_filepath('my_table');`],
+['MySQL','Architecture','Buffer pool and redo log settings','innodb_redo_log_capacity needs MySQL 8.0.30 or later.',`SHOW VARIABLES LIKE 'innodb_buffer_pool_size';
+SHOW VARIABLES LIKE 'innodb_redo_log_capacity';
+SHOW VARIABLES LIKE 'innodb_file_per_table';`],
+['MySQL','Architecture','Server threads, storage engines and data directory','See the internal threads and where data lives.',`SELECT thread_id, name, type FROM performance_schema.threads ORDER BY type, name LIMIT 20;
+SHOW ENGINES;
+SHOW VARIABLES LIKE 'datadir';`],
+['SQL Server','Architecture','Memory use and schedulers','Compare target and actual memory, then check the schedulers.',`SELECT physical_memory_kb/1024 AS server_mb FROM sys.dm_os_sys_info;
+SELECT counter_name, cntr_value FROM sys.dm_os_performance_counters
+WHERE counter_name IN ('Total Server Memory (KB)','Target Server Memory (KB)');
+SELECT scheduler_id, status, current_tasks_count FROM sys.dm_os_schedulers WHERE scheduler_id < 255;`],
+['SQL Server','Architecture','Database files and system databases','Every data and log file, including master, model, msdb and tempdb.',`SELECT DB_NAME(database_id) AS db, name, type_desc, physical_name
+FROM sys.master_files ORDER BY database_id, type_desc;`],
+
+['Oracle','Troubleshooting','What sessions are waiting on','Count active sessions by wait event to see what is slowing the system.',`SELECT event, COUNT(*) AS sessions FROM v$session
+WHERE type = 'USER' AND wait_class <> 'Idle' GROUP BY event ORDER BY sessions DESC;`],
+['Oracle','Troubleshooting','Fix ORA-01653: unable to extend','1. Find the tablespace named in the error. 2. Check its free space. 3. Add or resize a datafile.',`SELECT tablespace_name, ROUND(SUM(bytes)/1048576) AS free_mb
+FROM dba_free_space GROUP BY tablespace_name;
+-- with Oracle Managed Files
+ALTER TABLESPACE users ADD DATAFILE SIZE 2G AUTOEXTEND ON NEXT 256M MAXSIZE 20G;`],
+['Oracle','Maintenance','Rebuild unusable indexes','Find indexes marked UNUSABLE, then rebuild them.',`SELECT owner, index_name FROM dba_indexes WHERE status = 'UNUSABLE';
+ALTER INDEX hr.emp_idx REBUILD ONLINE;`],
+['Oracle','Maintenance','Purge old trace and alert files with ADRCI','Age is in minutes; 10080 is 7 days.',`adrci
+adrci> SET HOMEPATH diag/rdbms/orcl/ORCL
+adrci> PURGE -AGE 10080 -TYPE TRACE
+adrci> PURGE -AGE 10080 -TYPE ALERT`],
+['Oracle','Automation','Schedule a job with DBMS_SCHEDULER','Gathers HR statistics every day at 02:00.',`BEGIN
+  DBMS_SCHEDULER.CREATE_JOB(
+    job_name        => 'NIGHTLY_STATS',
+    job_type        => 'PLSQL_BLOCK',
+    job_action      => 'BEGIN DBMS_STATS.GATHER_SCHEMA_STATS(''HR''); END;',
+    repeat_interval => 'FREQ=DAILY;BYHOUR=2',
+    enabled         => TRUE);
+END;
+/`],
+['Oracle','Automation','Nightly RMAN backup with cron','1. Write the backup script. 2. Add it to the oracle user crontab.',`# /home/oracle/rman_full.sh
+rman target / log=/backup/logs/rman_$(date +\\%F).log <<EOF
+BACKUP DATABASE PLUS ARCHIVELOG;
+DELETE NOPROMPT OBSOLETE;
+EOF
+# crontab -e
+0 1 * * * /home/oracle/rman_full.sh`],
+['Oracle','Migration','Import a schema under a new name','Data Pump import with remap.',`impdp system directory=DATA_PUMP_DIR dumpfile=hr.dmp logfile=imp_hr.log \\
+  remap_schema=HR:HR_TEST remap_tablespace=USERS:DATA`],
+['Oracle','Migration','Transportable tablespace','1. Check the tablespace is self-contained. 2. Make it read only. 3. Export metadata. 4. Copy the files. 5. Import on the target.',`EXEC DBMS_TTS.TRANSPORT_SET_CHECK('USERS', TRUE);
+ALTER TABLESPACE users READ ONLY;
+expdp system directory=DATA_PUMP_DIR dumpfile=tts.dmp transport_tablespaces=USERS
+-- copy datafiles and dump to the target, then
+impdp system directory=DATA_PUMP_DIR dumpfile=tts.dmp transport_datafiles='/u01/oradata/NEW/users01.dbf'
+ALTER TABLESPACE users READ WRITE;`],
+
+['PostgreSQL','Troubleshooting','Too many clients already','Find who holds the connections. Consider a pooler such as PgBouncer.',`SELECT count(*) FROM pg_stat_activity;
+SHOW max_connections;
+SELECT usename, count(*) FROM pg_stat_activity GROUP BY usename ORDER BY 2 DESC;`],
+['PostgreSQL','Troubleshooting','Disk full because of WAL','1. Look for inactive replication slots. 2. Drop the ones no longer needed. 3. Check for archive failures.',`SELECT slot_name, active FROM pg_replication_slots;
+SELECT pg_drop_replication_slot('old_slot');
+SELECT archived_count, failed_count, last_failed_wal FROM pg_stat_archiver;`],
+['PostgreSQL','Maintenance','Reindex without blocking writes','Rebuilds a bloated index while the table stays usable.',`REINDEX INDEX CONCURRENTLY idx_orders_date;`],
+['PostgreSQL','Maintenance','Tune autovacuum for a busy table','Vacuum sooner on large, frequently changed tables.',`ALTER TABLE orders SET (autovacuum_vacuum_scale_factor = 0.02,
+                        autovacuum_analyze_scale_factor = 0.01);
+SELECT relname, last_autovacuum, last_autoanalyze FROM pg_stat_user_tables
+WHERE relname = 'orders';`],
+['PostgreSQL','Automation','Nightly backup with cron','Backs up at 02:00 and removes dumps older than 7 days. Run as the postgres user.',`# crontab -e
+0 2 * * * pg_dump -Fc mydb -f /backup/mydb_$(date +\\%F).dump
+30 2 * * * find /backup -name '*.dump' -mtime +7 -delete`],
+['PostgreSQL','Automation','Schedule jobs inside the database with pg_cron','Add pg_cron to shared_preload_libraries and restart first.',`CREATE EXTENSION pg_cron;
+SELECT cron.schedule('nightly-vacuum', '0 3 * * *', 'VACUUM ANALYZE');
+SELECT jobid, schedule, command FROM cron.job;`],
+['PostgreSQL','Migration','Move a database with pg_dump','1. Dump roles. 2. Dump the database. 3. Restore both on the new server.',`pg_dumpall --roles-only > roles.sql
+pg_dump -Fc -h old_host -U postgres mydb -f mydb.dump
+psql -h new_host -U postgres -f roles.sql
+createdb -h new_host mydb
+pg_restore -h new_host -d mydb -j 4 mydb.dump`],
+['PostgreSQL','Migration','Near-zero downtime with logical replication','1. Set wal_level to logical. 2. Copy the schema. 3. Publish. 4. Subscribe. 5. Cut over when caught up.',`# source postgresql.conf: wal_level = logical
+pg_dump -s mydb | psql -h new_host mydb
+-- on the source
+CREATE PUBLICATION mig_pub FOR ALL TABLES;
+-- on the target
+CREATE SUBSCRIPTION mig_sub
+  CONNECTION 'host=old_host dbname=mydb user=repl password=<pwd>' PUBLICATION mig_pub;`],
+
+['MySQL','Troubleshooting','Too many connections','Raise the limit for now, then fix the cause (leaks, missing pooling).',`SHOW VARIABLES LIKE 'max_connections';
+SHOW STATUS LIKE 'Max_used_connections';
+SET GLOBAL max_connections = 500;`],
+['MySQL','Troubleshooting','Replication has stopped','Read Last_IO_Error and Last_SQL_Error first.',`SHOW REPLICA STATUS\\G
+SELECT * FROM performance_schema.replication_applier_status_by_worker\\G`],
+['MySQL','Maintenance','Analyze and check tables','Refresh index statistics and check for corruption.',`ANALYZE TABLE mydb.orders;
+CHECK TABLE mydb.orders;`],
+['MySQL','Maintenance','Purge old binary logs','Never purge logs a replica still needs.',`SHOW BINARY LOGS;
+PURGE BINARY LOGS BEFORE DATE_SUB(NOW(), INTERVAL 7 DAY);
+SET PERSIST binlog_expire_logs_seconds = 604800;`],
+['MySQL','Automation','Nightly mysqldump with cron','Compressed dump at 02:00.',`# crontab -e
+0 2 * * * mysqldump --single-transaction --routines -u backup mydb | gzip > /backup/mydb_$(date +\\%F).sql.gz`],
+['MySQL','Automation','Schedule a job with an EVENT','Deletes rows older than 30 days every night.',`SET GLOBAL event_scheduler = ON;
+CREATE EVENT purge_old_logs ON SCHEDULE EVERY 1 DAY STARTS '2026-09-22 03:00:00'
+DO DELETE FROM mydb.app_log WHERE created_at < NOW() - INTERVAL 30 DAY;
+SHOW EVENTS FROM mydb;`],
+['MySQL','Migration','Move a database with mysqldump','Create the empty database on the new server first.',`mysqldump --single-transaction --routines --triggers --events -h old_host -u root -p mydb \\
+  | mysql -h new_host -u root -p mydb`],
+['MySQL','Migration','Move large databases with MySQL Shell','Faster and parallel. The target needs local_infile enabled.',`mysqlsh root@old_host -- util dumpInstance /backup/dump
+mysqlsh root@new_host -- util loadDump /backup/dump`],
+
+['SQL Server','Troubleshooting','Database is Suspect or Recovery Pending','Check disk space and file permissions. Restore from backup if files are damaged.',`SELECT name, state_desc FROM sys.databases WHERE state_desc <> 'ONLINE';
+EXEC xp_readerrorlog 0, 1, N'mydb';`],
+['SQL Server','Troubleshooting','Transaction log is full (error 9002)','Find out why the log cannot be reused, then fix that cause.',`SELECT name, log_reuse_wait_desc FROM sys.databases WHERE name = 'mydb';
+BACKUP LOG mydb TO DISK = 'D:\\bak\\mydb.trn';`],
+['SQL Server','Maintenance','Reorganize or rebuild indexes','Reorganize at 10 to 30 percent fragmentation, rebuild above 30.',`ALTER INDEX IX_Orders_Date ON dbo.Orders REORGANIZE;
+ALTER INDEX IX_Orders_Date ON dbo.Orders REBUILD;`],
+['SQL Server','Maintenance','Update statistics','One table with a full scan, or all tables with a quick pass.',`UPDATE STATISTICS dbo.Orders WITH FULLSCAN;
+EXEC sp_updatestats;`],
+['SQL Server','Automation','Create a SQL Agent job','Deletes old rows every day at 03:00.',`EXEC msdb.dbo.sp_add_job @job_name = N'Nightly cleanup';
+EXEC msdb.dbo.sp_add_jobstep @job_name = N'Nightly cleanup', @step_name = N'Delete old rows',
+  @subsystem = N'TSQL', @database_name = N'mydb',
+  @command = N'DELETE FROM dbo.AppLog WHERE Created < DATEADD(day,-30,GETDATE());';
+EXEC msdb.dbo.sp_add_schedule @schedule_name = N'Daily 3am', @freq_type = 4,
+  @freq_interval = 1, @active_start_time = 030000;
+EXEC msdb.dbo.sp_attach_schedule @job_name = N'Nightly cleanup', @schedule_name = N'Daily 3am';
+EXEC msdb.dbo.sp_add_jobserver @job_name = N'Nightly cleanup';`],
+['SQL Server','Automation','Run a script with sqlcmd','Use it from Windows Task Scheduler or a shell script.',`sqlcmd -S localhost -d mydb -E -i D:\\scripts\\cleanup.sql -o D:\\logs\\cleanup.log`],
+['SQL Server','Migration','Move logins and fix orphaned users','Copy logins with dbatools, then relink database users after a restore.',`-- PowerShell (dbatools)
+Copy-DbaLogin -Source oldsql -Destination newsql
+-- T-SQL on the new server
+EXEC sp_change_users_login 'Report';
+ALTER USER app WITH LOGIN = app;`],
+['SQL Server','Migration','Detach and attach a database','The database is offline while you copy. Backup and restore is usually safer.',`EXEC sp_detach_db 'mydb';
+-- copy the .mdf and .ldf files to the new server, then
+CREATE DATABASE mydb ON (FILENAME = 'D:\\data\\mydb.mdf'), (FILENAME = 'E:\\log\\mydb_log.ldf')
+  FOR ATTACH;`]
+];
+var ARCH={
+Oracle:{n:'An instance (memory and processes) works on a database (files). Changes are made in memory and logged as redo. LGWR writes redo at commit; DBWn writes the changed blocks later.',
+f:['Client','Listener','Server process','Buffer cache','Redo log buffer','Datafiles and redo logs'],
+l:[['Memory (SGA and PGA)',['Buffer cache: data blocks in memory','Shared pool: parsed SQL and metadata','Redo log buffer: changes waiting to be logged','Large pool and Java pool','PGA: private memory per session']],
+['Background processes',['DBWn: writes changed blocks to datafiles','LGWR: writes redo to the online logs','CKPT: marks checkpoints','SMON and PMON: recovery and cleanup','ARCn: archives full redo logs']],
+['Files on disk',['Datafiles and tempfiles','Online redo logs','Control files','Archived redo logs','Parameter file (spfile)']]]},
+PostgreSQL:{n:'The postmaster starts one backend process per connection. Every change is written to the WAL first; the checkpointer and background writer flush data files later. Old row versions stay until autovacuum removes them.',
+f:['Client','Postmaster','Backend process','Shared buffers','WAL','Data files'],
+l:[['Memory',['shared_buffers: cached table and index pages','WAL buffers: WAL waiting to be written','work_mem: per sort or hash operation','maintenance_work_mem: vacuum and index builds','OS file cache: used heavily']],
+['Processes',['Postmaster: accepts connections','Backend: one per connection','Checkpointer and background writer','WAL writer, archiver, WAL sender and receiver','Autovacuum launcher and workers']],
+['Files on disk',['Data directory with one folder per database','pg_wal: write-ahead log','Tablespace folders','postgresql.conf and pg_hba.conf','pg_xact: commit status']]]},
+MySQL:{n:'A thread handles each connection. The SQL layer parses and optimizes the query; the storage engine (InnoDB by default) reads pages through the buffer pool. Redo log gives durability, undo log gives rollback and consistent reads, the binary log feeds replication.',
+f:['Client','Connection thread','Parser and optimizer','InnoDB buffer pool','Redo and binary log','Tablespace files'],
+l:[['Memory',['InnoDB buffer pool: cached pages','Log buffer: redo waiting to be written','Change buffer and adaptive hash index','Per-connection sort and join buffers','Table and metadata caches']],
+['Threads',['Connection threads','Page cleaner threads: flush dirty pages','Purge threads: clean undo','I/O threads: read and write pages','Replication threads on replicas']],
+['Files on disk',['System tablespace (ibdata1)','.ibd file per table','Redo log files','Undo tablespaces','Binary logs and error log']]]},
+'SQL Server':{n:'SQLOS schedules work for the relational engine, which compiles the query, and the storage engine, which reads pages through the buffer pool. Write-ahead logging writes to the log at commit; checkpoint and lazy writer flush data pages later.',
+f:['Client (TDS)','Relational engine','Storage engine','Buffer pool','Transaction log','Data files'],
+l:[['Memory',['Buffer pool: cached data pages','Plan cache: compiled query plans','Memory grants for sorts and joins','Log buffer','Procedure and object caches']],
+['Engine components',['SQLOS: schedulers and worker threads','Relational engine: parser and optimizer','Storage engine: access methods and transactions','Checkpoint and lazy writer','Log writer']],
+['Files on disk',['.mdf primary data file','.ndf secondary data files','.ldf transaction log','System databases: master, model, msdb, tempdb','Backup files']]]}
+};
+var G=[['Learn',['Architecture']],['Set up and maintain',['Install','Patching','Upgrade','High availability']],['Daily work',['Sessions','Storage','Backup','Performance','Health','Security']],['More topics',['Troubleshooting','Maintenance','Automation','Migration']]];
+var TD={Install:'Set up a new database server from scratch.',Patching:'Apply security and bug-fix updates to an existing server.',Upgrade:'Move to a newer major version of the database.','High availability':'Replication, standby servers and failover.',Architecture:'How each database is built: memory, processes and files, plus queries to inspect them.',Troubleshooting:'Diagnose and fix common problems and errors.',Maintenance:'Routine jobs that keep tables, indexes and logs healthy.',Automation:'Schedule backups, jobs and scripts.',Migration:'Move databases and users to another server.',Sessions:'See who is connected, find blocked work and stop sessions.',Storage:'Check disk and data file space before it runs out.',Backup:'Take, verify and restore backups.',Performance:'Find slow queries and keep tables and indexes healthy.',Health:'Quick checks that the system is running normally.',Security:'Create users and give them the right access.'};
+var CHG=/\b(ALTER|KILL|CREATE|GRANT|DROP|SET GLOBAL|VACUUM|REBUILD|RESTORE|EXEC|BACKUP|pg_terminate_backend|pg_cancel_backend|shutdown|startup|install|apply|update|upgrade|expdp|pg_dump|mysqldump|rman|setup|initdb|stop|start|restart|patch|runInstaller|autoupgrade|reload|sp_configure|RECONFIGURE|xtrabackup --(backup|copy)|pg_basebackup|REVOKE|pg_restore|mysqlbinlog|ANALYZE TABLE|REINDEX|PURGE|crontab|adrci|impdp|mysqlsh|DELETE|DETACH|Copy-Dba|sqlcmd|cron\.schedule|DBMS_SCHEDULER|pg_drop_replication_slot|FAILOVER|PROMOTE|pg_promote|START REPLICA|REASSIGN|OPTIMIZE)\b/i;
+var st={e:'All',c:'All',q:''};
+var $=function(i){return document.getElementById(i)};
+function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+function match(d,anyCat){return (st.e==='All'||d[0]===st.e)&&(anyCat||st.c==='All'||d[1]===st.c)&&(!st.q||d.join(' ').toLowerCase().indexOf(st.q)>-1)}
+function chip(label,n,on,attr,off){return '<button class="chip" '+attr+' aria-pressed="'+on+'"'+(off?' disabled':'')+'><span>'+label+'</span>'+(n===null?'':'<small>'+n+'</small>')+'</button>'}
+function nav(){
+  var h='';['All'].concat(Object.keys(E)).forEach(function(n){
+    h+=chip(n,D.filter(function(d){return (n==='All'||d[0]===n)&&(!st.q||d.join(' ').toLowerCase().indexOf(st.q)>-1)}).length,st.e===n,'data-e="'+n+'"')});
+  $('engines').innerHTML=h;
+  var t='';
+  [['',['All']]].concat(G).forEach(function(g,i){
+    t+=(i?'<h3 class="gl">'+g[0]+'</h3>':'')+'<div class="chips">';
+    g[1].forEach(function(c){
+      var n=D.filter(function(d){return match(d,true)&&(c==='All'||d[1]===c)}).length;
+      t+=chip(c==='All'?'All topics':c,n,st.c===c,'data-c="'+c+'"',n===0&&c!=='All')});
+    t+='</div>'});
+  $('topics').innerHTML=t;
+}
+function item(d,open){
+  var steps=/^1\.\s/.test(d[3])?d[3].split(/\s*\d+\.\s+/).filter(Boolean):null;
+  var risk=CHG.test(d[4])?['chg','Makes changes']:['ro','Read-only'];
+  var sum=steps?steps.length+' steps':d[3];
+  var body=steps?'<ol>'+steps.map(function(s){return '<li>'+esc(s)+'</li>'}).join('')+'</ol>':'<p>'+esc(d[3])+'</p>';
+  return '<details class="item" style="--c:'+E[d[0]]+'"'+(open?' open':'')+'><summary><span class="t">'+esc(d[2])+'</span>'+
+    '<span class="badges"><span class="eng">'+d[0]+'</span><span>'+d[1]+'</span><span class="'+risk[0]+'">'+risk[1]+'</span></span>'+
+    '<span class="s">'+esc(sum)+'</span></summary><div class="body">'+body+
+    '<div class="cw"><pre>'+esc(d[4])+'</pre><button class="copy" data-i="'+D.indexOf(d)+'">Copy</button></div></div></details>';
+}
+function render(){
+  var r=D.filter(function(d){return match(d)});
+  var f=st.e!=='All'||st.c!=='All'||st.q;
+  $('intro').hidden=!!f;
+  $('head').innerHTML=f?'<h2>'+(st.c==='All'?(st.q?'Search results':'All topics'):st.c)+(st.e==='All'?'':' for '+st.e)+'</h2>'+(TD[st.c]?'<p>'+TD[st.c]+'</p>':''):'';
+  $('count').textContent=f?r.length+(r.length===1?' guide':' guides'):D.length+' guides in total';
+  $('clear').hidden=!f;
+  $('list').innerHTML=r.length?r.map(function(d){return item(d,r.length<=3&&f)}).join(''):'<div class="empty">No guides match. Clear the filters or try a different word.</div>';
+  var A='';
+  if(st.c==='Architecture'&&!st.q)Object.keys(ARCH).forEach(function(e){if(st.e==='All'||st.e===e)A+=arch(e)});
+  $('arch').innerHTML=A;
+  nav();
+}
+function arch(e){
+  var a=ARCH[e];
+  return '<section class="card arch" style="--c:'+E[e]+'"><h2>'+e+' architecture</h2><p>'+a.n+'</p><div class="flow">'+
+    a.f.map(function(x){return '<span>'+x+'</span>'}).join('')+'</div><div class="lanes">'+
+    a.l.map(function(l){return '<div class="lane"><b>'+l[0]+'</b><ul>'+l[1].map(function(i){return '<li>'+i+'</li>'}).join('')+'</ul></div>'}).join('')+'</div></section>';
+}
+$('engines').addEventListener('click',function(e){var b=e.target.closest('[data-e]');if(b){st.e=b.dataset.e;render()}});
+$('topics').addEventListener('click',function(e){var b=e.target.closest('[data-c]');if(b&&!b.disabled){st.c=b.dataset.c;render()}});
+$('q').addEventListener('input',function(e){st.q=e.target.value.trim().toLowerCase();render()});
+$('clear').addEventListener('click',function(){st={e:'All',c:'All',q:''};$('q').value='';render()});
+$('list').addEventListener('click',function(e){
+  var i=e.target.dataset.i;if(i===undefined)return;
+  var b=e.target;
+  try{navigator.clipboard.writeText(D[i][4]).then(function(){b.textContent='Copied';setTimeout(function(){b.textContent='Copy'},1500)},function(){b.textContent='Select and copy'})}
+  catch(x){b.textContent='Select and copy'}
+});
+render();
+</script>
 </body>
 </html>
