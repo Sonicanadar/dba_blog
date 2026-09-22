@@ -1088,7 +1088,804 @@ EXEC sp_cycle_errorlog;`],
 ['SQL Server','Logs and diagnostics','Recent object changes from the default trace','Who created, dropped or altered objects.',`SELECT TOP 20 StartTime, LoginName, ObjectName, EventClass
 FROM sys.fn_trace_gettable(CONVERT(varchar(260),
   (SELECT path FROM sys.traces WHERE is_default = 1)), DEFAULT)
-WHERE EventClass IN (46, 47, 164) ORDER BY StartTime DESC;`]
+WHERE EventClass IN (46, 47, 164) ORDER BY StartTime DESC;`],
+
+['Oracle','Resource limits','Limit sessions and idle time with a profile','Also locks the account after repeated failed logins.',`CREATE PROFILE app_profile LIMIT SESSIONS_PER_USER 10 IDLE_TIME 30
+  FAILED_LOGIN_ATTEMPTS 5 PASSWORD_LOCK_TIME 1/24;
+ALTER USER app_user PROFILE app_profile;
+SELECT username, profile FROM dba_users WHERE username = 'APP_USER';`],
+['Oracle','Resource limits','Set and check tablespace quotas','A user cannot create segments without a quota.',`ALTER USER app_user QUOTA 2G ON app_data;
+SELECT username, tablespace_name, ROUND(bytes/1048576) AS used_mb, max_bytes
+FROM dba_ts_quotas WHERE username = 'APP_USER';`],
+['PostgreSQL','Resource limits','Limit connections per role or database','Stops one application from using every connection.',`ALTER ROLE app_user CONNECTION LIMIT 20;
+ALTER DATABASE mydb CONNECTION LIMIT 100;`],
+['PostgreSQL','Resource limits','Set query and idle timeouts for a role','Applies to new sessions of that role.',`ALTER ROLE app_user SET statement_timeout = '30s';
+ALTER ROLE app_user SET idle_in_transaction_session_timeout = '60s';
+SELECT rolname, rolconfig FROM pg_roles WHERE rolname = 'app_user';`],
+['MySQL','Resource limits','Limit connections and queries for an account','Per-account limits.',`ALTER USER 'app'@'%' WITH MAX_USER_CONNECTIONS 20 MAX_QUERIES_PER_HOUR 100000;
+SELECT user, host, max_user_connections, max_questions FROM mysql.user WHERE user = 'app';`],
+['MySQL','Resource limits','Cap SELECT run time','max_execution_time is in milliseconds and applies to SELECT statements only.',`SET GLOBAL max_execution_time = 30000;
+SELECT /*+ MAX_EXECUTION_TIME(5000) */ * FROM orders WHERE status = 'new';`],
+['SQL Server','Resource limits','Limit CPU for a workload with Resource Governor','1. Create a pool. 2. Create a workload group. 3. Route logins with a classifier function in master. 4. Reconfigure.',`CREATE RESOURCE POOL reports_pool WITH (MAX_CPU_PERCENT = 30);
+CREATE WORKLOAD GROUP reports_group USING reports_pool;
+-- create the classifier function in master and register it, then
+ALTER RESOURCE GOVERNOR RECONFIGURE;`],
+['SQL Server','Resource limits','Cap file size and set fixed growth','Percentage growth gets slower as files get bigger.',`ALTER DATABASE mydb MODIFY FILE (NAME = mydb, MAXSIZE = 50GB, FILEGROWTH = 512MB);`],
+
+['Oracle','Data integrity','Find and remove duplicate rows','Run the SELECT first and review the result.',`SELECT email, COUNT(*) FROM hr.customers GROUP BY email HAVING COUNT(*) > 1;
+DELETE FROM hr.customers
+WHERE ROWID NOT IN (SELECT MIN(ROWID) FROM hr.customers GROUP BY email);`],
+['Oracle','Data integrity','Find disabled or unvalidated constraints','Constraints that do not fully protect the data.',`SELECT owner, table_name, constraint_name, constraint_type, status, validated
+FROM dba_constraints
+WHERE (status = 'DISABLED' OR validated = 'NOT VALIDATED')
+  AND owner NOT IN ('SYS','SYSTEM');`],
+['PostgreSQL','Data integrity','Find and remove duplicate rows','Keeps the row with the lowest ctid. Run the SELECT first.',`SELECT email, count(*) FROM customers GROUP BY email HAVING count(*) > 1;
+DELETE FROM customers a USING customers b
+WHERE a.email = b.email AND a.ctid > b.ctid;`],
+['PostgreSQL','Data integrity','Check indexes and checksums for corruption','amcheck verifies B-tree indexes. Checksum failures show in pg_stat_database.',`CREATE EXTENSION amcheck;
+SELECT bt_index_check('idx_orders_date'::regclass);
+SELECT datname, checksum_failures FROM pg_stat_database WHERE checksum_failures IS NOT NULL;`],
+['MySQL','Data integrity','Find orphaned rows','Child rows whose parent no longer exists.',`SELECT o.id FROM orders o
+LEFT JOIN customers c ON o.customer_id = c.id
+WHERE c.id IS NULL;`],
+['MySQL','Data integrity','List foreign keys and check a table','Also shows whether foreign key checks are on.',`SELECT constraint_name, table_name, referenced_table_name
+FROM information_schema.referential_constraints WHERE constraint_schema = 'mydb';
+SHOW VARIABLES LIKE 'foreign_key_checks';
+CHECK TABLE mydb.orders;`],
+['SQL Server','Data integrity','Find and remove duplicate rows','Keeps the row with the lowest Id. Run a SELECT with the same CTE first.',`WITH d AS (
+  SELECT ROW_NUMBER() OVER (PARTITION BY Email ORDER BY Id) AS rn FROM dbo.Customers)
+DELETE FROM d WHERE rn > 1;`],
+['SQL Server','Data integrity','Find untrusted or disabled foreign keys','The optimizer ignores untrusted constraints.',`SELECT OBJECT_NAME(parent_object_id) AS tbl, name, is_disabled, is_not_trusted
+FROM sys.foreign_keys WHERE is_disabled = 1 OR is_not_trusted = 1;
+ALTER TABLE dbo.Orders WITH CHECK CHECK CONSTRAINT FK_Orders_Customers;`],
+
+['Oracle','Stored code','Show source and compile errors','For a procedure, function or package.',`SELECT text FROM dba_source WHERE owner = 'HR' AND name = 'ADD_EMP' ORDER BY line;
+SELECT line, position, text FROM dba_errors WHERE owner = 'HR' AND name = 'ADD_EMP';`],
+['Oracle','Stored code','Find what depends on an object','Check before changing or dropping a table.',`SELECT owner, name, type FROM dba_dependencies
+WHERE referenced_owner = 'HR' AND referenced_name = 'EMPLOYEES';`],
+['PostgreSQL','Stored code','List functions and read one','Skips system schemas.',`SELECT n.nspname, p.proname, pg_get_function_identity_arguments(p.oid) AS args
+FROM pg_proc p JOIN pg_namespace n ON p.pronamespace = n.oid
+WHERE n.nspname NOT IN ('pg_catalog','information_schema');
+SELECT pg_get_functiondef('public.my_func()'::regprocedure);`],
+['PostgreSQL','Stored code','List triggers and views on a table','Check before changing a table.',`SELECT tgname, tgrelid::regclass AS table_name, tgenabled FROM pg_trigger WHERE NOT tgisinternal;
+SELECT view_name FROM information_schema.view_table_usage WHERE table_name = 'orders';`],
+['MySQL','Stored code','List procedures, functions and triggers','Then show one definition.',`SELECT routine_type, routine_name FROM information_schema.routines WHERE routine_schema = 'mydb';
+SHOW TRIGGERS FROM mydb;
+SHOW CREATE PROCEDURE mydb.my_proc\\G`],
+['MySQL','Stored code','List events and views','Scheduled events and views in one schema.',`SHOW EVENTS FROM mydb;
+SELECT table_name FROM information_schema.views WHERE table_schema = 'mydb';`],
+['SQL Server','Stored code','List stored procedures and read a definition','Most recently changed first.',`SELECT s.name AS schema_name, p.name, p.modify_date
+FROM sys.procedures p JOIN sys.schemas s ON p.schema_id = s.schema_id
+ORDER BY p.modify_date DESC;
+EXEC sp_helptext 'dbo.MyProc';`],
+['SQL Server','Stored code','Find what references an object','Check before changing or dropping a table.',`SELECT referencing_schema_name, referencing_entity_name
+FROM sys.dm_sql_referencing_entities('dbo.Orders', 'OBJECT');`],
+
+['Oracle','SQL syntax tips','Limit rows and paginate','Row limiting needs Oracle 12c or later.',`SELECT * FROM hr.employees ORDER BY employee_id
+OFFSET 20 ROWS FETCH NEXT 10 ROWS ONLY;`],
+['Oracle','SQL syntax tips','Dates, strings and NULLs','Oracle needs FROM dual for expressions.',`SELECT SYSDATE, TRUNC(SYSDATE), ADD_MONTHS(SYSDATE, 1), 'a' || 'b', NVL(NULL, 'x') FROM dual;`],
+['PostgreSQL','SQL syntax tips','Limit rows and paginate','Always add ORDER BY so pages are stable.',`SELECT * FROM orders ORDER BY id LIMIT 10 OFFSET 20;`],
+['PostgreSQL','SQL syntax tips','Dates, strings and NULLs','Common everyday expressions.',`SELECT now(), current_date, now() + interval '1 month', 'a' || 'b', coalesce(NULL, 'x');`],
+['MySQL','SQL syntax tips','Limit rows and paginate','LIMIT offset, count is the same as LIMIT count OFFSET offset.',`SELECT * FROM orders ORDER BY id LIMIT 10 OFFSET 20;`],
+['MySQL','SQL syntax tips','Dates, strings and NULLs','Note that || is OR in MySQL by default, so use CONCAT.',`SELECT NOW(), CURDATE(), DATE_ADD(NOW(), INTERVAL 1 MONTH), CONCAT('a','b'), IFNULL(NULL, 'x');`],
+['SQL Server','SQL syntax tips','Limit rows and paginate','TOP for the first rows, OFFSET FETCH for paging (needs ORDER BY).',`SELECT TOP 10 * FROM dbo.Orders ORDER BY Id;
+SELECT * FROM dbo.Orders ORDER BY Id OFFSET 20 ROWS FETCH NEXT 10 ROWS ONLY;`],
+['SQL Server','SQL syntax tips','Dates, strings and NULLs','Common everyday expressions.',`SELECT GETDATE(), CAST(GETDATE() AS date), DATEADD(month, 1, GETDATE()), CONCAT('a','b'), ISNULL(NULL, 'x');`],
+
+['Oracle','Cross-database queries','Query another database with a link','Test the link, then query a remote table through it.',`CREATE DATABASE LINK remote_db CONNECT TO app IDENTIFIED BY "<pwd>" USING 'REMOTEDB';
+SELECT COUNT(*) FROM employees@remote_db;`],
+['Oracle','Cross-database queries','List and drop database links','Check what exists before removing one.',`SELECT owner, db_link, host FROM dba_db_links;
+DROP DATABASE LINK remote_db;`],
+['PostgreSQL','Cross-database queries','Query another PostgreSQL database with postgres_fdw','1. Create the extension and server. 2. Map the user. 3. Import or create foreign tables.',`CREATE EXTENSION postgres_fdw;
+CREATE SERVER remote_db FOREIGN DATA WRAPPER postgres_fdw OPTIONS (host 'remote_host', dbname 'mydb');
+CREATE USER MAPPING FOR app SERVER remote_db OPTIONS (user 'app', password '<pwd>');
+IMPORT FOREIGN SCHEMA public FROM SERVER remote_db INTO local_schema;`],
+['PostgreSQL','Cross-database queries','List foreign servers and tables','See what is already linked in.',`SELECT srvname, srvoptions FROM pg_foreign_server;
+SELECT foreign_table_name, foreign_server_name FROM information_schema.foreign_tables;`],
+['MySQL','Cross-database queries','Query another server with FEDERATED','The FEDERATED storage engine must be enabled at startup.',`CREATE TABLE remote_orders (id INT, customer_id INT)
+ENGINE=FEDERATED CONNECTION='mysql://app:<pwd>@remote_host:3306/mydb/orders';`],
+['MySQL','Cross-database queries','Cross-database join on the same server','No link needed within one server, just qualify the schema.',`SELECT o.id, c.name FROM sales.orders o
+JOIN accounts.customers c ON o.customer_id = c.id;`],
+['SQL Server','Cross-database queries','Query another server with a linked server','1. Create the link. 2. Add the login mapping. 3. Query it.',`EXEC sp_addlinkedserver @server = 'REMOTESQL', @srvproduct = '', @provider = 'SQLNCLI',
+  @datasrc = 'remote_host';
+EXEC sp_addlinkedsrvlogin @rmtsrvname = 'REMOTESQL', @useself = 'false',
+  @locallogin = NULL, @rmtuser = 'app', @rmtpassword = '<pwd>';
+SELECT * FROM REMOTESQL.mydb.dbo.Orders;`],
+['SQL Server','Cross-database queries','List linked servers and test one','Test before relying on it in a query.',`SELECT name, product, data_source FROM sys.servers WHERE is_linked = 1;
+EXEC sp_testlinkedserver 'REMOTESQL';`],
+
+['Oracle','JSON and full-text','Store and query JSON','JSON_VALUE extracts a scalar; IS JSON validates the column.',`CREATE TABLE app.docs (id NUMBER, data CLOB CHECK (data IS JSON));
+SELECT JSON_VALUE(data, '$.customer.name') AS name FROM app.docs
+WHERE JSON_VALUE(data, '$.status') = 'open';`],
+['Oracle','JSON and full-text','Create and use an Oracle Text index','Full-text search on a text or CLOB column.',`CREATE INDEX docs_ft_idx ON app.docs(body) INDEXTYPE IS CTXSYS.CONTEXT;
+SELECT id FROM app.docs WHERE CONTAINS(body, 'invoice AND overdue') > 0;`],
+['PostgreSQL','JSON and full-text','Store and query JSONB','JSONB is indexable and faster than json for querying.',`CREATE TABLE docs (id serial, data jsonb);
+CREATE INDEX idx_docs_data ON docs USING gin (data);
+SELECT data->>'name' FROM docs WHERE data @> '{"status":"open"}';`],
+['PostgreSQL','JSON and full-text','Full-text search with tsvector','A generated column keeps the search vector up to date automatically.',`ALTER TABLE articles ADD COLUMN search tsvector
+  GENERATED ALWAYS AS (to_tsvector('english', title || ' ' || body)) STORED;
+CREATE INDEX idx_articles_search ON articles USING gin (search);
+SELECT title FROM articles WHERE search @@ to_tsquery('english', 'invoice & overdue');`],
+['MySQL','JSON and full-text','Store and query JSON','Generated columns let you index a JSON field.',`CREATE TABLE docs (id INT AUTO_INCREMENT PRIMARY KEY, data JSON);
+SELECT JSON_EXTRACT(data, '$.name') FROM docs WHERE data->>'$.status' = 'open';`],
+['MySQL','JSON and full-text','Full-text search on InnoDB','Works on InnoDB and MyISAM tables.',`ALTER TABLE articles ADD FULLTEXT INDEX ft_idx (title, body);
+SELECT title FROM articles
+WHERE MATCH(title, body) AGAINST ('invoice overdue' IN NATURAL LANGUAGE MODE);`],
+['SQL Server','JSON and full-text','Store and query JSON','JSON is stored as text with helper functions to query it.',`CREATE TABLE dbo.Docs (Id int, Data nvarchar(max));
+SELECT JSON_VALUE(Data, '$.customer.name') AS name FROM dbo.Docs
+WHERE JSON_VALUE(Data, '$.status') = 'open';`],
+['SQL Server','JSON and full-text','Set up full-text search','1. Create a catalog. 2. Create a full-text index. 3. Query with CONTAINS.',`CREATE FULLTEXT CATALOG ft_catalog AS DEFAULT;
+CREATE FULLTEXT INDEX ON dbo.Articles(Title, Body) KEY INDEX PK_Articles;
+SELECT Title FROM dbo.Articles WHERE CONTAINS((Title, Body), 'invoice AND overdue');`],
+
+['Oracle','Containers and cloud-native','Run Oracle XE in Docker','Free Express Edition, good for development and testing.',`docker run -d --name oracle-xe -p 1521:1521 -e ORACLE_PWD=<pwd> \\
+  -v oracle_data:/opt/oracle/oradata gvenzl/oracle-xe:latest
+docker exec -it oracle-xe sqlplus system/<pwd>@//localhost/XEPDB1`],
+['Oracle','Containers and cloud-native','Back up a containerized database','Use RMAN inside the container, and store the backup on a mounted volume.',`docker exec oracle-xe rman target / <<< "BACKUP DATABASE PLUS ARCHIVELOG;"
+docker cp oracle-xe:/opt/oracle/fast_recovery_area ./backup`],
+['PostgreSQL','Containers and cloud-native','Run PostgreSQL in Docker with a persistent volume','Data survives container restarts and recreation.',`docker run -d --name pg -e POSTGRES_PASSWORD=<pwd> \\
+  -v pgdata:/var/lib/postgresql/data -p 5432:5432 postgres:17`],
+['PostgreSQL','Containers and cloud-native','Back up and restore a container with pg_dump','Runs pg_dump inside the container and streams the file out.',`docker exec pg pg_dump -U postgres -Fc mydb > mydb.dump
+docker exec -i pg pg_restore -U postgres -d mydb < mydb.dump`],
+['MySQL','Containers and cloud-native','Run MySQL in Docker with a persistent volume','Data survives container restarts and recreation.',`docker run -d --name mysql -e MYSQL_ROOT_PASSWORD=<pwd> \\
+  -v mysqldata:/var/lib/mysql -p 3306:3306 mysql:8.4`],
+['MySQL','Containers and cloud-native','Back up and restore a container with mysqldump','Runs mysqldump inside the container.',`docker exec mysql mysqldump -u root -p<pwd> --all-databases > full.sql
+docker exec -i mysql mysql -u root -p<pwd> < full.sql`],
+['SQL Server','Containers and cloud-native','Run SQL Server in Docker with a persistent volume','The image needs at least 2 GB of memory.',`docker run -d --name mssql -e ACCEPT_EULA=Y -e MSSQL_SA_PASSWORD=<pwd> \\
+  -v mssqldata:/var/opt/mssql -p 1433:1433 mcr.microsoft.com/mssql/server:2022-latest`],
+['SQL Server','Containers and cloud-native','Back up and restore a container with sqlcmd','Backs up inside the container, then copies the file to the host.',`docker exec mssql /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P <pwd> -C \\
+  -Q "BACKUP DATABASE mydb TO DISK='/var/opt/mssql/backup/mydb.bak'"
+docker cp mssql:/var/opt/mssql/backup/mydb.bak .`],
+
+['Oracle','Interview questions','Redo log versus undo (rollback) segments','Redo protects committed changes for recovery. Undo lets a transaction roll back and gives read consistency for other sessions.',`SELECT tablespace_name, status FROM dba_tablespaces WHERE tablespace_name = 'UNDOTBS1';
+SELECT name, ROUND(bytes/1048576) AS mb FROM v$log;`],
+['Oracle','Interview questions','How does the cost-based optimizer choose a plan?','It picks the plan with the lowest estimated cost, using statistics on table and index size, row counts and column distribution. Stale statistics are a common cause of a bad plan.',`SELECT table_name, last_analyzed, num_rows FROM dba_tables WHERE owner = 'HR';`],
+['Oracle','Interview questions','Full, incremental and archived redo backups','A full backup copies every used block. An incremental backup (RMAN level 1) copies only blocks changed since the last one. Archived redo logs let RMAN recover to a point in time after either.',`RMAN> BACKUP INCREMENTAL LEVEL 1 DATABASE;`],
+['Oracle','Interview questions','Why does ALTER TABLE ... DROP COLUMN take a long time?','It has to update every row. SET UNUSED marks the column instantly, and the space is reclaimed later in a maintenance window.',`ALTER TABLE hr.employees SET UNUSED COLUMN legacy_code;
+ALTER TABLE hr.employees DROP UNUSED COLUMNS;`],
+
+['PostgreSQL','Interview questions','Transaction isolation levels','Read Committed is the default. Repeatable Read and Serializable add stronger guarantees using MVCC snapshots, at the cost of more serialization failures to retry.',`SHOW transaction_isolation;
+BEGIN TRANSACTION ISOLATION LEVEL REPEATABLE READ;`],
+['PostgreSQL','Interview questions','DELETE, TRUNCATE and DROP','DELETE removes rows and can be rolled back and filtered with WHERE. TRUNCATE empties a table fast and resets identity sequences. DROP removes the table itself.',`TRUNCATE TABLE orders RESTART IDENTITY;`],
+['PostgreSQL','Interview questions','Common index types: B-tree, GIN, GiST, BRIN','B-tree suits equality and range queries. GIN suits arrays, JSONB and full text. GiST suits geometric and nearest-neighbour searches. BRIN suits huge, naturally ordered tables at low cost.',`CREATE INDEX idx_data ON docs USING gin (data);`],
+['PostgreSQL','Interview questions','VACUUM versus VACUUM FULL','VACUUM marks dead rows reusable without locking the table. VACUUM FULL rewrites the table to reclaim disk space, and needs an exclusive lock.',`VACUUM (VERBOSE) orders;
+VACUUM FULL orders;`],
+
+['MySQL','Interview questions','InnoDB versus MyISAM','InnoDB supports transactions, foreign keys and row-level locking, and is the default. MyISAM is simpler and lacks transactions, and is rarely the right choice today.',`SELECT table_name, engine FROM information_schema.tables WHERE table_schema = 'mydb';`],
+['MySQL','Interview questions','DELETE, TRUNCATE and DROP','DELETE removes rows, can use WHERE and can be rolled back inside a transaction. TRUNCATE empties a table fast and resets AUTO_INCREMENT. DROP removes the table itself.',`TRUNCATE TABLE orders;`],
+['MySQL','Interview questions','Replication versus Group Replication','Classic replication is one source with one or more replicas, applied asynchronously or semi-synchronously. Group Replication runs a small cluster where every member can accept writes and stays consistent through consensus.',`SELECT * FROM performance_schema.replication_group_members;`],
+['MySQL','Interview questions','CHAR versus VARCHAR','CHAR is fixed length and padded with spaces, which is faster for short, uniform values. VARCHAR stores only what is needed plus a length prefix, which saves space for variable text.',`CREATE TABLE t (code CHAR(3), name VARCHAR(100));`],
+
+['SQL Server','Interview questions','DELETE, TRUNCATE and DROP','DELETE removes rows, can use WHERE and is fully logged. TRUNCATE empties a table with minimal logging and resets identity. DROP removes the table itself.',`TRUNCATE TABLE dbo.Orders;`],
+['SQL Server','Interview questions','How SQL Server handles a deadlock','It picks a victim, usually the transaction that is cheapest to roll back, kills it with error 1205, and lets the other continue. The application should catch the error and retry.',`SELECT xact_state, error_number FROM sys.dm_exec_requests WHERE session_id = @@SPID;`],
+['SQL Server','Interview questions','Stored procedure versus function','A function must return a value and cannot change data or use SET statements; it can be used inside a SELECT. A stored procedure can change data, use transactions, and return multiple result sets.',`SELECT name, type_desc FROM sys.objects WHERE type IN ('P','FN','IF','TF');`],
+['SQL Server','Interview questions','What tempdb is used for','Temporary tables and table variables, sort and hash work area for queries, row versioning for snapshot isolation, and index rebuilds. One tempdb is shared by every database on the instance.',`SELECT DB_NAME(database_id) AS db, type_desc, physical_name FROM sys.master_files WHERE database_id = 2;`],
+
+['Oracle','Cloning and refresh','Clone a PDB from an existing one','Fast on the same CDB when both use the same storage.',`ALTER PLUGGABLE DATABASE app_pdb CLOSE;
+ALTER PLUGGABLE DATABASE app_pdb OPEN READ ONLY;
+CREATE PLUGGABLE DATABASE app_pdb_clone FROM app_pdb;
+ALTER PLUGGABLE DATABASE app_pdb CLOSE;
+ALTER PLUGGABLE DATABASE app_pdb OPEN;`],
+['Oracle','Cloning and refresh','Refresh a schema from production','1. Export from production. 2. Drop or truncate target objects. 3. Import over them.',`expdp system schemas=APP directory=DATA_PUMP_DIR dumpfile=app.dmp
+impdp system schemas=APP directory=DATA_PUMP_DIR dumpfile=app.dmp
+  remap_schema=APP:APP table_exists_action=REPLACE`],
+['PostgreSQL','Cloning and refresh','Clone a database on the same server','Fast, file-level copy. The source database must have no active connections.',`CREATE DATABASE app_clone TEMPLATE app_prod;`],
+['PostgreSQL','Cloning and refresh','Refresh a database from a dump','Drop and recreate, then restore.',`dropdb app_test
+createdb app_test
+pg_restore -d app_test -j 4 app_prod.dump`],
+['MySQL','Cloning and refresh','Clone a database with the clone plugin','Fast, physical clone between MySQL 8 instances.',`INSTALL PLUGIN clone SONAME 'mysql_clone.so';
+CLONE INSTANCE FROM app_user@source_host:3306
+  IDENTIFIED BY '<pwd>';`],
+['MySQL','Cloning and refresh','Refresh a database from a dump','Drop and recreate, then load.',`mysql -u root -p -e "DROP DATABASE app_test; CREATE DATABASE app_test;"
+mysql -u root -p app_test < app_prod.sql`],
+['SQL Server','Cloning and refresh','Clone a database by restoring under a new name','Restoring the same backup with new file names creates an independent copy.',`RESTORE DATABASE app_test FROM DISK = 'D:\\bak\\app_prod.bak'
+  WITH MOVE 'app_prod' TO 'D:\\data\\app_test.mdf',
+       MOVE 'app_prod_log' TO 'E:\\log\\app_test_log.ldf', REPLACE;`],
+['SQL Server','Cloning and refresh','Mask sensitive data after a refresh','Dynamic Data Masking hides column values from non-privileged users without changing the stored data.',`ALTER TABLE dbo.Customers ALTER COLUMN Email
+  ADD MASKED WITH (FUNCTION = 'email()');`],
+
+['Oracle','Materialized views','Create a materialized view with a refresh schedule','FAST refresh needs a materialized view log on the base table.',`CREATE MATERIALIZED VIEW LOG ON hr.orders WITH ROWID;
+CREATE MATERIALIZED VIEW hr.mv_daily_sales
+  BUILD IMMEDIATE REFRESH FAST ON DEMAND
+  AS SELECT TRUNC(order_date) AS day, SUM(amount) AS total FROM hr.orders GROUP BY TRUNC(order_date);
+EXEC DBMS_MVIEW.REFRESH('HR.MV_DAILY_SALES');`],
+['Oracle','Materialized views','Check refresh status and staleness','Confirms the last refresh and whether the data is current.',`SELECT mview_name, last_refresh_date, staleness FROM dba_mviews WHERE owner = 'HR';`],
+['PostgreSQL','Materialized views','Create and refresh a materialized view','CONCURRENTLY needs a unique index and lets readers keep querying during the refresh.',`CREATE MATERIALIZED VIEW mv_daily_sales AS
+  SELECT date_trunc('day', order_date) AS day, sum(amount) AS total FROM orders GROUP BY 1;
+CREATE UNIQUE INDEX ON mv_daily_sales (day);
+REFRESH MATERIALIZED VIEW CONCURRENTLY mv_daily_sales;`],
+['PostgreSQL','Materialized views','Schedule a refresh with pg_cron','Runs the refresh every night at 02:00.',`SELECT cron.schedule('refresh-sales', '0 2 * * *',
+  'REFRESH MATERIALIZED VIEW CONCURRENTLY mv_daily_sales');`],
+['MySQL','Materialized views','Simulate a materialized view with a summary table and event','MySQL has no native materialized view, so a scheduled event keeps a summary table current.',`CREATE TABLE mv_daily_sales (day DATE PRIMARY KEY, total DECIMAL(12,2));
+CREATE EVENT refresh_sales ON SCHEDULE EVERY 1 DAY STARTS '2026-09-22 02:00:00' DO
+  REPLACE INTO mv_daily_sales
+  SELECT DATE(order_date), SUM(amount) FROM orders GROUP BY DATE(order_date);`],
+['MySQL','Materialized views','Check when the summary table last ran','Query the event scheduler status for the job.',`SELECT event_name, last_executed, status FROM information_schema.events WHERE event_schema = 'mydb';`],
+['SQL Server','Materialized views','Create an indexed view','SCHEMABINDING is required. An indexed view behaves like a materialized view kept in sync automatically.',`CREATE VIEW dbo.vw_daily_sales WITH SCHEMABINDING AS
+  SELECT CAST(OrderDate AS date) AS Day, SUM(Amount) AS Total, COUNT_BIG(*) AS Cnt
+  FROM dbo.Orders GROUP BY CAST(OrderDate AS date);
+CREATE UNIQUE CLUSTERED INDEX IX_vw_daily_sales ON dbo.vw_daily_sales (Day);`],
+['SQL Server','Materialized views','Check indexed views on a database','Views that already have a clustered index.',`SELECT v.name FROM sys.views v
+JOIN sys.indexes i ON v.object_id = i.object_id AND i.index_id = 1;`],
+
+['Oracle','Character sets and time zones','Check the database character set','Changing it later is a major, risky operation.',`SELECT parameter, value FROM nls_database_parameters
+WHERE parameter IN ('NLS_CHARACTERSET','NLS_NCHAR_CHARACTERSET');`],
+['Oracle','Character sets and time zones','Session time zone and date format','Set per session, or as a login trigger default.',`ALTER SESSION SET TIME_ZONE = 'Asia/Kolkata';
+ALTER SESSION SET NLS_DATE_FORMAT = 'YYYY-MM-DD HH24:MI:SS';
+SELECT SESSIONTIMEZONE, CURRENT_TIMESTAMP FROM dual;`],
+['PostgreSQL','Character sets and time zones','Check encoding and collation','Set when the database is created; changing them later usually means a dump and reload.',`SELECT datname, pg_encoding_to_char(encoding), datcollate FROM pg_database;`],
+['PostgreSQL','Character sets and time zones','Set and check the session time zone','timestamptz always stores UTC; the time zone only affects display.',`SET TIME ZONE 'Asia/Kolkata';
+SHOW TIME ZONE;
+SELECT now();`],
+['MySQL','Character sets and time zones','Check and convert to utf8mb4','utf8mb4 supports full Unicode including emoji; the old utf8 alias does not.',`SELECT default_character_set_name FROM information_schema.schemata WHERE schema_name = 'mydb';
+ALTER DATABASE mydb CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;`],
+['MySQL','Character sets and time zones','Set and check the session time zone','Named zones need the time zone tables to be loaded first.',`SET time_zone = 'Asia/Kolkata';
+SELECT @@session.time_zone, NOW();`],
+['SQL Server','Character sets and time zones','Check server and database collation','Collation controls sort order and case sensitivity.',`SELECT SERVERPROPERTY('Collation') AS server_collation;
+SELECT name, collation_name FROM sys.databases;`],
+['SQL Server','Character sets and time zones','Work with time zones using datetimeoffset','datetime2 has no time zone; use datetimeoffset when the zone matters.',`SELECT SYSDATETIMEOFFSET();
+SELECT CAST(SYSDATETIMEOFFSET() AT TIME ZONE 'India Standard Time' AS datetimeoffset);`],
+
+['Oracle','Backup strategy','Define and check your RPO and RTO','RPO is how much data you can afford to lose; RTO is how long recovery may take. Redo transport frequency and backup schedule should match your RPO.',`SELECT name, value FROM v$dataguard_stats WHERE name = 'transport lag';
+SELECT MAX(completion_time) AS last_backup FROM v$backup_datafile;`],
+['Oracle','Backup strategy','Choose full, incremental and archive log frequency','A common pattern: weekly full, daily incremental level 1, and archive logs shipped continuously.',`RMAN> CONFIGURE RETENTION POLICY TO RECOVERY WINDOW OF 14 DAYS;
+RMAN> CONFIGURE ARCHIVELOG DELETION POLICY TO BACKED UP 2 TIMES TO DISK;`],
+['PostgreSQL','Backup strategy','Choose base backup and WAL archiving frequency','A common pattern: nightly base backup plus continuous WAL archiving, giving point-in-time recovery to any second.',`SELECT pg_walfile_name(pg_current_wal_lsn());
+SELECT * FROM pg_stat_archiver;`],
+['PostgreSQL','Backup strategy','Test a restore regularly','A backup you have never restored is not a tested backup. Do this on a separate server on a schedule.',`pg_restore --list mydb.dump | head -20
+pg_restore -d restore_test -j 4 mydb.dump`],
+['MySQL','Backup strategy','Choose full backup and binary log retention','A common pattern: nightly full backup and binary logs kept at least as long as your RPO window.',`SHOW VARIABLES LIKE 'binlog_expire_logs_seconds';
+SHOW BINARY LOGS;`],
+['MySQL','Backup strategy','Test a restore regularly','Restore into a separate instance or schema and check row counts.',`mysql -u root -p test_restore < full.sql
+mysql -u root -p test_restore -e "SELECT COUNT(*) FROM orders;"`],
+['SQL Server','Backup strategy','Choose full, differential and log backup frequency','A common pattern: weekly full, daily differential, and log backups every 15 minutes for a low RPO.',`SELECT database_name, type, backup_start_date FROM msdb.dbo.backupset
+ORDER BY backup_start_date DESC;`],
+['SQL Server','Backup strategy','Test a restore regularly','WITH VERIFYONLY checks the backup file; a real restore to a test server also proves the process works.',`RESTORE VERIFYONLY FROM DISK = 'D:\\bak\\mydb.bak';
+RESTORE DATABASE mydb_test FROM DISK = 'D:\\bak\\mydb.bak'
+  WITH MOVE 'mydb' TO 'D:\\data\\mydb_test.mdf',
+       MOVE 'mydb_log' TO 'E:\\log\\mydb_test_log.ldf', REPLACE;`],
+
+['Oracle','Data masking','Mask a column with Data Redaction','Hides the value for matching sessions without changing the stored data.',`BEGIN
+  DBMS_REDACT.ADD_POLICY(
+    object_schema => 'HR', object_name => 'CUSTOMERS', column_name => 'CREDIT_CARD',
+    policy_name => 'mask_cc', function_type => DBMS_REDACT.PARTIAL,
+    function_parameters => 'VVVVVVVVVVVV1111,VVVVVVVVVVVVFFFF,4');
+END;
+/`],
+['Oracle','Data masking','Static masking for a non-production copy','Overwrites the real values so the whole copy is safe to share.',`UPDATE hr.customers_test SET email = 'user' || customer_id || '@example.com',
+  credit_card = 'XXXX-XXXX-XXXX-' || SUBSTR(credit_card, -4);
+COMMIT;`],
+['PostgreSQL','Data masking','Mask a column for a role with a security view','Give the role access to the view instead of the base table.',`CREATE VIEW customers_masked AS
+  SELECT id, name, left(email,1) || '***@***' AS email FROM customers;
+GRANT SELECT ON customers_masked TO analyst;`],
+['PostgreSQL','Data masking','Static masking with the postgresql_anonymizer extension','Applies masking rules, then writes an anonymized copy.',`CREATE EXTENSION anon CASCADE;
+SECURITY LABEL FOR anon ON COLUMN customers.email IS 'MASKED WITH FUNCTION anon.fake_email()';
+SELECT anon.anonymize_database();`],
+['MySQL','Data masking','Mask a column with a generated column or view','Give applications the masked view instead of the base table.',`CREATE VIEW customers_masked AS
+  SELECT id, name, CONCAT(LEFT(email,1), '***@***') AS email FROM customers;
+GRANT SELECT ON mydb.customers_masked TO 'app'@'%';`],
+['MySQL','Data masking','Static masking for a non-production copy','Overwrites real values after loading a copy into a test schema.',`UPDATE customers_test SET
+  email = CONCAT('user', id, '@example.com'),
+  phone = CONCAT('555-000-', LPAD(id,4,'0'));`],
+['SQL Server','Data masking','Dynamic Data Masking on a column','Masks values for users without UNMASK, without changing the stored data.',`ALTER TABLE dbo.Customers ALTER COLUMN Email ADD MASKED WITH (FUNCTION = 'email()');
+ALTER TABLE dbo.Customers ALTER COLUMN Phone ADD MASKED WITH (FUNCTION = 'partial(0,"XXX-XXX-",4)');
+GRANT UNMASK TO reporting_role;`],
+['SQL Server','Data masking','Static masking for a non-production copy','Overwrites real values in the restored test database.',`UPDATE dbo.Customers SET
+  Email = CONCAT('user', CustomerId, '@example.com'),
+  Phone = CONCAT('555-000-', RIGHT('0000' + CAST(CustomerId AS varchar(4)),4));`],
+
+['Oracle','Licensing and editions','Check which Oracle Database edition is running','Options such as Partitioning and Diagnostics Pack are licensed separately from the edition.',`SELECT banner FROM v$version;
+SELECT * FROM v$option WHERE parameter IN ('Partitioning','Advanced Compression');`],
+['Oracle','Licensing and editions','Find options and packs in use','Helps confirm you are only using what is licensed.',`SELECT name, detected_usages, currently_used FROM dba_feature_usage_statistics
+WHERE currently_used = 'TRUE' ORDER BY name;`],
+['PostgreSQL','Licensing and editions','Check version and build details','PostgreSQL itself is fully open source; costs come from support or managed services.',`SELECT version();
+SHOW server_version;`],
+['PostgreSQL','Licensing and editions','List installed extensions','Some extensions (such as some FDWs) may carry their own license terms.',`SELECT extname, extversion FROM pg_extension;`],
+['MySQL','Licensing and editions','Check whether this is Community or Enterprise Edition','Enterprise adds features such as Thread Pool and Enterprise Audit under a paid license.',`SHOW VARIABLES LIKE 'version_comment';
+SELECT VERSION();`],
+['MySQL','Licensing and editions','Check for Enterprise-only plugins','If any Enterprise plugins are active, that server needs a commercial license.',`SHOW PLUGINS;`],
+['SQL Server','Licensing and editions','Check edition and licensing model','Licensing is normally per-core for Enterprise and Standard, or per-server plus CALs.',`SELECT SERVERPROPERTY('Edition') AS edition, SERVERPROPERTY('LicenseType') AS license_type,
+       SERVERPROPERTY('NumLicenses') AS num_licenses;`],
+['SQL Server','Licensing and editions','Count physical cores for core-based licensing','SQL Server licensing counts physical cores, with a minimum of 4 per processor.',`SELECT cpu_count, hyperthread_ratio, cpu_count/hyperthread_ratio AS physical_cores
+FROM sys.dm_os_sys_info;`],
+
+['Oracle','Password and credential management','Enforce a password verify function','Rejects weak passwords such as ones matching the username.',`ALTER PROFILE app_profile LIMIT PASSWORD_VERIFY_FUNCTION ora12c_verify_function
+  PASSWORD_LIFE_TIME 90 PASSWORD_REUSE_MAX 5;`],
+['Oracle','Password and credential management','Store credentials for scripts in a wallet','Avoids hard-coding passwords in scripts and cron jobs.',`mkstore -wrl /u01/wallet -create
+mkstore -wrl /u01/wallet -createCredential ORCL app_user <pwd>
+sqlplus /@ORCL`],
+['PostgreSQL','Password and credential management','Require strong passwords with scram-sha-256','md5 is weaker and being phased out.',`ALTER SYSTEM SET password_encryption = 'scram-sha-256';
+SELECT pg_reload_conf();
+ALTER ROLE app_user PASSWORD 'NewStrongPass#1';`],
+['PostgreSQL','Password and credential management','Store credentials in a .pgpass file','Avoids putting passwords in scripts. Must be chmod 0600.',`# ~/.pgpass
+db_host:5432:mydb:app:MyPassword
+chmod 0600 ~/.pgpass`],
+['MySQL','Password and credential management','Enforce a password policy','Requires a mix of characters and blocks reuse of recent passwords.',`INSTALL COMPONENT 'file://component_validate_password';
+SET GLOBAL validate_password.policy = 'STRONG';
+ALTER USER 'app'@'%' IDENTIFIED BY 'NewStrongPass#1' PASSWORD HISTORY 5;`],
+['MySQL','Password and credential management','Store credentials in a login path','Encrypted login file, avoids passwords in shell history or scripts.',`mysql_config_editor set --login-path=app --host=db_host --user=app --password
+mysql --login-path=app mydb`],
+['SQL Server','Password and credential management','Enforce Windows password policy on a SQL login','Applies the same complexity and expiration rules as domain accounts.',`CREATE LOGIN app WITH PASSWORD = 'NewStrongPass#1',
+  CHECK_POLICY = ON, CHECK_EXPIRATION = ON;`],
+['SQL Server','Password and credential management','Store a credential for an external resource','Used for tasks like BACKUP TO URL or SSIS package access.',`CREATE CREDENTIAL AzureBlob WITH IDENTITY = 'SHARED ACCESS SIGNATURE',
+  SECRET = '<sas_token>';`],
+
+['Oracle','ETL and data movement','Move data between tables with a database link','Useful for one-off loads between environments.',`INSERT INTO app.orders_stage
+  SELECT * FROM app.orders@remote_db WHERE order_date >= TRUNC(SYSDATE) - 1;
+COMMIT;`],
+['Oracle','ETL and data movement','Bulk load with external tables','Reads a CSV file as if it were a table, no separate load step needed.',`CREATE TABLE app.orders_ext (order_id NUMBER, amount NUMBER)
+ORGANIZATION EXTERNAL (
+  TYPE ORACLE_LOADER DEFAULT DIRECTORY data_dir
+  ACCESS PARAMETERS (RECORDS DELIMITED BY NEWLINE FIELDS TERMINATED BY ',')
+  LOCATION ('orders.csv'));`],
+['PostgreSQL','ETL and data movement','Incremental load with foreign data wrapper and upsert','Pull only new or changed rows, then upsert to avoid duplicates.',`INSERT INTO orders SELECT * FROM remote_orders WHERE updated_at > (SELECT max(updated_at) FROM orders)
+ON CONFLICT (id) DO UPDATE SET amount = EXCLUDED.amount, updated_at = EXCLUDED.updated_at;`],
+['PostgreSQL','ETL and data movement','Stream changes with logical replication for near-real-time ETL','Publishes a subset of tables to a downstream consumer.',`CREATE PUBLICATION etl_pub FOR TABLE orders, customers;
+SELECT * FROM pg_replication_slots;`],
+['MySQL','ETL and data movement','Bulk load a CSV efficiently','Much faster than row-by-row INSERT statements.',`LOAD DATA INFILE '/var/lib/mysql-files/orders.csv' INTO TABLE orders
+FIELDS TERMINATED BY ',' LINES TERMINATED BY '\\n' IGNORE 1 LINES;`],
+['MySQL','ETL and data movement','Incremental load with upsert','Only inserts new rows or updates existing ones matched by primary key.',`INSERT INTO orders (id, amount, updated_at) VALUES (1, 99.5, NOW())
+ON DUPLICATE KEY UPDATE amount = VALUES(amount), updated_at = VALUES(updated_at);`],
+['SQL Server','ETL and data movement','Bulk load with BULK INSERT or bcp','BULK INSERT runs inside T-SQL; bcp runs from the command line.',`BULK INSERT dbo.Orders FROM 'D:\\data\\orders.csv' WITH (FORMAT = 'CSV', FIRSTROW = 2, TABLOCK);`],
+['SQL Server','ETL and data movement','Incremental load with MERGE','Inserts new rows and updates changed ones in a single statement.',`MERGE dbo.Orders AS tgt
+USING dbo.OrdersStage AS src ON tgt.Id = src.Id
+WHEN MATCHED THEN UPDATE SET tgt.Amount = src.Amount
+WHEN NOT MATCHED THEN INSERT (Id, Amount) VALUES (src.Id, src.Amount);`],
+
+['Oracle','Interview questions','Tablespace versus datafile','A tablespace is a logical storage unit made up of one or more physical datafiles. Objects like tables are assigned to a tablespace, not directly to a file.',`SELECT tablespace_name, file_name FROM dba_data_files ORDER BY tablespace_name;`],
+['Oracle','Interview questions','What happens at a checkpoint?','CKPT signals DBWn to write dirty buffers to the datafiles and updates the checkpoint information in the control file and datafile headers, which shortens crash recovery.',`SELECT checkpoint_change#, controlfile_type FROM v$database;`],
+['Oracle','Interview questions','Hot backup versus cold backup','A cold backup is taken with the database shut down and is simple but needs downtime. A hot (online) backup, normally via RMAN, is taken while the database is open by backing up datafiles while in ARCHIVELOG mode.',`SELECT log_mode FROM v$database;`],
+['Oracle','Interview questions','What is Oracle RAC?','Real Application Clusters lets two or more instances, usually on separate servers, mount and open the same database concurrently, giving high availability and horizontal scaling for connections.',`SELECT inst_id, instance_name, status FROM gv$instance;`],
+['PostgreSQL','Interview questions','Primary key versus unique constraint','Both enforce uniqueness and are backed by a unique index. A table can have only one primary key, which also disallows NULLs; it can have several unique constraints, which allow NULLs.',`ALTER TABLE customers ADD CONSTRAINT customers_email_uq UNIQUE (email);`],
+['PostgreSQL','Interview questions','What is a sequence?','A separate database object that generates unique numbers, commonly used to back a serial or identity column. It increments outside the transaction, so gaps after a rollback are normal.',`CREATE SEQUENCE orders_id_seq;
+SELECT nextval('orders_id_seq');`],
+['PostgreSQL','Interview questions','What happens at a checkpoint?','The checkpointer flushes all dirty shared buffers to disk and records the checkpoint location in pg_control, which bounds how much WAL must be replayed after a crash.',`SHOW checkpoint_timeout;
+SELECT * FROM pg_control_checkpoint();`],
+['PostgreSQL','Interview questions','What is a foreign data wrapper?','An extension mechanism that lets PostgreSQL query external data, such as another PostgreSQL database or a CSV file, as if it were a local table.',`SELECT fdwname FROM pg_foreign_data_wrapper;`],
+['MySQL','Interview questions','Primary key versus unique key','Both enforce uniqueness. A table can have only one primary key, which cannot be NULL and is used to cluster the InnoDB table. It can have several unique keys, which allow one NULL each.',`SHOW INDEX FROM orders WHERE Key_name = 'PRIMARY';`],
+['MySQL','Interview questions','What happens at a checkpoint in InnoDB?','InnoDB periodically flushes dirty pages from the buffer pool to the tablespace and advances the checkpoint LSN, which limits how much redo log must be replayed after a crash.',`SHOW ENGINE INNODB STATUS\\G`],
+['MySQL','Interview questions','What is the binary log used for?','It records every change that modifies data, in commit order. Replicas read it to stay in sync, and it also supports point-in-time recovery when replayed after a backup.',`SHOW VARIABLES LIKE 'log_bin';`],
+['MySQL','Interview questions','Asynchronous versus semi-synchronous replication','Asynchronous replication does not wait for a replica to receive a transaction before committing on the source. Semi-synchronous waits for at least one replica to acknowledge receipt, which reduces data loss on failover at some latency cost.',`SHOW VARIABLES LIKE 'rpl_semi_sync%';`],
+['SQL Server','Interview questions','Primary key versus unique key','Both enforce uniqueness and create an index. A table can have only one primary key, which cannot be NULL; it can have several unique constraints, which allow one NULL each.',`SELECT name, is_primary_key, is_unique_constraint FROM sys.key_constraints
+WHERE parent_object_id = OBJECT_ID('dbo.Orders');`],
+['SQL Server','Interview questions','What happens at a checkpoint?','A checkpoint writes dirty pages from the buffer pool to disk and records the point in the log up to which changes are on disk, which shortens the REDO phase of crash recovery.',`SELECT MAX(database_id) FROM sys.dm_tran_database_transactions;
+CHECKPOINT;`],
+['SQL Server','Interview questions','What are virtual log files (VLFs)?','The transaction log is internally divided into VLFs. Too many small VLFs from frequent tiny auto-growths slow down recovery and log backups.',`DBCC LOGINFO;`],
+['SQL Server','Interview questions','How to prioritize which wait types matter','Wait statistics show what sessions spend time waiting for, such as locks, I/O or CPU. High cumulative waits of one type point to where to focus tuning, but common background waits should be filtered out first.',`SELECT TOP 10 wait_type, wait_time_ms FROM sys.dm_os_wait_stats
+WHERE wait_type NOT IN ('SLEEP_TASK','BROKER_TASK_STOP','LAZYWRITER_SLEEP')
+ORDER BY wait_time_ms DESC;`],
+['Oracle','Interview questions','OLTP versus OLAP','OLTP systems handle many short transactions, such as an order being placed, and are optimized for fast writes. OLAP systems handle large analytical queries over historical data, often using star schemas and bitmap indexes.',`CREATE BITMAP INDEX emp_dept_bmi ON hr.employees(department_id);`],
+['Oracle','Interview questions','What is a bitmap index used for?','It suits columns with a small number of distinct values, common in data warehouses. It is a poor fit for columns with frequent single-row updates because of locking at the bitmap segment level.',`SELECT index_name, index_type FROM dba_indexes WHERE table_name = 'EMPLOYEES';`],
+['Oracle','Interview questions','What is a synonym?','An alias for another object, often in a different schema, so code can reference EMPLOYEES instead of HR.EMPLOYEES. A public synonym is visible to every user.',`CREATE SYNONYM employees FOR hr.employees;`],
+['Oracle','Interview questions','How does Oracle enforce ACID?','Atomicity and durability come from the redo log and two-phase commit for distributed transactions. Consistency comes from constraints. Isolation comes from multiversion read consistency using undo, so readers do not block writers.',`SELECT name, value FROM v$sysstat WHERE name = 'consistent gets';`],
+
+['PostgreSQL','Interview questions','What is a CTE, and what makes it recursive?','A WITH clause names a subquery for reuse within one statement. A recursive CTE references itself and is commonly used for hierarchies such as an org chart or a bill of materials.',`WITH RECURSIVE org AS (
+  SELECT id, manager_id, 1 AS depth FROM employees WHERE manager_id IS NULL
+  UNION ALL
+  SELECT e.id, e.manager_id, o.depth + 1 FROM employees e JOIN org o ON e.manager_id = o.id)
+SELECT * FROM org;`],
+['PostgreSQL','Interview questions','What is a window function?','It computes a value across a set of related rows without collapsing them into one row, unlike GROUP BY. Common uses are running totals and ranking.',`SELECT customer_id, amount, SUM(amount) OVER (PARTITION BY customer_id ORDER BY order_date) AS running_total
+FROM orders;`],
+['PostgreSQL','Interview questions','Normalization versus denormalization','Normalization splits data to avoid update anomalies and redundancy. Denormalization intentionally duplicates data to reduce joins for read-heavy workloads, trading some write complexity for read speed.',`SELECT relname, n_tup_ins, n_tup_upd FROM pg_stat_user_tables ORDER BY n_tup_upd DESC LIMIT 5;`],
+['PostgreSQL','Interview questions','What is an extension?','A packaged set of SQL objects, and sometimes C code, that adds functionality such as PostGIS or pg_stat_statements. Extensions are installed per database.',`SELECT * FROM pg_available_extensions WHERE name = 'postgis';`],
+
+['MySQL','Interview questions','Why is InnoDB the default storage engine?','It supports transactions, foreign keys, crash recovery and row-level locking, which MyISAM lacks. Almost every modern MySQL workload should use InnoDB.',`SELECT table_name, engine FROM information_schema.tables WHERE table_schema = 'mydb' AND engine <> 'InnoDB';`],
+['MySQL','Interview questions','What is a covering index?','An index that contains every column a query needs, so MySQL can answer it from the index alone without reading the table.',`EXPLAIN SELECT customer_id FROM orders WHERE status = 'open';
+-- Extra: Using index means it is covering`],
+['MySQL','Interview questions','Horizontal versus vertical partitioning','Horizontal partitioning splits rows across partitions or shards, for example by date range. Vertical partitioning splits columns, for example moving rarely used large columns into a separate table.',`SHOW CREATE TABLE orders\\G`],
+['MySQL','Interview questions','What is a generated column?','A column computed from other columns in the same row, either stored on disk or computed on read, and it can be indexed.',`ALTER TABLE orders ADD COLUMN total_with_tax DECIMAL(10,2)
+  GENERATED ALWAYS AS (amount * 1.1) STORED;`],
+
+['SQL Server','Interview questions','OLTP versus OLAP, and what a columnstore index is','OLTP handles many short transactions with row-based storage. OLAP handles large analytical scans, where a columnstore index compresses and scans by column, giving big gains for aggregate queries.',`CREATE CLUSTERED COLUMNSTORE INDEX CCI_Sales ON dbo.SalesFact;`],
+['SQL Server','Interview questions','What is a CTE?','A WITH clause that names a subquery for one statement, making complex queries easier to read, and it can be recursive for hierarchical data.',`WITH RecentOrders AS (SELECT * FROM dbo.Orders WHERE OrderDate > DATEADD(day,-7,GETDATE()))
+SELECT * FROM RecentOrders;`],
+['SQL Server','Interview questions','UNION versus UNION ALL','UNION removes duplicate rows and sorts internally to do so, which costs more. UNION ALL keeps every row including duplicates and is faster when duplicates are not a concern.',`SELECT CustomerId FROM dbo.Orders
+UNION ALL
+SELECT CustomerId FROM dbo.Returns;`],
+['SQL Server','Interview questions','What is a synonym?','An alias for another object, which can simplify code and make it easier to repoint at a different server or database later without changing every query.',`CREATE SYNONYM dbo.Orders_Syn FOR RemoteServer.mydb.dbo.Orders;`],
+
+['Oracle','Hardening and OS security','Remove default accounts and lock unused ones','Sample schemas and demo accounts are common audit findings.',`SELECT username, account_status FROM dba_users
+WHERE username IN ('SCOTT','HR','OE','PM','SH') AND account_status = 'OPEN';
+ALTER USER scott ACCOUNT LOCK PASSWORD EXPIRE;`],
+['Oracle','Hardening and OS security','Restrict file system access for the oracle OS user','Oracle files should only be readable by the oracle account and dba group.',`sudo chown -R oracle:oinstall $ORACLE_HOME
+sudo chmod -R o-rwx $ORACLE_HOME
+umask 027`],
+['PostgreSQL','Hardening and OS security','Tighten pg_hba.conf to specific networks','Avoid 0.0.0.0/0 in production; list only the networks that need access.',`# pg_hba.conf
+host  mydb  app  10.0.1.0/24  scram-sha-256
+sudo systemctl reload postgresql`],
+['PostgreSQL','Hardening and OS security','Set safe file and directory permissions','PostgreSQL refuses to start if these are too open.',`sudo chmod 700 /var/lib/pgsql/17/data
+sudo chown -R postgres:postgres /var/lib/pgsql/17/data`],
+['MySQL','Hardening and OS security','Remove anonymous users and the test database','Covered by mysql_secure_installation, but useful to verify directly.',`SELECT user, host FROM mysql.user WHERE user = '';
+DROP DATABASE IF EXISTS test;
+DELETE FROM mysql.user WHERE user = '';
+FLUSH PRIVILEGES;`],
+['MySQL','Hardening and OS security','Restrict data directory permissions','Only the mysql OS user should be able to read the data files.',`sudo chown -R mysql:mysql /var/lib/mysql
+sudo chmod 750 /var/lib/mysql`],
+['SQL Server','Hardening and OS security','Disable the sa login and use Windows Authentication','Reduces the attack surface from a well-known account name.',`ALTER LOGIN sa DISABLE;
+ALTER LOGIN sa WITH NAME = renamed_sa_xyz;`],
+['SQL Server','Hardening and OS security','Turn off unused surface area features','xp_cmdshell in particular can run OS commands if enabled.',`EXEC sp_configure 'xp_cmdshell', 0; RECONFIGURE;
+EXEC sp_configure 'show advanced options', 0; RECONFIGURE;`],
+
+['Oracle','Multi-tenant architecture','List pluggable databases in a CDB','Shows every PDB and whether it is open.',`SELECT con_id, name, open_mode FROM v$pdbs;`],
+['Oracle','Multi-tenant architecture','Create and open a new pluggable database','Uses the seed PDB as a template.',`CREATE PLUGGABLE DATABASE app_pdb ADMIN USER pdbadmin IDENTIFIED BY "<pwd>"
+  FILE_NAME_CONVERT = ('/pdbseed/','/app_pdb/');
+ALTER PLUGGABLE DATABASE app_pdb OPEN;
+ALTER PLUGGABLE DATABASE app_pdb SAVE STATE;`],
+['PostgreSQL','Multi-tenant architecture','Separate tenants by schema in one database','Each tenant gets its own schema; the app sets search_path per connection.',`CREATE SCHEMA tenant_acme;
+CREATE TABLE tenant_acme.orders (LIKE public.orders INCLUDING ALL);
+SET search_path TO tenant_acme, public;`],
+['PostgreSQL','Multi-tenant architecture','Separate tenants by row with row-level security','Each row is tagged with a tenant id and RLS enforces isolation automatically.',`ALTER TABLE orders ENABLE ROW LEVEL SECURITY;
+CREATE POLICY tenant_isolation ON orders
+  USING (tenant_id = current_setting('app.tenant_id')::int);`],
+['MySQL','Multi-tenant architecture','Separate tenants by database on one server','Simple isolation; each tenant is a separate schema with its own grants.',`CREATE DATABASE tenant_acme;
+GRANT ALL PRIVILEGES ON tenant_acme.* TO 'tenant_acme_app'@'%';`],
+['MySQL','Multi-tenant architecture','Separate tenants by row with a tenant_id column','Every query must filter by tenant_id; add it to every relevant index.',`CREATE INDEX idx_orders_tenant ON orders (tenant_id, id);
+SELECT * FROM orders WHERE tenant_id = 42 AND id = 100;`],
+['SQL Server','Multi-tenant architecture','Separate tenants by schema in one database','Each tenant gets a schema; grant access per schema.',`CREATE SCHEMA tenant_acme;
+CREATE TABLE tenant_acme.Orders (LIKE dbo.Orders);`],
+['SQL Server','Multi-tenant architecture','Separate tenants by row with Row-Level Security','A security policy filters rows automatically based on a predicate function.',`CREATE FUNCTION dbo.fn_tenant_predicate(@TenantId int) RETURNS TABLE
+  WITH SCHEMABINDING AS RETURN SELECT 1 AS result WHERE @TenantId = CAST(SESSION_CONTEXT(N'TenantId') AS int);
+CREATE SECURITY POLICY tenant_policy
+  ADD FILTER PREDICATE dbo.fn_tenant_predicate(TenantId) ON dbo.Orders;`],
+
+['Oracle','Caching layers','Enable the client result cache','Caches query results on the client side for repeated identical queries.',`ALTER SYSTEM SET client_result_cache_size = 32M SCOPE = SPFILE;
+SELECT /*+ RESULT_CACHE */ department_id, COUNT(*) FROM hr.employees GROUP BY department_id;`],
+['Oracle','Caching layers','Check the buffer cache hit ratio','A rough guide only; a low ratio does not always mean a problem.',`SELECT ROUND((1 - (phy.value / (cur.value + con.value))) * 100, 1) AS hit_ratio
+FROM v$sysstat phy, v$sysstat cur, v$sysstat con
+WHERE phy.name = 'physical reads' AND cur.name = 'db block gets' AND con.name = 'consistent gets';`],
+['PostgreSQL','Caching layers','Cache query results in Redis alongside PostgreSQL','A common pattern: check the cache first, fall back to the database, then repopulate.',`# application pseudocode
+value = redis.get(f"orders:{id}")
+if value is None:
+    value = pg.query("SELECT * FROM orders WHERE id = %s", id)
+    redis.set(f"orders:{id}", value, ex=300)`],
+['PostgreSQL','Caching layers','Check the OS and shared buffer cache hit ratio','PostgreSQL relies heavily on the OS file cache in addition to shared_buffers.',`SELECT sum(heap_blks_hit) / nullif(sum(heap_blks_hit + heap_blks_read),0) AS hit_ratio
+FROM pg_statio_user_tables;`],
+['MySQL','Caching layers','Cache query results in Redis alongside MySQL','MySQL removed its built-in query cache in 8.0; an external cache replaces that role.',`# application pseudocode
+value = redis.get(f"orders:{id}")
+if value is None:
+    value = mysql.query("SELECT * FROM orders WHERE id = %s", id)
+    redis.set(f"orders:{id}", value, ex=300)`],
+['MySQL','Caching layers','Check the InnoDB buffer pool hit ratio','Close to 100% is normal for a warmed-up server.',`SHOW STATUS LIKE 'Innodb_buffer_pool_read%';
+SELECT (1 - Innodb_buffer_pool_reads / Innodb_buffer_pool_read_requests) * 100 AS hit_ratio
+FROM (SELECT
+  (SELECT variable_value FROM performance_schema.global_status WHERE variable_name='Innodb_buffer_pool_reads') AS Innodb_buffer_pool_reads,
+  (SELECT variable_value FROM performance_schema.global_status WHERE variable_name='Innodb_buffer_pool_read_requests') AS Innodb_buffer_pool_read_requests) t;`],
+['SQL Server','Caching layers','Cache query results in Redis alongside SQL Server','Common for read-heavy pages where slightly stale data is acceptable.',`-- application pseudocode
+value = redis.get(f"orders:{id}")
+if value is None:
+    value = sql.query("SELECT * FROM dbo.Orders WHERE Id = @id", id)
+    redis.set(f"orders:{id}", value, ex=300)`],
+['SQL Server','Caching layers','Check the buffer cache hit ratio','Should normally stay well above 95 percent on a warmed-up server.',`SELECT (a.cntr_value * 1.0 / b.cntr_value) * 100 AS hit_ratio
+FROM sys.dm_os_performance_counters a, sys.dm_os_performance_counters b
+WHERE a.counter_name = 'Buffer cache hit ratio'
+  AND b.counter_name = 'Buffer cache hit ratio base';`],
+
+['Oracle','Change management','Create a release checklist before a schema change','1. Back up. 2. Review the change in a lower environment. 3. Check for locks on the objects. 4. Apply in a maintenance window. 5. Verify.',`SELECT object_name FROM dba_objects WHERE object_name IN ('EMPLOYEES') AND status = 'INVALID';
+-- take a guaranteed restore point before risky changes
+CREATE RESTORE POINT before_release GUARANTEE FLASHBACK DATABASE;`],
+['Oracle','Change management','Roll back with Flashback Database','Needs a guaranteed restore point and flashback logging enabled.',`SHUTDOWN IMMEDIATE;
+STARTUP MOUNT;
+FLASHBACK DATABASE TO RESTORE POINT before_release;
+ALTER DATABASE OPEN RESETLOGS;`],
+['PostgreSQL','Change management','Apply schema changes with a migration tool','Track applied migrations in version control, using a tool such as Flyway or Sqitch.',`flyway -url=jdbc:postgresql://db_host/mydb -user=app migrate
+flyway info`],
+['PostgreSQL','Change management','Wrap a risky change in a transaction to test it','DDL is transactional in PostgreSQL, so most changes can be rolled back if something looks wrong.',`BEGIN;
+ALTER TABLE orders ADD COLUMN status text;
+-- check it looks right, then
+ROLLBACK;`],
+['MySQL','Change management','Apply schema changes with a migration tool','DDL in MySQL is mostly not transactional, so test carefully in a lower environment first.',`flyway -url=jdbc:mysql://db_host/mydb -user=app migrate
+flyway info`],
+['MySQL','Change management','Check for a running online DDL operation','Long ALTER TABLE operations can be tracked and, if needed, killed.',`SELECT * FROM information_schema.innodb_metrics WHERE name LIKE '%ddl%';
+SHOW PROCESSLIST;`],
+['SQL Server','Change management','Apply schema changes with a migration tool','Track versioned scripts in source control using a tool such as Flyway or DbUp.',`flyway -url=jdbc:sqlserver://db_host;databaseName=mydb -user=app migrate`],
+['SQL Server','Change management','Wrap a risky change in a transaction to test it','Roll back if the change does not look right.',`BEGIN TRANSACTION;
+ALTER TABLE dbo.Orders ADD Status varchar(20) NULL;
+-- check it looks right, then
+ROLLBACK TRANSACTION;`],
+
+['Oracle','Compliance frameworks','Check password and account policies for PCI or similar audits','Auditors typically check expiry, lockout and complexity settings.',`SELECT profile, resource_name, limit FROM dba_profiles
+WHERE resource_name IN ('PASSWORD_LIFE_TIME','FAILED_LOGIN_ATTEMPTS','PASSWORD_REUSE_MAX');`],
+['Oracle','Compliance frameworks','List users with powerful roles for a periodic access review','Send this list to application owners on a regular schedule.',`SELECT grantee, granted_role FROM dba_role_privs
+WHERE granted_role IN ('DBA','SYSDBA') ORDER BY grantee;`],
+['PostgreSQL','Compliance frameworks','Confirm encryption in transit is enforced','Many frameworks such as PCI DSS require encrypted connections.',`SHOW ssl;
+SELECT count(*) FROM pg_hba_file_rules WHERE type = 'host' AND auth_method <> 'reject';`],
+['PostgreSQL','Compliance frameworks','List roles with superuser for a periodic access review','Send this list to application owners on a regular schedule.',`SELECT rolname FROM pg_roles WHERE rolsuper;`],
+['MySQL','Compliance frameworks','Confirm required SSL and password expiry settings','Common checks for compliance audits.',`SELECT user, host, ssl_type FROM mysql.user;
+SELECT user, host, password_lifetime FROM mysql.user;`],
+['MySQL','Compliance frameworks','List accounts with admin privileges for a periodic access review','Send this list to application owners on a regular schedule.',`SELECT grantee, privilege_type FROM information_schema.user_privileges
+WHERE privilege_type = 'SUPER';`],
+['SQL Server','Compliance frameworks','Confirm TDE and audit are enabled where required','Common checks for compliance audits such as PCI DSS or HIPAA.',`SELECT name, is_encrypted FROM sys.databases;
+SELECT name, is_state_enabled FROM sys.server_audits;`],
+['SQL Server','Compliance frameworks','List members of sysadmin for a periodic access review','Send this list to application owners on a regular schedule.',`SELECT m.name FROM sys.server_role_members r
+JOIN sys.server_principals m ON r.member_principal_id = m.principal_id
+JOIN sys.server_principals p ON r.role_principal_id = p.principal_id
+WHERE p.name = 'sysadmin';`],
+
+['Oracle','Capacity and sizing','Estimate a new tablespace size from row and index estimates','Rough sizing before creating a new tablespace for a project.',`SELECT segment_name, ROUND(bytes/1048576) AS mb FROM dba_segments
+WHERE segment_name = 'EMPLOYEES';
+-- add 20-30% for indexes and headroom when sizing a new tablespace`],
+['Oracle','Capacity and sizing','CPU and I/O usage over the last hour from AWR','Requires the Diagnostics Pack license.',`SELECT snap_id, ROUND(value,1) AS host_cpu_pct FROM dba_hist_osstat
+WHERE stat_name = 'BUSY_TIME' AND snap_id > (SELECT MAX(snap_id) FROM dba_hist_snapshot) - 4;`],
+['PostgreSQL','Capacity and sizing','Estimate table size before creating it','Rough per-row and per-index sizing.',`SELECT pg_size_pretty(pg_relation_size('orders')) AS table_size,
+       pg_size_pretty(pg_indexes_size('orders')) AS index_size;`],
+['PostgreSQL','Capacity and sizing','Server CPU and memory headroom','Basic OS-level check to compare against database settings.',`SELECT setting FROM pg_settings WHERE name = 'shared_buffers';
+-- on the OS
+free -h
+nproc`],
+['MySQL','Capacity and sizing','Estimate table size before creating it','Rough sizing based on an existing similar table.',`SELECT table_name, data_length, index_length FROM information_schema.tables
+WHERE table_schema = 'mydb' AND table_name = 'orders';`],
+['MySQL','Capacity and sizing','Server CPU and memory headroom','Basic OS-level check to compare against buffer pool sizing.',`SHOW VARIABLES LIKE 'innodb_buffer_pool_size';
+free -h
+nproc`],
+['SQL Server','Capacity and sizing','Estimate table size before creating it','Uses an existing table to estimate row and index size.',`EXEC sp_spaceused 'dbo.Orders';`],
+['SQL Server','Capacity and sizing','Server CPU and memory headroom','Compare physical memory with max server memory settings.',`SELECT physical_memory_kb/1024 AS server_mb, virtual_machine_type_desc FROM sys.dm_os_sys_info;`],
+
+['Oracle','Archiving and retention','Move old rows to an archive table','Archive, verify the count, then delete from the live table.',`INSERT INTO hr.orders_archive SELECT * FROM hr.orders WHERE order_date < ADD_MONTHS(SYSDATE,-24);
+DELETE FROM hr.orders WHERE order_date < ADD_MONTHS(SYSDATE,-24);
+COMMIT;`],
+['Oracle','Archiving and retention','Automatic Data Optimization to compress cold data','Compresses partitions that have not been modified in 90 days, saving space without deleting anything.',`ALTER TABLE hr.orders ILM ADD POLICY
+  ROW STORE COMPRESS ADVANCED SEGMENT AFTER 90 DAYS OF NO MODIFICATION;`],
+['PostgreSQL','Archiving and retention','Move old rows to an archive table','Insert into the archive, then delete from the live table in one transaction.',`BEGIN;
+INSERT INTO orders_archive SELECT * FROM orders WHERE order_date < now() - interval '2 years';
+DELETE FROM orders WHERE order_date < now() - interval '2 years';
+COMMIT;`],
+['PostgreSQL','Archiving and retention','Drop old partitions instead of deleting rows','Far cheaper than a row-by-row delete when the table is partitioned by date.',`DROP TABLE orders_2023_09;`],
+['MySQL','Archiving and retention','Move old rows to an archive table in batches','Deleting in batches avoids one huge transaction and long lock waits.',`INSERT INTO orders_archive SELECT * FROM orders WHERE order_date < NOW() - INTERVAL 2 YEAR;
+DELETE FROM orders WHERE order_date < NOW() - INTERVAL 2 YEAR LIMIT 1000;
+-- repeat the DELETE until it affects 0 rows`],
+['MySQL','Archiving and retention','Drop old partitions instead of deleting rows','Far cheaper than a row-by-row delete when the table is partitioned by date.',`ALTER TABLE orders DROP PARTITION p2023_09;`],
+['SQL Server','Archiving and retention','Move old rows to an archive table in batches','OUTPUT captures the deleted rows so they can be inserted elsewhere in the same statement.',`DELETE TOP (1000) FROM dbo.Orders
+OUTPUT DELETED.* INTO dbo.OrdersArchive
+WHERE OrderDate < DATEADD(year,-2,GETDATE());
+-- repeat until 0 rows affected`],
+['SQL Server','Archiving and retention','Switch out an old partition to an archive table','A metadata-only operation, so it is instant even on large tables.',`ALTER TABLE dbo.Orders SWITCH PARTITION 1 TO dbo.OrdersArchive;`],
+
+['Oracle','Query hints and plan stability','Force a specific execution plan with SQL Plan Baselines','Locks in a known-good plan so an optimizer or statistics change cannot regress it.',`DBMS_SPM.LOAD_PLANS_FROM_CURSOR_CACHE(sql_id => 'abc123xyz');
+SELECT sql_handle, plan_name, enabled FROM dba_sql_plan_baselines;`],
+['Oracle','Query hints and plan stability','Common hints and when to use them','Hints override the optimizer and should be used sparingly, only after confirming the default plan is wrong.',`SELECT /*+ INDEX(e emp_dept_ix) */ * FROM hr.employees e WHERE department_id = 50;
+SELECT /*+ FULL(e) PARALLEL(e,4) */ * FROM hr.employees e;`],
+['PostgreSQL','Query hints and plan stability','Influence the planner without traditional hints','PostgreSQL has no native hint syntax; these settings nudge the planner instead.',`SET enable_seqscan = off;
+SELECT * FROM orders WHERE customer_id = 42;
+RESET enable_seqscan;`],
+['PostgreSQL','Query hints and plan stability','Use pg_hint_plan for explicit hints','A separate extension, needed when a specific plan must be forced.',`CREATE EXTENSION pg_hint_plan;
+/*+ IndexScan(orders idx_orders_customer) */
+SELECT * FROM orders WHERE customer_id = 42;`],
+['MySQL','Query hints and plan stability','Optimizer hints in the query','Newer syntax than FORCE INDEX, and works at the statement level.',`SELECT /*+ INDEX(orders idx_customer) */ * FROM orders WHERE customer_id = 42;
+SELECT /*+ NO_ICP(orders) */ * FROM orders WHERE customer_id = 42;`],
+['MySQL','Query hints and plan stability','Capture and replay a query plan with a plan management table','Advanced; useful when the same query occasionally picks a bad plan.',`SET GLOBAL innodb_stats_persistent = ON;
+ANALYZE TABLE orders;`],
+['SQL Server','Query hints and plan stability','Force a specific plan with Query Store','Query Store captures plans over time and lets you pin a known-good one.',`ALTER DATABASE mydb SET QUERY_STORE = ON;
+EXEC sp_query_store_force_plan @query_id = 10, @plan_id = 25;`],
+['SQL Server','Query hints and plan stability','Common query hints','OPTION hints affect one statement; USE PLAN forces an exact plan from XML.',`SELECT * FROM dbo.Orders WHERE CustomerId = 42 OPTION (RECOMPILE);
+SELECT * FROM dbo.Orders WITH (INDEX(IX_Orders_Customer)) WHERE CustomerId = 42;`],
+
+['Oracle','Directory and SSO integration','Authenticate database users against LDAP or Active Directory','Users log in with their directory password instead of a separate database password.',`ALTER SYSTEM SET OS_AUTHENT_PREFIX = '' SCOPE = SPFILE;
+CREATE USER jdoe IDENTIFIED GLOBALLY AS 'CN=jdoe,OU=Users,DC=corp,DC=example,DC=com';`],
+['Oracle','Directory and SSO integration','Map a directory group to a database role','Everyone in the AD group gets the role without individual grants.',`-- configured through Oracle Enterprise User Security and Oracle Internet Directory
+SELECT username, external_name FROM dba_users WHERE authentication_type = 'GLOBAL';`],
+['PostgreSQL','Directory and SSO integration','Authenticate against LDAP','pg_hba.conf routes matching connections to the LDAP server for password checks.',`# pg_hba.conf
+host  all  all  10.0.0.0/24  ldap ldapserver=ldap.corp.example.com ldapbasedn="dc=corp,dc=example,dc=com"`],
+['PostgreSQL','Directory and SSO integration','Use GSSAPI for Kerberos single sign-on','Lets users connect without typing a password, using their existing Kerberos ticket.',`# pg_hba.conf
+host  all  all  10.0.0.0/24  gss include_realm=0 krb_realm=CORP.EXAMPLE.COM`],
+['MySQL','Directory and SSO integration','Authenticate against LDAP with the PAM plugin','Requires the PAM authentication plugin and an LDAP-aware PAM module on the OS.',`INSTALL PLUGIN authentication_pam SONAME 'authentication_pam.so';
+CREATE USER 'jdoe'@'%' IDENTIFIED WITH authentication_pam;`],
+['MySQL','Directory and SSO integration','Authenticate against Windows Active Directory','MySQL Enterprise Edition feature for direct AD integration.',`CREATE USER 'jdoe'@'%' IDENTIFIED WITH authentication_windows;`],
+['SQL Server','Directory and SSO integration','Create a login from an Active Directory account','The normal way to integrate SQL Server with a domain.',`CREATE LOGIN [CORP\\jdoe] FROM WINDOWS;
+CREATE USER jdoe FOR LOGIN [CORP\\jdoe];`],
+['SQL Server','Directory and SSO integration','Add an Azure AD (Entra ID) admin','Used when the database is Azure SQL rather than on-premises.',`ALTER SERVER... -- set through the Azure portal or:
+az sql server ad-admin create --resource-group myrg --server myserver \\
+  --display-name "DBA Team" --object-id <aad-object-id>`],
+
+['Oracle','Interview questions','Difference between TRUNCATE and DELETE in Oracle','DELETE is logged row by row and can be rolled back; TRUNCATE deallocates the extents immediately, resets the high water mark, and cannot be rolled back once issued.',`TRUNCATE TABLE hr.temp_load;`],
+['Oracle','Interview questions','Types of materialized view refresh','COMPLETE re-runs the whole query. FAST applies only the changes, using a materialized view log. FORCE lets Oracle pick FAST if possible, otherwise COMPLETE.',`EXEC DBMS_MVIEW.REFRESH('HR.MV_DAILY_SALES', 'C');`],
+['Oracle','Interview questions','Partitioning strategies: range, hash and list','Range partitions by an ordered value like a date. Hash spreads rows evenly using a hash of the key, useful for load balancing without a natural range. List partitions by a fixed set of discrete values such as region.',`SELECT partitioning_type FROM dba_part_tables WHERE table_name = 'SALES';`],
+['Oracle','Interview questions','EXPLAIN PLAN versus SQL Trace','EXPLAIN PLAN shows the estimated plan without running the query. SQL Trace, read with tkprof, captures the actual execution including waits and real row counts, so it is more reliable for real tuning.',`ALTER SESSION SET SQL_TRACE = TRUE;`],
+
+['PostgreSQL','Interview questions','Partitioning strategies: range, list and hash','Range partitions by an ordered value like a date. List partitions by a fixed set of discrete values. Hash spreads rows evenly across a fixed number of partitions.',`CREATE TABLE orders_h PARTITION OF orders FOR VALUES WITH (MODULUS 4, REMAINDER 0);`],
+['PostgreSQL','Interview questions','INNER JOIN versus LEFT JOIN','INNER JOIN returns only rows with a match in both tables. LEFT JOIN returns every row from the left table, with NULLs for columns from the right table when there is no match.',`SELECT c.name, o.id FROM customers c LEFT JOIN orders o ON o.customer_id = c.id;`],
+['PostgreSQL','Interview questions','ON DELETE CASCADE on a foreign key','Automatically deletes child rows when the referenced parent row is deleted, instead of failing with a foreign key violation.',`ALTER TABLE orders ADD CONSTRAINT fk_customer
+  FOREIGN KEY (customer_id) REFERENCES customers(id) ON DELETE CASCADE;`],
+['PostgreSQL','Interview questions','Why use PgBouncer for connection pooling?','Each PostgreSQL connection is a full OS process, so a high connection count wastes memory. PgBouncer sits in front and reuses a small pool of real connections across many client connections.',`# pgbouncer.ini
+[databases]
+mydb = host=127.0.0.1 port=5432
+pool_mode = transaction`],
+
+['MySQL','Interview questions','Row-level versus table-level locking','InnoDB locks only the rows a transaction touches, allowing high concurrency. MyISAM locks the whole table for writes, which serializes writers and is one reason InnoDB is preferred.',`SHOW ENGINE INNODB STATUS\\G`],
+['MySQL','Interview questions','What are replication filters used for?','They let a replica include or exclude specific databases or tables from replication, useful when a replica only needs part of the data.',`SHOW VARIABLES LIKE 'replicate%';`],
+['MySQL','Interview questions','VARCHAR versus TEXT','VARCHAR has a defined maximum length, stores inline with the row up to a point, and can be part of an index without a prefix length. TEXT is meant for longer content, stored partly off-page, and needs a prefix length to index.',`CREATE TABLE t (summary VARCHAR(500), body TEXT);`],
+['MySQL','Interview questions','Why does column order matter in a composite index?','InnoDB indexes are sorted left to right, so a query must use a leftmost prefix of the columns to benefit. Put the most selective, most frequently filtered column first.',`CREATE INDEX idx_orders_cust_date ON orders (customer_id, order_date);`],
+
+['SQL Server','Interview questions','Temp table versus table variable','A temp table (#table) behaves like a real table, supports indexes and statistics, and is best for larger data. A table variable has limited statistics and is usually best for small, simple sets.',`CREATE TABLE #temp (Id int);
+DECLARE @tv TABLE (Id int);`],
+['SQL Server','Interview questions','Always On Availability Groups versus Failover Cluster Instances','An Availability Group replicates specific databases to readable secondaries at the database level. An FCI protects the whole instance using shared storage, with only one node active at a time and no readable secondary.',`SELECT name FROM sys.availability_groups;`],
+['SQL Server','Interview questions','What is SNAPSHOT isolation?','Readers see a consistent snapshot of the data as of the start of the transaction, so they never block writers. It uses row versioning in tempdb and can raise update conflict errors instead of blocking.',`ALTER DATABASE mydb SET ALLOW_SNAPSHOT_ISOLATION ON;
+SET TRANSACTION ISOLATION LEVEL SNAPSHOT;`],
+['SQL Server','Interview questions','What is a computed column?','A column defined by an expression over other columns in the same row. It can be persisted (stored and indexable) or left virtual (calculated on read).',`ALTER TABLE dbo.Orders ADD TotalWithTax AS (Amount * 1.1) PERSISTED;`],
+
+['Oracle','REST and API access','Expose a table over REST with ORDS','Oracle REST Data Services turns a schema or table into a REST endpoint without writing an API layer.',`BEGIN
+  ORDS.ENABLE_SCHEMA(p_enabled => TRUE, p_schema => 'HR');
+  ORDS.ENABLE_OBJECT(p_enabled => TRUE, p_schema => 'HR', p_object => 'EMPLOYEES', p_object_type => 'TABLE');
+END;
+/`],
+['Oracle','REST and API access','Call the generated REST endpoint','GET on the auto-REST endpoint returns rows as JSON, paged by default.',`curl https://dbhost:8443/ords/hr/employees/`],
+['PostgreSQL','REST and API access','Expose tables over REST with PostgREST','Reads the schema and instantly serves a REST API, with permissions driven by database roles.',`# postgrest.conf
+db-uri = "postgres://app:pwd@localhost/mydb"
+db-schemas = "api"
+postgrest postgrest.conf`],
+['PostgreSQL','REST and API access','Query the generated REST endpoint','PostgREST turns query parameters into SQL filters automatically.',`curl "http://localhost:3000/orders?status=eq.open&order=order_date.desc"`],
+['MySQL','REST and API access','Enable the MySQL Document Store REST-like interface (X DevAPI)','X Protocol lets you query MySQL as a document store from application SDKs, alongside normal SQL.',`SET GLOBAL mysqlx_port = 33060;
+-- from an app using an X DevAPI driver
+db.getCollection('orders').find('status = "open"')`],
+['MySQL','REST and API access','Put a lightweight API in front of MySQL','MySQL has no built-in REST layer, so a small API service (or a tool like Hasura) is the common approach.',`# example with a generic ORM-based API layer
+GET /api/orders?status=open`],
+['SQL Server','REST and API access','Expose data through the Azure SQL built-in REST endpoint','Available on Azure SQL Database; not available on-premises without an API layer.',`curl -X POST https://myserver.database.windows.net:1433/rest/example \\
+  -H "Authorization: Bearer <token>" -d '{"query":"SELECT TOP 10 * FROM dbo.Orders"}'`],
+['SQL Server','REST and API access','Call a stored procedure from an HTTP service layer','On-premises SQL Server has no native REST endpoint, so a thin API service is the common pattern.',`EXEC dbo.GetOpenOrders;
+-- exposed by an API layer as GET /api/orders?status=open`],
+
+['Oracle','Sharding','Check the shard topology','Requires the Oracle Sharding feature and a configured shard catalog.',`gdsctl config shard
+gdsctl status`],
+['Oracle','Sharding','Run a query across all shards','SHARDED tables spread data by a shard key; a cross-shard query is coordinated by the catalog.',`SELECT COUNT(*) FROM hr.orders;  -- run through the GSM-aware connection`],
+['PostgreSQL','Sharding','Shard with the Citus extension','Distributes a table\'s rows across worker nodes by a distribution column.',`CREATE EXTENSION citus;
+SELECT create_distributed_table('orders', 'customer_id');`],
+['PostgreSQL','Sharding','Check shard placement across nodes','Shows which worker node holds which shard.',`SELECT * FROM citus_shards;`],
+['MySQL','Sharding','Shard manually by a key range across schemas','MySQL has no built-in sharding; a common pattern is routing by customer_id range at the application layer.',`-- shard 1: customer_id 1-1000000 on host db1
+-- shard 2: customer_id 1000001-2000000 on host db2
+SELECT * FROM orders WHERE customer_id = 500000;  -- app routes to db1`],
+['MySQL','Sharding','Shard with Vitess','Vitess adds a proxy layer that shards MySQL transparently to the application.',`vtctldclient ApplySchema --sql-file=schema.sql mydb
+vtctldclient Reshard mydb.reshard1 --source_shards=0 --target_shards=-80,80-`],
+['SQL Server','Sharding','Query across shards with elastic query (Azure SQL)','Lets one database query tables that live in other, sharded Azure SQL databases.',`CREATE EXTERNAL DATA SOURCE ShardedOrders
+  WITH (TYPE = SHARD_MAP_MANAGER, LOCATION = 'shardmapserver.database.windows.net',
+        DATABASE_NAME = 'ShardMapDB', SHARD_MAP_NAME = 'OrdersMap', CREDENTIAL = ShardCred);
+CREATE EXTERNAL TABLE dbo.Orders_External (...) WITH (DATA_SOURCE = ShardedOrders);`],
+['SQL Server','Sharding','Partitioned views across manually split databases','An older, on-premises pattern using UNION ALL views over identically structured tables.',`CREATE VIEW dbo.OrdersAll AS
+  SELECT * FROM Shard1.dbo.Orders WHERE CustomerId BETWEEN 1 AND 1000000
+  UNION ALL
+  SELECT * FROM Shard2.dbo.Orders WHERE CustomerId BETWEEN 1000001 AND 2000000;`],
+
+['Oracle','Testing and CI/CD','Run schema tests with utPLSQL','A unit testing framework for PL/SQL, similar in spirit to JUnit.',`CREATE OR REPLACE PACKAGE test_orders IS
+  --%suite
+  --%test
+  PROCEDURE total_is_positive;
+END;
+/
+EXEC ut.run('APP.TEST_ORDERS');`],
+['Oracle','Testing and CI/CD','Spin up a disposable test database in a pipeline','Uses a lightweight container image so each pipeline run gets a clean database.',`docker run -d --name oracle-ci -e ORACLE_PWD=<pwd> gvenzl/oracle-xe:slim-faststart
+# wait for healthy, then run migrations and tests`],
+['PostgreSQL','Testing and CI/CD','Run schema tests with pgTAP','A TAP-based unit testing framework for PostgreSQL, integrates with most CI systems.',`CREATE EXTENSION pgtap;
+SELECT has_table('public', 'orders', 'orders table should exist');
+SELECT * FROM runtests();`],
+['PostgreSQL','Testing and CI/CD','Spin up a disposable test database in a pipeline','A fresh, isolated database for each pipeline run.',`docker run -d --name pg-ci -e POSTGRES_PASSWORD=<pwd> -p 5433:5432 postgres:17
+psql -h localhost -p 5433 -U postgres -f schema.sql`],
+['MySQL','Testing and CI/CD','Run schema tests with the mytap extension','A TAP-based testing framework for MySQL, similar to pgTAP.',`CALL tap.plan(1);
+CALL tap.ok(EXISTS(SELECT 1 FROM orders LIMIT 1), 'orders table has data');
+CALL tap.finish();`],
+['MySQL','Testing and CI/CD','Spin up a disposable test database in a pipeline','A fresh, isolated database for each pipeline run.',`docker run -d --name mysql-ci -e MYSQL_ROOT_PASSWORD=<pwd> -p 3307:3306 mysql:8.4
+mysql -h 127.0.0.1 -P 3307 -u root -p<pwd> < schema.sql`],
+['SQL Server','Testing and CI/CD','Run schema tests with tSQLt','A unit testing framework for T-SQL, runs inside the database itself.',`EXEC tSQLt.NewTestClass 'OrdersTests';
+GO
+CREATE PROCEDURE OrdersTests.[test total is never negative] AS
+BEGIN
+  ASSERT.IsTrue((SELECT MIN(Amount) FROM dbo.Orders) >= 0);
+END;
+GO
+EXEC tSQLt.RunAll;`],
+['SQL Server','Testing and CI/CD','Spin up a disposable test database in a pipeline','A fresh, isolated SQL Server for each pipeline run.',`docker run -d --name mssql-ci -e ACCEPT_EULA=Y -e MSSQL_SA_PASSWORD=<pwd> -p 1434:1433 \\
+  mcr.microsoft.com/mssql/server:2022-latest
+sqlcmd -S localhost,1434 -U sa -P <pwd> -i schema.sql`],
+
+['Oracle','Interview questions','VARCHAR2 versus CHAR','VARCHAR2 stores only the characters given, up to the declared limit. CHAR is fixed length and pads with trailing spaces, which can cause surprising results when comparing values.',`CREATE TABLE t (code CHAR(3), name VARCHAR2(100));`],
+['Oracle','Interview questions','What is a bind variable and why does it matter?','A placeholder for a literal value in SQL, such as :dept_id. Using bind variables lets Oracle reuse the same parsed cursor for different values, avoiding hard parses and reducing shared pool contention and latch waits.',`SELECT * FROM hr.employees WHERE department_id = :dept_id;`],
+['Oracle','Interview questions','Statement-level versus transaction-level read consistency','A single query always sees data as of the moment it started, using undo. Setting SERIALIZABLE isolation extends that same consistent view across every statement in the whole transaction.',`ALTER SESSION SET ISOLATION_LEVEL = SERIALIZABLE;`],
+['Oracle','Interview questions','What causes excessive log switching, and why does it matter?','High transaction volume or undersized redo logs cause frequent switches, which triggers more checkpoints and archiving, adding overhead. The fix is usually larger, or more, redo log groups.',`SELECT group#, sequence#, first_time FROM v$log_history ORDER BY first_time DESC FETCH FIRST 10 ROWS ONLY;`],
+
+['PostgreSQL','Interview questions','TRUNCATE versus DELETE in PostgreSQL','DELETE removes rows individually, is fully logged and can be filtered with WHERE and rolled back. TRUNCATE deallocates the pages directly, is much faster for a full wipe, and also resets any owned sequences.',`TRUNCATE TABLE orders RESTART IDENTITY CASCADE;`],
+['PostgreSQL','Interview questions','Foreign key versus check constraint','A foreign key enforces that a value exists in another table\'s column. A check constraint enforces a boolean condition on the row itself, such as amount > 0, with no reference to another table.',`ALTER TABLE orders ADD CONSTRAINT amount_positive CHECK (amount > 0);`],
+['PostgreSQL','Interview questions','How connections map to backend processes','PostgreSQL forks one OS backend process per connection, unlike a threaded model. This is why connection counts matter so much for memory, and why a pooler like PgBouncer is often used.',`SELECT pid, backend_type FROM pg_stat_activity;`],
+['PostgreSQL','Interview questions','Logical replication versus physical (streaming) replication','Physical replication streams raw WAL and replicates the entire cluster byte for byte. Logical replication decodes changes into row-level operations, so it can replicate specific tables and works across major versions.',`SELECT * FROM pg_publication;
+SELECT * FROM pg_stat_replication;`],
+
+['MySQL','Interview questions','Why do some statements commit automatically?','DDL statements such as CREATE TABLE or ALTER TABLE cause an implicit commit in MySQL, ending any open transaction. This differs from Oracle and PostgreSQL, where DDL can usually be part of a transaction.',`START TRANSACTION;
+INSERT INTO orders (id) VALUES (1);
+CREATE TABLE t (id INT);  -- this implicitly commits the INSERT above`],
+['MySQL','Interview questions','Binary log formats: STATEMENT, ROW and MIXED','STATEMENT logs the SQL text, which is compact but can replicate inconsistently for non-deterministic statements. ROW logs the actual row changes, which is safer and is the default. MIXED switches between the two automatically.',`SHOW VARIABLES LIKE 'binlog_format';`],
+['MySQL','Interview questions','Common causes of replication lag','A single-threaded replica applier struggling with the source\'s write rate, a large unindexed table needing a full scan on the replica, or long-running transactions on the replica blocking apply threads.',`SHOW REPLICA STATUS\\G   -- check Seconds_Behind_Source`],
+['MySQL','Interview questions','Common replication topologies','Source-replica is one source with one or more replicas. Chained replication has a replica act as a source for further replicas, reducing load on the original source. Group Replication forms a multi-primary or single-primary cluster.',`SELECT * FROM performance_schema.replication_connection_status;`],
+
+['SQL Server','Interview questions','Heap versus a table with a clustered index','A heap has no clustered index, so rows are stored in no particular order and accessed by a row identifier. A clustered index physically orders the table\'s data by the key, which usually makes range scans and lookups faster.',`SELECT OBJECT_NAME(object_id) AS tbl, index_id, type_desc FROM sys.indexes WHERE index_id IN (0,1);`],
+['SQL Server','Interview questions','What is a filtered index?','A non-clustered index built on only the rows matching a WHERE predicate, such as active orders. It is smaller and faster to maintain than an index over the whole table.',`CREATE NONCLUSTERED INDEX IX_Orders_Open ON dbo.Orders (CustomerId) WHERE Status = 'open';`],
+['SQL Server','Interview questions','What is parameter sniffing?','SQL Server compiles a plan using the parameter values from the first execution and caches it. If later calls use very different values, that cached plan can be a poor fit, causing inconsistent performance.',`ALTER DATABASE SCOPED CONFIGURATION SET PARAMETER_SNIFFING = OFF;`],
+['SQL Server','Interview questions','What is a contained database?','A database with fewer dependencies on the instance: logins, collation settings and other metadata live inside the database itself, which makes it easier to move between servers, including Availability Group failover.',`ALTER DATABASE mydb SET CONTAINMENT = PARTIAL;`],
+
+['Oracle','Incident response','First checks when a database is reported down','Run these before escalating; they answer most of the "is it really down" questions.',`ps -ef | grep pmon
+lsnrctl status
+tail -50 $ORACLE_BASE/diag/rdbms/*/*/trace/alert_*.log`],
+['Oracle','Incident response','Capture a quick health snapshot for the incident record','Takes a moment and gives the next responder a starting point.',`SELECT instance_name, status, database_status FROM v$instance;
+SELECT tablespace_name, status FROM dba_tablespaces WHERE status <> 'ONLINE';
+SELECT COUNT(*) FROM v$session WHERE status = 'ACTIVE';`],
+['PostgreSQL','Incident response','First checks when a database is reported down','Run these before escalating.',`sudo systemctl status postgresql
+pg_isready -h localhost
+sudo tail -50 /var/log/postgresql/postgresql-17-main.log`],
+['PostgreSQL','Incident response','Capture a quick health snapshot for the incident record','A fast baseline to attach to the incident ticket.',`SELECT count(*) FROM pg_stat_activity;
+SELECT datname, pg_size_pretty(pg_database_size(datname)) FROM pg_database;
+SELECT * FROM pg_stat_replication;`],
+['MySQL','Incident response','First checks when a database is reported down','Run these before escalating.',`sudo systemctl status mysqld
+mysqladmin -u root -p ping
+sudo tail -50 /var/log/mysqld.log`],
+['MySQL','Incident response','Capture a quick health snapshot for the incident record','A fast baseline to attach to the incident ticket.',`SHOW GLOBAL STATUS LIKE 'Threads_connected';
+SHOW REPLICA STATUS\\G
+SHOW ENGINE INNODB STATUS\\G`],
+['SQL Server','Incident response','First checks when a database is reported down','Run these before escalating.',`sc query MSSQLSERVER
+sqlcmd -S localhost -Q "SELECT @@SERVERNAME, GETDATE()"
+EXEC xp_readerrorlog 0, 1;`],
+['SQL Server','Incident response','Capture a quick health snapshot for the incident record','A fast baseline to attach to the incident ticket.',`SELECT name, state_desc FROM sys.databases;
+SELECT COUNT(*) FROM sys.dm_exec_sessions WHERE is_user_process = 1;
+SELECT TOP 5 wait_type, wait_time_ms FROM sys.dm_os_wait_stats ORDER BY wait_time_ms DESC;`],
+
+['Oracle','Naming conventions and standards','A practical naming convention for common objects','Consistency makes scripts, monitoring and onboarding much easier.',`-- tables: singular or plural, but pick one, e.g. ORDERS
+-- primary key constraint: PK_ORDERS
+-- foreign key constraint: FK_ORDERS_CUSTOMERS
+-- index: IX_ORDERS_CUSTOMER_ID
+-- sequence: SEQ_ORDERS_ID`],
+['Oracle','Naming conventions and standards','Find objects that break your naming standard','Simple pattern check for constraint names.',`SELECT constraint_name FROM dba_constraints
+WHERE owner = 'HR' AND constraint_type = 'R' AND constraint_name NOT LIKE 'FK\\_%' ESCAPE '\\';`],
+['PostgreSQL','Naming conventions and standards','A practical naming convention for common objects','snake_case avoids needing to quote identifiers.',`-- tables: snake_case plural, e.g. orders
+-- primary key: orders_pkey (the default Postgres naming)
+-- foreign key: fk_orders_customer_id
+-- index: idx_orders_customer_id`],
+['PostgreSQL','Naming conventions and standards','Find objects that break your naming standard','Lists indexes that do not follow an idx_ prefix.',`SELECT indexname FROM pg_indexes WHERE schemaname = 'public' AND indexname NOT LIKE 'idx\\_%';`],
+['MySQL','Naming conventions and standards','A practical naming convention for common objects','Keep names under the identifier length limit and avoid reserved words.',`-- tables: snake_case plural, e.g. orders
+-- foreign key: fk_orders_customer_id
+-- index: idx_orders_customer_id`],
+['MySQL','Naming conventions and standards','Find objects that break your naming standard','Lists indexes that do not follow an idx_ prefix.',`SELECT index_name FROM information_schema.statistics
+WHERE table_schema = 'mydb' AND index_name NOT LIKE 'idx\\_%' AND index_name <> 'PRIMARY';`],
+['SQL Server','Naming conventions and standards','A practical naming convention for common objects','PascalCase is the common SQL Server convention.',`-- tables: PascalCase plural, e.g. Orders
+-- primary key: PK_Orders
+-- foreign key: FK_Orders_Customers
+-- index: IX_Orders_CustomerId`],
+['SQL Server','Naming conventions and standards','Find objects that break your naming standard','Lists indexes that do not follow an IX_ prefix.',`SELECT name FROM sys.indexes WHERE name IS NOT NULL AND name NOT LIKE 'IX[_]%' AND name NOT LIKE 'PK[_]%';`],
+
+['Oracle','Third-party monitoring integration','Expose metrics to Prometheus','The community oracledb_exporter runs alongside the database and scrapes v$ views.',`docker run -d -p 9161:9161 -e DATA_SOURCE_NAME="app/pwd@localhost:1521/ORCL" \\
+  iamseth/oracledb_exporter`],
+['Oracle','Third-party monitoring integration','Send alerts through a webhook when a check fails','A generic pattern used by many monitoring tools alongside a query like this.',`SELECT tablespace_name, used_percent FROM dba_tablespace_usage_metrics WHERE used_percent > 90;
+-- external monitoring tool calls a webhook if this query returns rows`],
+['PostgreSQL','Third-party monitoring integration','Expose metrics to Prometheus','postgres_exporter reads pg_stat views and exposes them on an HTTP endpoint.',`docker run -d -p 9187:9187 -e DATA_SOURCE_NAME="postgresql://app:pwd@localhost:5432/mydb?sslmode=disable" \\
+  prometheuscommunity/postgres-exporter`],
+['PostgreSQL','Third-party monitoring integration','Check what pg_stat_statements exposes for external dashboards','The same view that tools like Datadog and Grafana typically read from.',`SELECT query, calls, mean_exec_time FROM pg_stat_statements ORDER BY mean_exec_time DESC LIMIT 5;`],
+['MySQL','Third-party monitoring integration','Expose metrics to Prometheus','mysqld_exporter reads performance_schema and status variables.',`docker run -d -p 9104:9104 -e DATA_SOURCE_NAME="app:pwd@(localhost:3306)/" \\
+  prom/mysqld-exporter`],
+['MySQL','Third-party monitoring integration','Check what monitoring tools typically read for dashboards','The same status and performance_schema data that external tools like Datadog poll.',`SHOW GLOBAL STATUS;
+SELECT * FROM performance_schema.events_statements_summary_by_digest LIMIT 5;`],
+['SQL Server','Third-party monitoring integration','Expose metrics to Prometheus','sql_exporter reads from dynamic management views and exposes them on an HTTP endpoint.',`docker run -d -p 9399:9399 -v ./sql_exporter.yml:/config/sql_exporter.yml \\
+  githubfree/sql_exporter`],
+['SQL Server','Third-party monitoring integration','Check what monitoring tools typically read for dashboards','The same DMVs that external tools like Datadog and SolarWinds poll.',`SELECT TOP 5 * FROM sys.dm_os_performance_counters;
+SELECT TOP 5 * FROM sys.dm_exec_query_stats ORDER BY total_worker_time DESC;`],
+
+['Oracle','Interview questions','VARCHAR2 versus CHAR revisited: trailing space comparison','Oracle compares CHAR values by padding the shorter one with spaces (blank-padded comparison), but compares VARCHAR2 values without padding, so "AB" and "AB " are equal for CHAR but not for VARCHAR2.',`SELECT CAST('AB' AS CHAR(4)) = CAST('AB  ' AS CHAR(4)) FROM dual;`],
+['Oracle','Interview questions','Heap table versus index-organized table (IOT)','A normal heap table stores rows in no particular order. An IOT stores the rows themselves inside the primary key\'s B-tree structure, which suits tables that are almost always looked up by that key.',`CREATE TABLE hr.lookup (id NUMBER PRIMARY KEY, val VARCHAR2(50)) ORGANIZATION INDEX;`],
+['Oracle','Interview questions','What is a bitmap join index?','A bitmap index built on a fact table using a column from a joined dimension table, avoiding the join at query time. Common in star-schema data warehouses.',`CREATE BITMAP INDEX sales_region_bmi ON sales(c.region)
+  FROM sales s, customers c WHERE s.customer_id = c.id;`],
+['Oracle','Interview questions','Flashback Query versus Flashback Table','Flashback Query reads a table as of a past time or SCN without changing anything, good for investigating what a row used to look like. Flashback Table actually restores a table to that earlier state, using the same underlying undo data.',`SELECT * FROM hr.orders AS OF TIMESTAMP (SYSTIMESTAMP - INTERVAL '1' HOUR) WHERE id = 100;
+FLASHBACK TABLE hr.orders TO TIMESTAMP (SYSTIMESTAMP - INTERVAL '1' HOUR);`],
+
+['PostgreSQL','Interview questions','View versus materialized view','A view is just a stored query, re-run every time it is selected from, so it is always current. A materialized view stores the result physically and must be refreshed explicitly, trading freshness for speed.',`CREATE VIEW v_orders AS SELECT * FROM orders WHERE status = 'open';`],
+['PostgreSQL','Interview questions','pg_stat_activity versus pg_stat_statements','pg_stat_activity shows what sessions are doing right now, one row per active connection. pg_stat_statements aggregates historical statistics per normalized query text, across every execution since the extension was reset.',`SELECT count(*) FROM pg_stat_activity WHERE state = 'active';`],
+['PostgreSQL','Interview questions','What is a LATERAL join?','It lets a subquery on the right side of the join reference columns from tables on the left, useful for a per-row top-N query that a normal join cannot express directly.',`SELECT c.id, o.* FROM customers c
+CROSS JOIN LATERAL (SELECT * FROM orders o WHERE o.customer_id = c.id ORDER BY o.order_date DESC LIMIT 3) o;`],
+['PostgreSQL','Interview questions','What does REPLICA IDENTITY control?','It determines what old-row information logical replication includes for UPDATE and DELETE. DEFAULT uses the primary key; FULL includes every column, which is needed for tables without a primary key.',`ALTER TABLE orders REPLICA IDENTITY FULL;`],
+
+['MySQL','Interview questions','Optimistic versus pessimistic locking in InnoDB','Pessimistic locking takes a row lock immediately with SELECT ... FOR UPDATE, blocking other writers. Optimistic locking reads without a lock, then checks a version or timestamp column at update time to detect conflicts, retrying if it changed.',`UPDATE orders SET amount = 100, version = version + 1 WHERE id = 1 AND version = 5;`],
+['MySQL','Interview questions','What does sql_mode = STRICT_TRANS_TABLES do?','It makes MySQL reject invalid or missing values with an error instead of silently truncating or substituting defaults, which is the safer, recommended setting.',`SET GLOBAL sql_mode = 'STRICT_TRANS_TABLES,NO_ZERO_DATE';`],
+['MySQL','Interview questions','innodb_flush_log_at_trx_commit values','A value of 1 flushes the redo log to disk on every commit, the safest and default setting. 2 flushes to the OS cache each commit but only to disk once a second. 0 flushes roughly once a second regardless of commits, the fastest but least durable.',`SHOW VARIABLES LIKE 'innodb_flush_log_at_trx_commit';`],
+['MySQL','Interview questions','What is the sys schema used for?','A set of views and procedures built on top of performance_schema, written to be much easier to query directly, such as sys.innodb_lock_waits or sys.statement_analysis.',`SELECT * FROM sys.schema_table_lock_waits;`],
+
+['SQL Server','Interview questions','AFTER trigger versus INSTEAD OF trigger','An AFTER trigger fires once the action has completed, and can only be defined on tables. An INSTEAD OF trigger replaces the action entirely and can be defined on views, letting you make an otherwise non-updatable view writable.',`CREATE TRIGGER trg_orders_audit ON dbo.Orders AFTER INSERT AS
+  INSERT INTO dbo.OrdersAudit SELECT *, GETDATE() FROM inserted;`],
+['SQL Server','Interview questions','Index seek versus index scan','A seek navigates directly to the matching rows using the index structure, ideal for selective queries. A scan reads the entire index or table, which is expected and fine for queries that need most of the rows anyway.',`SET STATISTICS IO ON;
+SELECT * FROM dbo.Orders WHERE Id = 42;`],
+['SQL Server','Interview questions','What is the model database used for?','A template. Every new database is created by copying model, so objects, settings or permissions added to model appear in every database created afterward.',`USE model;
+CREATE TABLE AuditDefaults (Id int);`],
+['SQL Server','Interview questions','What is the dedicated admin connection (DAC)?','A special connection reserved for administrators that works even when the server is unresponsive to normal connections, useful for killing a runaway session or diagnosing a stuck server.',`sqlcmd -S admin:localhost -E`]
 ];
 var ARCH={
 Oracle:{n:'An instance (memory and processes) works on a database (files). Changes are made in memory and logged as redo. LGWR writes redo at commit; DBWn writes the changed blocks later.',
@@ -1112,9 +1909,9 @@ l:[['Memory',['Buffer pool: cached data pages','Plan cache: compiled query plans
 ['Engine components',['SQLOS: schedulers and worker threads','Relational engine: parser and optimizer','Storage engine: access methods and transactions','Checkpoint and lazy writer','Log writer']],
 ['Files on disk',['.mdf primary data file','.ndf secondary data files','.ldf transaction log','System databases: master, model, msdb, tempdb','Backup files']]]}
 };
-var G=[['Learn',['Architecture','Interview questions']],['Set up and maintain',['Install','Patching','Upgrade','High availability']],['Daily work',['Sessions','Storage','Backup','Performance','Health','Security']],['More topics',['Troubleshooting','Maintenance','Automation','Migration','Disaster recovery','Auditing','Cloud']],['Tuning and data',['Indexing','Locks and deadlocks','Partitioning','Import and export','Execution plans','Temp and memory']],['Operations',['Configuration','Connectivity','Capacity planning','Monitoring','Schema objects','Logs and diagnostics']]];
-var TD={Install:'Set up a new database server from scratch.',Patching:'Apply security and bug-fix updates to an existing server.',Upgrade:'Move to a newer major version of the database.','High availability':'Replication, standby servers and failover.',Architecture:'How each database is built: memory, processes and files, plus queries to inspect them.',Troubleshooting:'Diagnose and fix common problems and errors.',Maintenance:'Routine jobs that keep tables, indexes and logs healthy.',Automation:'Schedule backups, jobs and scripts.',Migration:'Move databases and users to another server.','Disaster recovery':'Recover from lost files, crashes and failed servers.',Auditing:'Track logins and changes, and encrypt data.',Cloud:'Run these databases on managed cloud services.','Interview questions':'Common DBA interview questions with short answers.',Indexing:'Create, check and remove indexes safely.','Locks and deadlocks':'Find blockers and deadlocks, and reduce them.',Partitioning:'Split large tables to speed up queries and clean-up.','Import and export':'Move data in and out with CSV and bulk tools.',Configuration:'View and change settings and parameters.',Connectivity:'Fix connection problems and check network settings.','Capacity planning':'Track growth and see how much room is left.',Monitoring:'Checks and thresholds to watch every day.','Execution plans':'See how the database runs a query and why it is slow.','Temp and memory':'Find what uses temporary space and memory.','Schema objects':'Create and inspect databases, tables and constraints.','Logs and diagnostics':'Find and read the logs that explain problems.',Sessions:'See who is connected, find blocked work and stop sessions.',Storage:'Check disk and data file space before it runs out.',Backup:'Take, verify and restore backups.',Performance:'Find slow queries and keep tables and indexes healthy.',Health:'Quick checks that the system is running normally.',Security:'Create users and give them the right access.'};
-var CHG=/\b(ALTER|KILL|CREATE|GRANT|DROP|SET GLOBAL|VACUUM|REBUILD|RESTORE|EXEC|BACKUP|pg_terminate_backend|pg_cancel_backend|shutdown|startup|install|apply|update|upgrade|expdp|pg_dump|mysqldump|rman|setup|initdb|stop|start|restart|patch|runInstaller|autoupgrade|reload|sp_configure|RECONFIGURE|xtrabackup --(backup|copy)|pg_basebackup|REVOKE|pg_restore|mysqlbinlog|ANALYZE TABLE|REINDEX|PURGE|crontab|adrci|impdp|mysqlsh|DELETE|DETACH|Copy-Dba|sqlcmd|cron\.schedule|DBMS_SCHEDULER|pg_rewind|touch|INSERT|LOAD DATA|sqlldr|COPY|bcp|PERSIST|netsh|OUTFILE|FLUSH|pg_drop_replication_slot|FAILOVER|PROMOTE|pg_promote|START REPLICA|REASSIGN|OPTIMIZE)\b/i;
+var G=[['Learn',['Architecture','SQL syntax tips','Interview questions']],['Set up and maintain',['Install','Patching','Upgrade','High availability']],['Daily work',['Sessions','Storage','Backup','Performance','Health','Security']],['More topics',['Troubleshooting','Maintenance','Automation','Migration','Disaster recovery','Auditing','Cloud']],['Tuning and data',['Indexing','Locks and deadlocks','Partitioning','Import and export','Execution plans','Temp and memory']],['Operations',['Configuration','Connectivity','Capacity planning','Monitoring','Schema objects','Logs and diagnostics','Resource limits','Cloning and refresh','Backup strategy','Password and credential management','Licensing and editions']],['Code and data',['Stored code','Data integrity','Cross-database queries','JSON and full-text','Materialized views','Character sets and time zones','Data masking','ETL and data movement']],['Modern platforms',['Containers and cloud-native','Hardening and OS security','Multi-tenant architecture','Caching layers','Change management','Compliance frameworks','Capacity and sizing','Archiving and retention','Query hints and plan stability','Directory and SSO integration','REST and API access','Sharding','Testing and CI/CD']],['Practices',['Incident response','Naming conventions and standards','Third-party monitoring integration']]];
+var TD={Install:'Set up a new database server from scratch.',Patching:'Apply security and bug-fix updates to an existing server.',Upgrade:'Move to a newer major version of the database.','High availability':'Replication, standby servers and failover.',Architecture:'How each database is built: memory, processes and files, plus queries to inspect them.',Troubleshooting:'Diagnose and fix common problems and errors.',Maintenance:'Routine jobs that keep tables, indexes and logs healthy.',Automation:'Schedule backups, jobs and scripts.',Migration:'Move databases and users to another server.','Disaster recovery':'Recover from lost files, crashes and failed servers.',Auditing:'Track logins and changes, and encrypt data.',Cloud:'Run these databases on managed cloud services.','Interview questions':'Common DBA interview questions with short answers.',Indexing:'Create, check and remove indexes safely.','Locks and deadlocks':'Find blockers and deadlocks, and reduce them.',Partitioning:'Split large tables to speed up queries and clean-up.','Import and export':'Move data in and out with CSV and bulk tools.',Configuration:'View and change settings and parameters.',Connectivity:'Fix connection problems and check network settings.','Capacity planning':'Track growth and see how much room is left.',Monitoring:'Checks and thresholds to watch every day.','Execution plans':'See how the database runs a query and why it is slow.','Temp and memory':'Find what uses temporary space and memory.','Schema objects':'Create and inspect databases, tables and constraints.','Logs and diagnostics':'Find and read the logs that explain problems.','Resource limits':'Cap connections, CPU, space and run time per user.','Stored code':'List and read procedures, functions and triggers.','Data integrity':'Find duplicates, orphans and broken constraints.','SQL syntax tips':'How common SQL tasks differ between the four databases.','Cross-database queries':'Query across databases and servers with links.','JSON and full-text':'Store JSON documents and search text.','Containers and cloud-native':'Run and manage these databases in Docker.','Hardening and OS security':'Reduce the attack surface at the OS and default-account level.','Multi-tenant architecture':'Isolate tenants by database, schema or row.','Caching layers':'Cache buffers and query results to cut repeat work.','Change management':'Apply and roll back changes safely.','Compliance frameworks':'Checks that support PCI, HIPAA and similar audits.','Capacity and sizing':'Estimate size and headroom before you need it.','Archiving and retention':'Move or drop old data on a schedule.','Query hints and plan stability':'Steer or lock in an execution plan.','Directory and SSO integration':'Authenticate users against LDAP, Active Directory or SSO.','REST and API access':'Expose data over HTTP without writing an API from scratch.',Sharding:'Split data across multiple database servers.','Testing and CI/CD':'Unit test the database and run it in pipelines.','Incident response':'First steps and quick checks when something is reported broken.','Naming conventions and standards':'Consistent names for tables, keys and indexes.','Third-party monitoring integration':'Feed metrics to Prometheus, Datadog and similar tools.','Cloning and refresh':'Copy a database for testing or restore a clean copy.','Materialized views':'Precompute and refresh summary data.','Character sets and time zones':'Encoding, collation and how time zones are handled.','Backup strategy':'Choose a backup schedule and prove restores work.','Password and credential management':'Enforce password rules and store credentials safely.','Licensing and editions':'Check editions, options and what is licensed.','Data masking':'Hide or replace sensitive values for non-production use.','ETL and data movement':'Load, move and upsert data between systems.',Sessions:'See who is connected, find blocked work and stop sessions.',Storage:'Check disk and data file space before it runs out.',Backup:'Take, verify and restore backups.',Performance:'Find slow queries and keep tables and indexes healthy.',Health:'Quick checks that the system is running normally.',Security:'Create users and give them the right access.'};
+var CHG=/\b(ALTER|KILL|CREATE|GRANT|DROP|SET GLOBAL|VACUUM|REBUILD|RESTORE|EXEC|BACKUP|pg_terminate_backend|pg_cancel_backend|shutdown|startup|install|apply|update|upgrade|expdp|pg_dump|mysqldump|rman|setup|initdb|stop|start|restart|patch|runInstaller|autoupgrade|reload|sp_configure|RECONFIGURE|xtrabackup --(backup|copy)|pg_basebackup|REVOKE|pg_restore|mysqlbinlog|ANALYZE TABLE|REINDEX|PURGE|crontab|adrci|impdp|mysqlsh|DELETE|DETACH|Copy-Dba|sqlcmd|cron\.schedule|DBMS_SCHEDULER|pg_rewind|touch|INSERT|LOAD DATA|sqlldr|COPY|bcp|PERSIST|netsh|OUTFILE|FLUSH|CREATE DATABASE LINK|DROP DATABASE LINK|sp_addlinkedserver|docker run|docker exec|docker cp|ALTER TABLE.*ADD FULLTEXT|CREATE FULLTEXT|CREATE PLUGGABLE|CLONE INSTANCE|INSTALL PLUGIN|dropdb|createdb|CREATE MATERIALIZED VIEW|REFRESH MATERIALIZED|CREATE EVENT|CREATE VIEW.*SCHEMABINDING|ALTER SESSION SET TIME_ZONE|SET TIME ZONE|SET time_zone|DBMS_REDACT|ACCOUNT LOCK|chown|chmod|umask|DROP DATABASE IF EXISTS|DELETE FROM mysql\.user|FLUSH PRIVILEGES|ALTER LOGIN|xp_cmdshell|CREATE PLUGGABLE DATABASE|SAVE STATE|CREATE SCHEMA|ENABLE ROW LEVEL SECURITY|CREATE POLICY|CREATE SECURITY POLICY|redis\.set|ALTER SYSTEM SET client_result_cache|INSERT INTO.*archive|DELETE FROM|DROP TABLE|DROP PARTITION|ALTER TABLE.*SWITCH PARTITION|ALTER TABLE.*ILM ADD POLICY|DBMS_SPM\.LOAD_PLANS|SET enable_seqscan|CREATE EXTENSION pg_hint_plan|SET GLOBAL innodb_stats_persistent|ANALYZE TABLE|ALTER DATABASE.*QUERY_STORE|sp_query_store_force_plan|ALTER SYSTEM SET OS_AUTHENT|CREATE USER.*IDENTIFIED GLOBALLY|INSTALL PLUGIN authentication_pam|CREATE USER.*authentication_windows|CREATE LOGIN|az sql server|TRUNCATE TABLE|ALTER SESSION SET SQL_TRACE|ALTER TABLE.*ADD CONSTRAINT.*CASCADE|CREATE TABLE #temp|ALTER DATABASE.*ALLOW_SNAPSHOT|ALTER TABLE.*ADD TotalWithTax|ORDS\.ENABLE|docker run|create_distributed_table|vtctldclient|CREATE EXTERNAL DATA SOURCE|CREATE EXTERNAL TABLE|CREATE VIEW|EXEC ut\.run|tap\.plan|tSQLt\.|TRUNCATE TABLE|ALTER SESSION SET ISOLATION_LEVEL|START TRANSACTION|CREATE TABLE t|ALTER DATABASE SCOPED CONFIGURATION|ALTER DATABASE.*CONTAINMENT|ALTER TABLE orders ADD CONSTRAINT amount_positive|docker run|CREATE TABLE hr\.lookup|FLASHBACK TABLE|CREATE VIEW v_orders|ALTER TABLE orders REPLICA IDENTITY|UPDATE orders SET amount|SET GLOBAL sql_mode|CREATE TRIGGER|USE model|CREATE TABLE AuditDefaults|SECURITY LABEL|anon\.anonymize|mkstore|mysql_config_editor|CREATE CREDENTIAL|INSTALL COMPONENT|LOAD DATA INFILE|BULK INSERT|MERGE|pg_drop_replication_slot|FAILOVER|PROMOTE|pg_promote|START REPLICA|REASSIGN|OPTIMIZE)\b/i;
 var st={e:'All',c:'All',q:''};
 var $=function(i){return document.getElementById(i)};
 var POP=[['Oracle','Active user sessions'],['Oracle','RMAN full backup'],['Oracle','Apply a Release Update with OPatch'],
