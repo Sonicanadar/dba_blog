@@ -579,7 +579,37 @@ var D=[["Oracle", "Sessions", "Active user sessions", "See who is connected and 
 ['Oracle','Advanced Operations','ADR incident packaging workflow','Prepare focused diagnostic packages for complex Oracle incidents.','-- Advanced DBA topic\n-- Review prerequisites, diagnostics, evidence collection, and recovery validation.'],
 ['PostgreSQL','Advanced Operations','Connection pool saturation analysis','Diagnose pool saturation by separating client demand, database limits, and long-running sessions.','-- Advanced DBA topic\n-- Review prerequisites, diagnostics, evidence collection, and recovery validation.'],
 ['MySQL','Advanced Operations','Redo capacity headroom','Monitor redo capacity so sustained write bursts do not create avoidable pressure.','-- Advanced DBA topic\n-- Review prerequisites, diagnostics, evidence collection, and recovery validation.'],
-['SQL Server','Advanced Operations','Recovery objective validation','Validate that backup and HA procedures can meet documented recovery objectives.','-- Advanced DBA topic\n-- Review prerequisites, diagnostics, evidence collection, and recovery validation.']].filter(Boolean);
+['SQL Server','Advanced Operations','Recovery objective validation','Validate that backup and HA procedures can meet documented recovery objectives.','-- Advanced DBA topic\n-- Review prerequisites, diagnostics, evidence collection, and recovery validation.']
+, ["MySQL","Install","Install MySQL 8.4 LTS on Ubuntu/Debian","Fresh installation using the official MySQL APT repository. Select the MySQL 8.4 LTS series when configuring the repository.",`# Download the MySQL APT repository package from MySQL
+sudo dpkg -i mysql-apt-config_<version>_all.deb
+# In the configuration menu, select MySQL 8.4 LTS
+sudo apt-get update
+sudo apt-get install mysql-server
+# Start and enable MySQL
+sudo systemctl enable --now mysql
+# Verify
+mysql --version
+sudo systemctl status mysql`],
+["MySQL","Install","Install MySQL 8.4 LTS on RHEL/Oracle Linux","Fresh installation using the official MySQL Yum repository. The 8.4 LTS subrepository is enabled by default by the mysql84 repository configuration package.",`# Download the MySQL Yum repository RPM for your platform from MySQL
+sudo dnf install ./mysql84-community-release-<platform>-<version>.noarch.rpm
+# EL8 only: disable the distribution MySQL module
+sudo dnf module disable mysql
+sudo dnf install mysql-community-server
+sudo systemctl enable --now mysqld
+# Verify
+mysql --version
+sudo systemctl status mysqld`],
+["MySQL","Install","Secure a MySQL 8.4 Linux installation","After installation, verify the service, inspect the initial root authentication method, remove unnecessary exposure, and apply your organization's security baseline.",`sudo systemctl status mysqld  # RHEL/Oracle Linux
+sudo systemctl status mysql   # Debian/Ubuntu
+sudo ss -lntp | grep 3306
+mysql -uroot -p
+-- Then review users, privileges, TLS, bind-address and firewall rules for your environment.`],
+["MySQL","Install","Verify MySQL 8.4 installation and version","Confirm that the server is running and that the installed server reports the expected 8.4 release series.",`mysql --version
+mysql -uroot -p -e "SELECT VERSION();"
+# Debian/Ubuntu
+sudo systemctl is-active mysql
+# RHEL/Oracle Linux
+sudo systemctl is-active mysqld`]].filter(Boolean);
 var ARCH={
 Oracle:{n:'An instance (memory and processes) works on a database (files). Changes are made in memory and logged as redo. LGWR writes redo at commit; DBWn writes the changed blocks later.',
 f:['Client','Listener','Server process','Buffer cache','Redo log buffer','Datafiles and redo logs'],
