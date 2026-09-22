@@ -714,7 +714,29 @@ function showPage(page){
   window.scrollTo(0,0);
 }
 document.querySelectorAll('.navbtn').forEach(function(b){b.addEventListener('click',function(){showPage(b.dataset.page)})});
-document.getElementById('contactForm').addEventListener('submit',function(){document.getElementById('contactStatus').hidden=false;});
+document.getElementById('contactForm').addEventListener('submit',async function(e){
+  e.preventDefault();
+  var form=e.currentTarget, status=document.getElementById('contactStatus'), button=form.querySelector('button[type=submit]');
+  status.hidden=false;
+  status.textContent='Sending message…';
+  button.disabled=true;
+  try{
+    var data=Object.fromEntries(new FormData(form).entries());
+    var response=await fetch('https://formsubmit.co/ajax/dbamyworld@gmail.com',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Accept':'application/json'},
+      body:JSON.stringify(data)
+    });
+    var result=await response.json();
+    if(!response.ok || result.success===false) throw new Error('Submission failed');
+    status.textContent='Thanks! Your message has been sent successfully.';
+    form.reset();
+  }catch(err){
+    status.textContent='Sorry, your message could not be sent. Please try again or email dbamyworld@gmail.com directly.';
+  }finally{
+    button.disabled=false;
+  }
+});
 
 pop();
 render();
