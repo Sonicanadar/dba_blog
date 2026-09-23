@@ -856,12 +856,25 @@ body[data-page]:not([data-page="home"]) .filters{display:none!important}
 @media(max-width:800px){.sqlp-toolbar{grid-template-columns:1fr}.sqlp-count{padding-top:2px}.sqlp-grid{grid-template-columns:1fr}}
 </style>
 <style id="v61-performance-css">[hidden]{display:none!important}.feature-page{content-visibility:auto;contain-intrinsic-size:800px}</style>
+
+<style id="global-search-v64">
+.global-search-wrap{position:relative;max-width:900px;margin:14px auto 0}.global-search-box{display:flex;align-items:center;gap:8px;background:var(--panel);border:1px solid rgba(255,255,255,.28);border-radius:12px;padding:4px 8px;box-shadow:var(--shadow)}.global-search-box input{flex:1;min-width:0;border:0;outline:0;background:transparent;color:var(--ink);padding:10px 6px;font:inherit}.global-search-box input::placeholder{color:var(--muted)}.global-search-icon{font-size:1.25rem;opacity:.75}.global-search-box button{border:0;background:transparent;color:var(--muted);font-size:1.35rem;cursor:pointer;padding:6px 8px}.global-search-results{position:absolute;z-index:1000;left:0;right:0;top:calc(100% + 7px);max-height:430px;overflow:auto;background:var(--panel);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);padding:6px}.global-result{display:block;width:100%;text-align:left;border:0;background:transparent;color:var(--ink);padding:11px 12px;border-radius:9px;cursor:pointer}.global-result:hover,.global-result:focus{background:rgba(127,127,127,.12);outline:none}.global-result-title{font-weight:700}.global-result-meta{font-size:.78rem;color:var(--brand);margin:3px 0}.global-result-snippet{font-size:.86rem;color:var(--muted);line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}.global-no-results{padding:16px;color:var(--muted);text-align:center}.global-search-results mark{background:rgba(255,210,70,.35);color:inherit;border-radius:3px;padding:0 2px}@media(max-width:600px){.global-search-wrap{margin-top:12px}.global-search-box input{font-size:.9rem}.global-search-results{max-height:55vh}}
+</style>
 </head>
 <body>
 <header class="top"><div class="in">
 <div class="logo">DBAMyWorld</div>
 <div class="tag">Step-by-step DBA guides for Oracle, PostgreSQL, MySQL and SQL Server</div>
 <nav class="navbar" aria-label="Main navigation"><button class="navbtn active" data-page="home">Home</button><button class="navbtn" data-page="roadmaps">Roadmaps</button><button type="button" class="navbtn" data-page="learning">Learning Paths</button><button type="button" class="navbtn" data-page="commands">Command Library</button><button type="button" class="navbtn" data-page="troubleshooting">Troubleshooting</button><button type="button" class="navbtn" data-page="tools">DBA Tools</button><button type="button" class="navbtn" data-page="oraclelab">Oracle DBA Lab</button><button type="button" class="navbtn" data-page="oraerrors">ORA Error Library</button><button type="button" class="navbtn" data-page="checklists">Production Checklists</button><button type="button" class="navbtn" data-page="sqlpractice">SQL Practice</button><button type="button" class="navbtn" data-page="quiz">DBA Quiz</button><button type="button" class="navbtn" data-page="interview">Interview Center</button><button class="navbtn" data-page="about">About</button><button class="navbtn" data-page="contact">Contact</button></nav>
+<div class="global-search-wrap" id="globalSearchWrap">
+  <div class="global-search-box">
+    <span class="global-search-icon" aria-hidden="true">⌕</span>
+    <input id="globalSearch" type="search" placeholder="Search DBAMyWorld… ORA errors, commands, SQL, interviews, labs" aria-label="Search all DBAMyWorld content" autocomplete="off" spellcheck="false">
+    <button type="button" id="globalSearchClear" aria-label="Clear global search">×</button>
+  </div>
+  <div id="globalSearchResults" class="global-search-results" role="listbox" aria-label="Search results" hidden></div>
+</div>
+
 </div></header>
 <div class="layout">
 <aside class="filters">
@@ -1938,5 +1951,40 @@ window.__DBAMyWorldSQLPracticeInit=init;
 })();
 </script>
 
-</body>
+\n<script id="global-search-v64">
+(function(){
+  var input=document.getElementById('globalSearch'), results=document.getElementById('globalSearchResults'), clear=document.getElementById('globalSearchClear');
+  if(!input||!results)return;
+  var pageNames={home:'Home',roadmaps:'Roadmaps',learning:'Learning Paths',commands:'DBA Command Library',troubleshooting:'Troubleshooting Center',tools:'Interactive DBA Tools',oraclelab:'Oracle DBA Lab',oraerrors:'ORA Error Library',checklists:'Production Checklists',sqlpractice:'SQL Practice Center',quiz:'DBA Quiz Center',interview:'Interview Center',about:'About',contact:'Contact'};
+  var timer;
+  function esc(s){return String(s).replace(/[&<>\"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;'}[c]})}
+  function highlight(s,q){var safe=esc(s);if(!q)return safe;var re=new RegExp('('+q.replace(/[.*+?^${}()|[\\]\\\\]/g,'\\\\$&')+')','ig');return safe.replace(re,'<mark>$1</mark>')}
+  function snippet(text,q){var t=(text||'').replace(/\\s+/g,' ').trim(), i=t.toLowerCase().indexOf(q.toLowerCase());if(i<0)return t.slice(0,190)+(t.length>190?'…':'');var start=Math.max(0,i-75), end=Math.min(t.length,i+q.length+120);return (start?'…':'')+t.slice(start,end)+(end<t.length?'…':'')}
+  function search(){
+    clearTimeout(timer);timer=setTimeout(function(){
+      var q=input.value.trim(); if(q.length<2){results.hidden=true;results.innerHTML='';return;}
+      var out=[], pages=document.querySelectorAll('[id^="page-"]');
+      pages.forEach(function(page){
+        if(page.hidden && page.id==='page-home'){}
+        var text=page.textContent||'';
+        if(text.toLowerCase().indexOf(q.toLowerCase())<0)return;
+        var title=pageNames[page.id.slice(5)]||page.id.slice(5);
+        var nodes=page.querySelectorAll('h1,h2,h3,h4,.card,.issue-card,.interview-card,.sql-card,.lab-card,.command-card');
+        var best=null;
+        for(var i=0;i<nodes.length;i++){var nt=nodes[i].textContent||'';if(nt.toLowerCase().indexOf(q.toLowerCase())>=0){best=nt.trim();break;}}
+        out.push({page:page.id.slice(5),title:title,match:best||title,snip:snippet(text,q)});
+      });
+      if(!out.length){results.innerHTML='<div class="global-no-results">No matching content found.</div>';results.hidden=false;return;}
+      out=out.slice(0,10);
+      results.innerHTML=out.map(function(r,idx){return '<button type="button" class="global-result" role="option" data-page="'+esc(r.page)+'" data-index="'+idx+'"><div class="global-result-title">'+highlight(r.match,q)+'</div><div class="global-result-meta">'+esc(r.title)+'</div><div class="global-result-snippet">'+highlight(r.snip,q)+'</div></button>';}).join('');
+      results.hidden=false;
+    },120);
+  }
+  input.addEventListener('input',search);
+  input.addEventListener('keydown',function(e){if(e.key==='Escape'){input.value='';results.hidden=true;} if(e.key==='Enter'){var first=results.querySelector('.global-result');if(first)first.click();}});
+  clear.addEventListener('click',function(){input.value='';results.hidden=true;input.focus();});
+  results.addEventListener('click',function(e){var b=e.target.closest('.global-result');if(!b)return; if(typeof showPage==='function')showPage(b.dataset.page);results.hidden=true;input.blur();var page=document.getElementById('page-'+b.dataset.page);if(page){var target=page.querySelector('h1,h2,h3,h4');if(target)target.scrollIntoView({behavior:'smooth',block:'start'});}});
+  document.addEventListener('click',function(e){if(!document.getElementById('globalSearchWrap').contains(e.target))results.hidden=true;});
+})();
+</script>\n</body>
 </html>
