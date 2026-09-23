@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>DBAMyWorld: DBA Guides and Queries</title>
+<title>DBAMyWorld: DBA Guides, Roadmaps and Queries</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600;700&family=IBM+Plex+Mono&display=swap">
 <style>
 :root{--bg:#f4f6f9;--panel:#fff;--ink:#16202a;--mute:#566574;--line:#dbe2ea;--brand:#16407a;--brandfg:#fff;--code:#101c27;--codefg:#d6e6ee;
@@ -427,12 +427,182 @@ footer{
 mark.search-hit{background:var(--wbg);color:var(--w);border-radius:3px;padding:0 2px}
 @media(min-width:900px){.search-suggest{max-width:100%}}
 </style>
+<style>
+/* v35: DBA roadmaps */
+.roadmap-wrap{max-width:1100px;margin:0 auto}
+.roadmap-hero{background:linear-gradient(135deg,var(--brand),#2a5f9f);color:var(--brandfg);border-radius:16px;padding:26px 28px;margin-bottom:18px}
+.roadmap-hero h1{margin:0 0 6px;font-size:clamp(1.6rem,4vw,2.2rem)}
+.roadmap-hero p{margin:0;opacity:.9;max-width:760px}
+.roadmap-tabs{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 18px}
+.roadmap-tab{font:inherit;border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:9px;padding:9px 13px;cursor:pointer}
+.roadmap-tab.active,.roadmap-tab:hover{background:var(--brand);color:var(--brandfg);border-color:var(--brand)}
+.roadmap-progress{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin-bottom:18px}
+.roadmap-progress-top{display:flex;justify-content:space-between;gap:12px;align-items:center;font-size:.9rem;color:var(--mute);margin-bottom:8px}
+.roadmap-progress-top b{color:var(--ink)}
+.progress-track{height:9px;background:var(--bg);border-radius:99px;overflow:hidden}
+.progress-fill{height:100%;width:0;background:var(--brand);border-radius:99px;transition:width .2s}
+.roadmap-stage{background:var(--panel);border:1px solid var(--line);border-radius:12px;margin-bottom:12px;overflow:hidden}
+.roadmap-stage-head{display:flex;gap:12px;align-items:flex-start;padding:16px 18px;border-bottom:1px solid var(--line)}
+.roadmap-num{width:34px;height:34px;border-radius:50%;background:var(--brand);color:var(--brandfg);display:grid;place-items:center;font-weight:700;flex:0 0 auto}
+.roadmap-stage-head h2{margin:0;font-size:1.1rem}
+.roadmap-stage-head p{margin:2px 0 0;color:var(--mute);font-size:.9rem}
+.roadmap-weeks{margin-left:auto;white-space:nowrap;font-size:.78rem;color:var(--mute);border:1px solid var(--line);padding:3px 8px;border-radius:999px}
+.roadmap-items{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;padding:14px 18px}
+.roadmap-item{display:flex;gap:9px;align-items:flex-start;padding:9px 10px;background:var(--bg);border:1px solid var(--line);border-radius:8px;font-size:.9rem}
+.roadmap-item input{margin-top:4px;accent-color:var(--brand)}
+.roadmap-item.done span{text-decoration:line-through;color:var(--mute)}
+.roadmap-tip{margin:0 18px 16px;padding:10px 12px;background:var(--wbg);color:var(--w);border-radius:8px;font-size:.88rem}
+.roadmap-reset{font:inherit;border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:8px;padding:6px 10px;cursor:pointer}
+@media(max-width:700px){.roadmap-items{grid-template-columns:1fr}.roadmap-stage-head{padding:14px}.roadmap-items{padding:12px 14px}.roadmap-weeks{display:none}.roadmap-hero{padding:20px}.roadmap-wrap{margin-top:4px}}
+</style>
+
+<style id="footer-v37">
+.site-footer{margin:32px 0 0;padding:22px 24px;border-top:1px solid var(--line,#d9dee7);background:var(--panel,#fff);color:var(--mute,#667085);text-align:center;font-size:.9rem;line-height:1.5}
+@media(min-width:900px){.site-footer{padding:24px 40px}}
+</style>
+
+<style id="footer-v39">
+/* v39: polished responsive footer */
+.site-footer{
+  margin-top:48px;
+  padding:0;
+  border-top:1px solid var(--line);
+  background:linear-gradient(180deg,var(--panel),var(--bg));
+  color:var(--mute);
+  text-align:left;
+  font-size:.9rem;
+  line-height:1.55;
+}
+.footer-inner{
+  max-width:1160px;
+  margin:0 auto;
+  padding:34px max(16px,env(safe-area-inset-right)) 18px max(16px,env(safe-area-inset-left));
+}
+.footer-grid{
+  display:grid;
+  grid-template-columns:minmax(0,2fr) repeat(2,minmax(130px,1fr));
+  gap:28px;
+  padding-bottom:26px;
+}
+.footer-brand-name{
+  color:var(--ink);
+  font-size:1.25rem;
+  font-weight:800;
+  letter-spacing:-.02em;
+  margin-bottom:6px;
+}
+.footer-brand-text{
+  max-width:520px;
+  margin:0;
+  color:var(--mute);
+}
+.footer-title{
+  margin:2px 0 9px;
+  color:var(--ink);
+  font-size:.78rem;
+  font-weight:800;
+  text-transform:uppercase;
+  letter-spacing:.1em;
+}
+.footer-links{
+  display:flex;
+  flex-direction:column;
+  align-items:flex-start;
+  gap:4px;
+}
+.footer-link{
+  appearance:none;
+  border:0;
+  background:transparent;
+  padding:3px 0;
+  color:var(--mute);
+  font:inherit;
+  cursor:pointer;
+  text-decoration:none;
+}
+.footer-link:hover{
+  color:var(--pg);
+  text-decoration:underline;
+}
+.footer-note{
+  margin:0;
+  font-size:.78rem;
+  color:var(--mute);
+}
+.footer-bottom{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:16px;
+  padding-top:16px;
+  border-top:1px solid var(--line);
+  font-size:.78rem;
+}
+.footer-bottom strong{color:var(--ink)}
+.footer-email{
+  color:var(--pg);
+  text-decoration:none;
+  font-weight:600;
+}
+.footer-email:hover{text-decoration:underline}
+@media(max-width:700px){
+  .footer-grid{grid-template-columns:1fr 1fr;gap:22px}
+  .footer-brand{grid-column:1/-1}
+}
+@media(max-width:480px){
+  .footer-inner{padding-top:28px}
+  .footer-grid{grid-template-columns:1fr}
+  .footer-brand{grid-column:auto}
+  .footer-bottom{align-items:flex-start;flex-direction:column;gap:6px}
+}
+</style>
+
+
+<style id="footer-v40-fix">
+.footer-v39 .footer-links button{
+  display:block;
+  width:100%;
+  padding:6px 0;
+  margin:0;
+  border:0;
+  background:transparent;
+  color:inherit;
+  font:inherit;
+  text-align:left;
+  cursor:pointer;
+}
+.footer-v39 .footer-links button:hover,
+.footer-v39 .footer-links a:hover{
+  color:var(--accent,#2563eb);
+  text-decoration:underline;
+}
+.footer-v39 .footer-links a{
+  display:block;
+  padding:6px 0;
+  color:inherit;
+  text-decoration:none;
+}
+@media (max-width:700px){
+  .footer-v39 .footer-links button{
+    text-align:center;
+  }
+}
+</style>
+
+
+<style id="command-library-v41">
+.command-wrap{max-width:1200px;margin:0 auto;padding:8px 0 30px}.command-hero{background:linear-gradient(135deg,rgba(99,102,241,.14),rgba(20,184,166,.10));border:1px solid var(--line);border-radius:18px;padding:24px;margin-bottom:18px}.command-hero h1{margin:0 0 8px}.command-hero p{margin:0;color:var(--muted)}.command-toolbar{display:flex;gap:10px;flex-wrap:wrap;margin:16px 0}.command-search{flex:1 1 280px;min-width:220px;padding:12px 14px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:inherit}.command-filter{border:1px solid var(--line);background:var(--card);color:inherit;border-radius:999px;padding:9px 13px;cursor:pointer}.command-filter.active{font-weight:700;box-shadow:0 0 0 2px rgba(99,102,241,.18)}.command-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:14px}.command-card{border:1px solid var(--line);border-radius:15px;background:var(--card);overflow:hidden}.command-card-head{padding:15px 16px 10px}.command-card h3{margin:4px 0 5px;font-size:17px}.command-card p{margin:0;color:var(--muted);font-size:13px}.command-badge{display:inline-block;font-size:11px;font-weight:700;padding:4px 8px;border-radius:999px;background:rgba(99,102,241,.12)}.command-code{margin:0;padding:14px 16px;background:var(--code-bg,#111827);color:var(--code-fg,#f8fafc);font:12px/1.5 ui-monospace,SFMono-Regular,Consolas,monospace;white-space:pre-wrap;overflow:auto;max-height:220px}.command-copy{margin:10px 16px 15px;padding:8px 12px;border:1px solid var(--line);border-radius:9px;background:transparent;color:inherit;cursor:pointer}.command-empty{padding:25px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:15px}.command-note{margin-top:16px;color:var(--muted);font-size:13px}
+</style>
+<style id="dba-quiz-v41">
+.quiz-wrap{max-width:1000px;margin:0 auto;padding:8px 0 36px}.quiz-hero{background:linear-gradient(135deg,rgba(22,64,122,.12),rgba(20,184,166,.10));border:1px solid var(--line);border-radius:18px;padding:24px;margin-bottom:18px}.quiz-hero h1{margin:0 0 8px}.quiz-hero p{margin:0;color:var(--muted)}.quiz-toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:14px 0}.quiz-filter{border:1px solid var(--line);background:var(--card);color:inherit;border-radius:999px;padding:9px 13px;cursor:pointer}.quiz-filter.active{font-weight:700;box-shadow:0 0 0 2px rgba(22,64,122,.18)}.quiz-progress{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin-bottom:16px}.quiz-progress-top{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;font-size:14px}.quiz-track{height:8px;background:var(--line);border-radius:99px;overflow:hidden;margin-top:10px}.quiz-fill{height:100%;background:var(--brand);transition:width .2s}.quiz-card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px;margin-bottom:14px}.quiz-card h2{font-size:18px;margin:0 0 15px}.quiz-option{display:flex;gap:10px;align-items:flex-start;padding:11px 12px;border:1px solid var(--line);border-radius:10px;margin:8px 0;cursor:pointer}.quiz-option:hover{background:rgba(22,64,122,.05)}.quiz-option input{margin-top:3px}.quiz-option.correct{border-color:#22a06b;background:rgba(34,160,107,.10)}.quiz-option.wrong{border-color:#d64545;background:rgba(214,69,69,.08)}.quiz-explain{margin-top:12px;padding:10px 12px;border-left:3px solid var(--brand);background:rgba(22,64,122,.06);font-size:14px;color:var(--muted)}.quiz-actions{display:flex;gap:10px;flex-wrap:wrap;margin:18px 0}.quiz-btn{border:1px solid var(--line);border-radius:10px;padding:11px 16px;background:var(--brand);color:var(--brandfg);cursor:pointer;font-weight:700}.quiz-btn.secondary{background:var(--card);color:inherit}.quiz-result{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px;margin-bottom:16px}.quiz-score{font-size:30px;font-weight:800;margin:4px 0}.quiz-muted{color:var(--muted)}
+</style>
+
 </head>
 <body>
 <header class="top"><div class="in">
 <div class="logo">DBAMyWorld</div>
 <div class="tag">Step-by-step DBA guides for Oracle, PostgreSQL, MySQL and SQL Server</div>
-<nav class="navbar" aria-label="Main navigation"><button class="navbtn active" data-page="home">Home</button><button class="navbtn" data-page="about">About</button><button class="navbtn" data-page="contact">Contact</button></nav>
+<nav class="navbar" aria-label="Main navigation"><button class="navbtn active" data-page="home">Home</button><button class="navbtn" data-page="roadmaps">Roadmaps</button><button type="button" data-page="learning">Learning Paths</button><button type="button" class="navbtn" data-page="commands">Command Library</button><button type="button" class="navbtn" data-page="quiz">DBA Quiz</button><button class="navbtn" data-page="about">About</button><button class="navbtn" data-page="contact">Contact</button></nav>
 </div></header>
 <div class="layout">
 <aside class="filters">
@@ -473,8 +643,60 @@ mark.search-hit{background:var(--wbg);color:var(--w);border-radius:3px;padding:0
 <div class="bar"><span id="count" aria-live="polite"></span><button class="link" id="clear" hidden>Clear filters</button></div>
 <div id="arch"></div>
 <div id="list"></div>
-<footer>Version numbers, paths and passwords are examples. Check the vendor documentation for your release.</footer>
 </div>
+<section id="page-roadmaps" hidden>
+<div class="roadmap-wrap">
+  <div class="roadmap-hero">
+    <h1>DBA Roadmaps</h1>
+    <p>Step-by-step learning paths from DBA fundamentals to senior administration. Pick a roadmap, work through each stage, and track your progress on this device.</p>
+  </div>
+  <div class="roadmap-tabs" id="roadmapTabs" role="tablist" aria-label="DBA roadmaps"></div>
+  <div id="roadmapContent"></div>
+</div>
+</section>
+
+<section id="page-learning" hidden>
+<div class="about-wrap"><article class="about-main">
+<div class="about-top"><p class="page-kicker">DBA Learning Paths</p><h1>Learn DBA Skills Step by Step</h1><p>Follow a structured path from database fundamentals to senior DBA and architecture skills.</p></div>
+<div class="about-body">
+<section class="about-section"><h2>1. Beginner DBA</h2><p>Build your database foundations.</p><ul><li>Database concepts and architecture</li><li>SQL fundamentals</li><li>Users, roles and permissions</li><li>Tables, indexes and constraints</li><li>Storage and capacity basics</li><li>Basic monitoring</li></ul></section>
+<section class="about-section"><h2>2. Junior DBA</h2><p>Learn daily DBA operations.</p><ul><li>Installation and configuration</li><li>Startup and shutdown</li><li>Backup and restore</li><li>Jobs and maintenance</li><li>Session monitoring</li><li>Log and alert analysis</li></ul></section>
+<section class="about-section"><h2>3. Mid-Level DBA</h2><p>Develop troubleshooting and performance skills.</p><ul><li>Performance troubleshooting</li><li>Blocking and deadlocks</li><li>Execution-plan analysis</li><li>Replication and standby</li><li>Backup and recovery strategy</li><li>Patching and upgrades</li></ul></section>
+<section class="about-section"><h2>4. Senior DBA</h2><p>Handle complex production environments.</p><ul><li>High availability and disaster recovery</li><li>Advanced performance tuning</li><li>Capacity planning</li><li>Production incident management</li><li>Automation and scripting</li><li>Security and compliance</li></ul></section>
+<section class="about-section"><h2>5. Lead DBA / Architect</h2><p>Build enterprise database architecture skills.</p><ul><li>Database architecture and standards</li><li>Cloud and hybrid strategy</li><li>Enterprise HA/DR design</li><li>Migration and modernization</li><li>Automation and platform engineering</li><li>Governance and mentoring</li></ul></section>
+</div></article></div></section>
+<section id="page-commands" hidden>
+<div class="command-wrap">
+  <div class="command-hero">
+    <p class="page-kicker">Step 3 · DBA Command Library</p>
+    <h1>DBA Command Library</h1>
+    <p>Quickly find practical commands for Oracle, PostgreSQL, MySQL and SQL Server. Search by task, database or category and copy a command when you need it.</p>
+  </div>
+  <div class="command-toolbar">
+    <input id="commandSearch" class="command-search" type="search" placeholder="Search commands, tasks or categories…" autocomplete="off">
+    <div id="commandFilters" class="command-toolbar" style="margin:0"></div>
+  </div>
+  <div id="commandGrid" class="command-grid"></div>
+  <p class="command-note">Examples are starting points. Review the command for your database release, privileges and environment before running it in production.</p>
+</div>
+</section>
+
+
+<section id="page-quiz" hidden>
+<div class="quiz-wrap">
+  <div class="quiz-hero">
+    <p class="page-kicker">Step 14 · DBA Quiz</p>
+    <h1>DBA Quiz Center</h1>
+    <p>Test your practical DBA knowledge with questions covering Oracle, PostgreSQL, MySQL and SQL Server. Choose a database, answer the questions, then review your score and explanations.</p>
+  </div>
+  <div class="quiz-toolbar" id="quizFilters"></div>
+  <div id="quizProgress"></div>
+  <div id="quizContainer"></div>
+  <div class="quiz-actions"><button type="button" class="quiz-btn" id="quizSubmit">Submit Quiz</button><button type="button" class="quiz-btn secondary" id="quizReset">Reset Quiz</button></div>
+  <div id="quizResult"></div>
+</div>
+</section>
+
 <section id="page-about" hidden>
 <div class="about-wrap">
   <article class="about-main">
@@ -699,8 +921,148 @@ $('list').addEventListener('click',function(e){
   try{navigator.clipboard.writeText(D[i][4]).then(function(){b.textContent='Copied';setTimeout(function(){b.textContent='Copy'},1500)},function(){b.textContent='Select and copy'})}
   catch(x){b.textContent='Select and copy'}
 });
+var ROADMAPS={
+  oracle:{name:'Oracle DBA',sub:'Core Oracle administration → HA/DR → performance → senior DBA',stages:[
+    ['1','DBA Foundations','Learn the Oracle architecture and daily administration basics','2–3 weeks',['Instance vs database','SGA, PGA and background processes','Tablespaces, datafiles and control files','Redo, undo and checkpoints','Users, roles, privileges and profiles','Listener, service and connection basics']],
+    ['2','SQL & Troubleshooting','Build the skills needed to diagnose everyday issues','2–3 weeks',['Read execution plans','Identify sessions and active SQL','Blocking, locks and deadlocks','Wait events and basic AWR/ASH concepts','Space and object health checks','Alert log and trace-file investigation']],
+    ['3','Backup & Recovery','Become confident with recoverability and restore testing','2–3 weeks',['RMAN architecture and backup types','Full, incremental and archived-log backups','Restore and recovery scenarios','Control-file and SPFILE recovery','Point-in-time recovery concepts','Backup validation and recovery drills']],
+    ['4','HA, DR & Enterprise','Move from single-instance DBA work into high availability','3–5 weeks',['Data Guard concepts and redo transport','Switchover and failover','RAC architecture and services','ASM concepts and disk groups','Standby monitoring and lag','DR runbooks and recovery objectives']],
+    ['5','Performance & Senior DBA','Develop production-level diagnostic and design skills','4–6 weeks',['AWR/ASH-based investigation','SQL tuning and plan stability','Capacity planning','Patching and upgrade strategy','Security hardening and auditing','Automation, standards and incident leadership']]
+  ]},
+  postgresql:{name:'PostgreSQL DBA',sub:'PostgreSQL internals → operations → HA → performance',stages:[
+    ['1','PostgreSQL Foundations','Understand clusters, databases, processes and storage','2–3 weeks',['Cluster, database, schema and role concepts','Postmaster/background workers and sessions','Configuration files and reload vs restart','Tables, indexes and TOAST','WAL, checkpoints and archiving','psql essentials']],
+    ['2','Daily Administration','Handle routine production operations safely','2–3 weeks',['Roles, grants and authentication','VACUUM, ANALYZE and autovacuum','Logs and activity views','Locks and blocking sessions','Disk and table bloat checks','Extensions and maintenance jobs']],
+    ['3','Backup & Recovery','Build and test a recoverable PostgreSQL environment','2–3 weeks',['pg_dump and pg_restore','Base backups','WAL archiving','Point-in-time recovery','Recovery testing','Backup retention and monitoring']],
+    ['4','Replication & HA','Operate resilient PostgreSQL systems','3–4 weeks',['Streaming replication','Replication slots','Synchronous vs asynchronous replication','Standby monitoring and lag','Failover and promotion','HA tooling concepts']],
+    ['5','Performance & Advanced DBA','Move into deeper PostgreSQL engineering','4–6 weeks',['EXPLAIN and EXPLAIN ANALYZE','Planner statistics and indexes','Connection and memory tuning','Partitioning','Logical replication','Upgrade and migration strategy']]
+  ]},
+  mysql:{name:'MySQL DBA',sub:'MySQL/InnoDB administration → backup → replication → performance',stages:[
+    ['1','MySQL Foundations','Learn server, InnoDB and SQL administration fundamentals','2–3 weeks',['MySQL architecture and server lifecycle','InnoDB storage engine','Databases, tables and indexes','Users, roles and privileges','Configuration and variables','mysql client essentials']],
+    ['2','Daily Operations','Manage sessions, logs, storage and routine maintenance','2–3 weeks',['Processlist and active sessions','Slow query and error logs','Transactions and locks','InnoDB status','Table and disk growth checks','Configuration change workflow']],
+    ['3','Backup & Recovery','Build reliable logical and physical recovery skills','2–3 weeks',['mysqldump backup and restore','mysqlpump or logical backup concepts','Physical backup concepts','Binary logs','Point-in-time recovery','Restore verification']],
+    ['4','Replication & HA','Operate replicated MySQL environments','3–5 weeks',['Binary-log replication','GTID concepts','Replica lag monitoring','Replication errors and recovery','Semi-synchronous concepts','Failover planning']],
+    ['5','Performance & Advanced DBA','Tune production workloads and design reliable systems','4–6 weeks',['EXPLAIN and optimizer basics','Indexes and query tuning','InnoDB buffer pool and I/O','Performance Schema','Partitioning and online changes','Upgrade and migration planning']]
+  ]},
+  sqlserver:{name:'SQL Server DBA',sub:'SQL Server operations → backup → HA → Query Store → performance',stages:[
+    ['1','SQL Server Foundations','Learn instances, databases, storage and core administration','2–3 weeks',['Instance and database architecture','Data files, log files and filegroups','TempDB fundamentals','Security, logins, users and roles','SQL Agent and jobs','DMVs and SSMS essentials']],
+    ['2','Daily Operations','Build reliable monitoring and troubleshooting habits','2–3 weeks',['Active requests and blocking','Deadlocks','Wait statistics','Error log and Agent history','Database consistency checks','Disk, file and log growth']],
+    ['3','Backup & Recovery','Master recoverability and restore operations','2–3 weeks',['Full, differential and log backups','Recovery models','Restore sequences','Point-in-time recovery','DBCC CHECKDB concepts','Backup verification and recovery drills']],
+    ['4','HA & DR','Operate resilient SQL Server platforms','3–5 weeks',['Always On availability groups','Failover and listener concepts','Log shipping','Replication concepts','Cluster dependencies','RPO/RTO and DR testing']],
+    ['5','Performance & Senior DBA','Develop advanced tuning and production design skills','4–6 weeks',['Query Store','Execution plans','Index and statistics strategy','Wait and CPU analysis','TempDB and memory optimization','Patching, upgrades and automation']]
+  ]},
+  cloud:{name:'Cloud DBA',sub:'Cloud database operations across managed and self-managed platforms',stages:[
+    ['1','Cloud Fundamentals','Understand networking, identity, storage and managed services','2–3 weeks',['VPC/VNet and subnets','Security groups/firewalls','IAM and least privilege','Object and block storage concepts','DNS and private connectivity','Cloud monitoring basics']],
+    ['2','Managed Databases','Learn how managed database services differ from self-managed DBs','2–3 weeks',['Provisioning and sizing','Parameter/configuration management','Maintenance windows','Automated backups','Read replicas','Service limits and quotas']],
+    ['3','Reliability & DR','Design recoverable cloud database environments','3–4 weeks',['Multi-zone/high-availability concepts','Cross-region DR','Backup retention','Restore testing','RPO/RTO design','Failure and recovery runbooks']],
+    ['4','Performance & Cost','Balance database performance, resilience and cost','3–4 weeks',['Metrics and alerting','Storage and I/O sizing','Connection pooling','Read scaling','Right-sizing','Cost monitoring']],
+    ['5','Automation & Platform Engineering','Move toward cloud DBA/DBRE responsibilities','4–6 weeks',['Infrastructure as code concepts','CI/CD for database changes','Secrets management','Observability','Automated backup/restore tests','Operational documentation and runbooks']]
+  ]},
+  senior:{name:'Senior DBA / Lead',sub:'Cross-platform operations → architecture → automation → leadership',stages:[
+    ['1','Production Mastery','Strengthen incident response and operational discipline','3–4 weeks',['Incident triage','Change management','Capacity planning','Monitoring standards','Backup compliance','Runbook development']],
+    ['2','Advanced Performance','Diagnose complex workload and infrastructure issues','4–6 weeks',['Wait-event analysis','SQL and index tuning','Memory and I/O bottlenecks','Concurrency problems','Capacity forecasting','Performance baselines']],
+    ['3','HA/DR Architecture','Design for business continuity','4–6 weeks',['RPO/RTO mapping','HA topology selection','DR architecture','Failover testing','Cross-region strategies','Recovery exercises']],
+    ['4','Automation & Engineering','Reduce repetitive DBA work and improve consistency','4–6 weeks',['Shell/PowerShell/Python automation','Infrastructure as code','Database deployment pipelines','Configuration standards','Automated health checks','Observability and alerting']],
+    ['5','Architecture & Leadership','Operate at principal/lead DBA level','4–8 weeks',['Platform standards','Migration strategy','Security and compliance','Cost and capacity governance','Technical documentation','Mentoring and incident leadership']]
+  ]}
+};
+var activeRoadmap='oracle';
+function roadmapKey(){return 'dbamyworld-roadmap-'+activeRoadmap}
+function renderRoadmapTabs(){
+  $('roadmapTabs').innerHTML=Object.keys(ROADMAPS).map(function(k){return '<button type="button" class="roadmap-tab'+(k===activeRoadmap?' active':'')+'" data-roadmap="'+k+'">'+esc(ROADMAPS[k].name)+'</button>'}).join('');
+}
+function roadmapState(){try{return JSON.parse(localStorage.getItem(roadmapKey())||'{}')}catch(e){return {}}}
+function saveRoadmapState(state){try{localStorage.setItem(roadmapKey(),JSON.stringify(state))}catch(e){}}
+function renderRoadmap(){
+  var r=ROADMAPS[activeRoadmap], state=roadmapState(), total=0, done=0;
+  r.stages.forEach(function(st){total+=st[4].length;st[4].forEach(function(_,i){if(state[st[0]+'-'+i])done++})});
+  var pct=total?Math.round(done/total*100):0;
+  $('roadmapContent').innerHTML='<div class="roadmap-progress"><div class="roadmap-progress-top"><span><b>'+done+'/'+total+'</b> learning items complete</span><button type="button" class="roadmap-reset" id="roadmapReset">Reset progress</button></div><div class="progress-track"><div class="progress-fill" style="width:'+pct+'%"></div></div></div>'+
+    r.stages.map(function(st){return '<section class="roadmap-stage"><div class="roadmap-stage-head"><span class="roadmap-num">'+st[0]+'</span><div><h2>'+esc(st[1])+'</h2><p>'+esc(st[2])+'</p></div><span class="roadmap-weeks">'+esc(st[3])+'</span></div><div class="roadmap-items">'+st[4].map(function(item,i){var key=st[0]+'-'+i, checked=!!state[key];return '<label class="roadmap-item'+(checked?' done':'')+'"><input type="checkbox" data-roadmap-check="'+key+'" '+(checked?'checked':'')+'><span>'+esc(item)+'</span></label>'}).join('')+'</div></section>'}).join('')+
+    '<p class="roadmap-tip"><b>Suggested routine:</b> study one stage, practise on a lab environment, document what you learned, then move to the next stage. Use the Home search to find matching guides and interview questions.</p>';
+}
+$('roadmapTabs').addEventListener('click',function(e){var b=e.target.closest('[data-roadmap]');if(!b)return;activeRoadmap=b.dataset.roadmap;renderRoadmapTabs();renderRoadmap();window.scrollTo(0,0)});
+$('roadmapContent').addEventListener('change',function(e){var cb=e.target.closest('[data-roadmap-check]');if(!cb)return;var state=roadmapState();state[cb.dataset.roadmapCheck]=cb.checked;saveRoadmapState(state);renderRoadmap()});
+$('roadmapContent').addEventListener('click',function(e){if(e.target.id!=='roadmapReset')return;saveRoadmapState({});renderRoadmap()});
+renderRoadmapTabs();renderRoadmap();
+
+var commandEngine='All';
+function renderCommandFilters(){
+  var engines=['All','Oracle','PostgreSQL','MySQL','SQL Server'];
+  $('commandFilters').innerHTML=engines.map(function(x){return '<button type="button" class="command-filter '+(commandEngine===x?'active':'')+'" data-command-engine="'+esc(x)+'">'+esc(x)+'</button>'}).join('');
+}
+function renderCommands(){
+  var q=($('commandSearch').value||'').toLowerCase().trim();
+  var items=D.filter(function(d){
+    if(commandEngine!=='All'&&d[0]!==commandEngine)return false;
+    return !q || (d[0]+' '+d[1]+' '+d[2]+' '+d[3]+' '+d[4]).toLowerCase().indexOf(q)>-1;
+  });
+  $('commandGrid').innerHTML=items.length?items.map(function(d,i){
+    var idx=D.indexOf(d);
+    return '<article class="command-card"><div class="command-card-head"><span class="command-badge">'+esc(d[0])+' · '+esc(d[1])+'</span><h3>'+esc(d[2])+'</h3><p>'+esc(d[3])+'</p></div><pre class="command-code">'+esc(d[4])+'</pre><button type="button" class="command-copy" data-command-copy="'+idx+'">Copy command</button></article>';
+  }).join(''):'<div class="command-empty">No commands match your search.</div>';
+}
+$('commandFilters').addEventListener('click',function(e){var b=e.target.closest('[data-command-engine]');if(!b)return;commandEngine=b.dataset.commandEngine;renderCommandFilters();renderCommands()});
+$('commandSearch').addEventListener('input',renderCommands);
+$('commandGrid').addEventListener('click',function(e){var b=e.target.closest('[data-command-copy]');if(!b)return;var d=D[Number(b.dataset.commandCopy)];if(!d)return;navigator.clipboard.writeText(d[4]).then(function(){b.textContent='Copied';setTimeout(function(){b.textContent='Copy command'},1200)},function(){b.textContent='Select and copy'});});
+renderCommandFilters();renderCommands();
+
+var QUIZ=[
+['Oracle','Which dynamic performance view shows current database sessions?',['V$SESSION','DBA_USERS','V$DATABASE','DBA_TABLESPACES'],0,'V$SESSION provides information about current Oracle sessions, including SID, status, username and machine.'],
+['Oracle','Which Oracle tool is designed for backup, restore and recovery?',['Data Pump','RMAN','SQL*Loader','DBCA'],1,'RMAN (Recovery Manager) is Oracle\'s primary tool for database backup and recovery.'],
+['Oracle','Which command opens a mounted database?',['ALTER DATABASE OPEN;','ALTER SYSTEM OPEN;','OPEN DATABASE;','START DATABASE OPEN;'],0,'ALTER DATABASE OPEN changes a mounted database to open mode when the required recovery conditions are met.'],
+['Oracle','Which parameter limits the maximum number of operating-system processes that can connect to an Oracle instance?',['SESSIONS','PROCESSES','CONNECTIONS','MAX_USERS'],1,'PROCESSES controls the maximum number of operating-system user processes that can connect to an Oracle instance.'],
+['Oracle','Which background process writes dirty buffers from the database buffer cache to data files?',['LGWR','DBWn','CKPT','SMON'],1,'DBWn writes modified database buffers from the buffer cache to data files.'],
+['Oracle','Which background process writes redo records from the redo log buffer to online redo logs?',['LGWR','DBWn','ARCn','PMON'],0,'LGWR writes redo records from the redo log buffer to the online redo log files.'],
+['Oracle','Which Oracle feature provides physical standby database functionality?',['Data Guard','Data Pump','Flashback Query','SQL*Loader'],0,'Oracle Data Guard provides standby databases and managed redo transport/apply for disaster recovery and availability.'],
+['Oracle','Which command lists RMAN backup pieces and backup sets?',['LIST BACKUP SUMMARY;','SHOW BACKUP FILES;','DISPLAY RMAN BACKUPS;','REPORT BACKUP PIECES ONLY;'],0,'LIST BACKUP SUMMARY provides a concise summary of RMAN backups known to the repository.'],
+['Oracle','Which view is commonly used to identify invalid database objects?',['DBA_OBJECTS','DBA_SEGMENTS','V$SESSION','DBA_DATA_FILES'],0,'DBA_OBJECTS includes the STATUS column, which can be checked for INVALID objects.'],
+['Oracle','Which storage structure logically groups data files?',['Tablespace','Control file','Redo log group','Listener'],0,'A tablespace is a logical storage structure made up of one or more data files.'],
+
+['PostgreSQL','Which psql command lists databases?',['\l','\dt','SHOW DATABASES;','LIST DATABASES;'],0,'\l is a psql meta-command that lists databases.'],
+['PostgreSQL','Which view provides information about current server activity and sessions?',['pg_stat_activity','pg_sessions','pg_active_users','pg_current_sessions'],0,'pg_stat_activity reports one row per server process and includes session and query activity information.'],
+['PostgreSQL','What is VACUUM primarily used for?',['Encrypting tables','Processing dead tuples and maintaining table health','Starting replication','Creating indexes'],1,'VACUUM processes dead tuples and helps maintain table health and visibility information.'],
+['PostgreSQL','Which command cancels a running PostgreSQL backend query without terminating the session?',['pg_cancel_backend()','pg_terminate_backend()','pg_stop_query()','pg_abort_backend()'],0,'pg_cancel_backend(pid) requests cancellation of the current query while leaving the backend/session running.'],
+['PostgreSQL','Which command terminates a PostgreSQL backend session?',['pg_cancel_backend()','pg_terminate_backend()','pg_kill_session()','pg_disconnect()'],1,'pg_terminate_backend(pid) requests termination of the selected backend process.'],
+['PostgreSQL','Which directory contains the PostgreSQL write-ahead log files by default?',['pg_wal','pg_redo','pg_archive','pg_logs'],0,'The pg_wal directory contains PostgreSQL WAL segment files.'],
+['PostgreSQL','Which function returns the size of a database in bytes?',['pg_database_size()','pg_db_size()','database_size()','pg_size_database()'],0,'pg_database_size(database_name) returns the total disk space used by the specified database.'],
+['PostgreSQL','Which command displays tables in the current database in psql?',['\dt','\l','\du','\df'],0,'\dt lists relations that match table objects in the current database.'],
+['PostgreSQL','Which PostgreSQL component records changes before they are written to data files?',['WAL','Autovacuum','Planner','pg_stat_activity'],0,'Write-Ahead Logging (WAL) records changes before the corresponding data pages are written, supporting durability and recovery.'],
+['PostgreSQL','Which view on a primary is commonly used to inspect physical replication connections?',['pg_stat_replication','pg_replication_status','pg_stat_standby','pg_replica_activity'],0,'pg_stat_replication shows information about WAL sender processes and connected standby servers.'],
+
+['MySQL','Which statement shows currently connected MySQL threads?',['SHOW PROCESSLIST;','SHOW THREADS;','LIST SESSIONS;','SHOW CONNECTIONS;'],0,'SHOW PROCESSLIST displays information about current MySQL client threads.'],
+['MySQL','Which storage engine commonly supports transactions and foreign keys?',['MyISAM','CSV','InnoDB','MEMORY'],2,'InnoDB is the standard transactional storage engine in modern MySQL and supports foreign keys.'],
+['MySQL','Which statement is used to change a MySQL account password?',['ALTER USER ... IDENTIFIED BY ...','CHANGE PASSWORD TABLE ...','UPDATE USERS PASSWORD ...','SET ACCOUNT PASSWORD COLUMN ...'],0,'ALTER USER is the standard statement for changing account authentication information.'],
+['MySQL','Which metadata source can be used to calculate table data and index sizes?',['information_schema.tables','mysql.users','performance_schema.files','sys.storage'],0,'information_schema.tables exposes data_length and index_length, which can be aggregated to estimate table size.'],
+['MySQL','Which statement terminates a MySQL connection by thread ID?',['KILL','STOP THREAD','TERMINATE SESSION','DROP CONNECTION'],0,'KILL thread_id terminates a MySQL thread/connection; KILL QUERY can terminate only the running statement.'],
+['MySQL','Which variable controls the threshold for statements written to the slow query log?',['long_query_time','slow_query_limit','query_timeout','log_query_time'],0,'long_query_time specifies the threshold, in seconds, for statements to be considered slow.'],
+['MySQL','Which command is used to inspect the status of a replication replica in current MySQL terminology?',['SHOW REPLICA STATUS\G','SHOW STANDBY STATUS\G','SHOW DATA GUARD STATUS\G','SHOW SLAVE HEALTH\G'],0,'SHOW REPLICA STATUS reports replication receiver/applier state and lag-related fields.'],
+['MySQL','Which utility is commonly used for logical backups of MySQL databases?',['mysqldump','mysqlbackupd','mysql_export','InnoBackupSQL'],0,'mysqldump creates logical SQL-format backups and can be used for selected databases or tables.'],
+['MySQL','Which performance schema area provides statement-level execution statistics?',['events_statements_*','table_queries_*','statement_history_only','sql_metrics_*'],0,'Performance Schema events_statements tables collect statement execution instrumentation and statistics.'],
+['MySQL','Which command displays the current MySQL server version?',['SELECT VERSION();','SHOW SERVER VERSION;','GET VERSION;','DISPLAY MYSQL VERSION;'],0,'SELECT VERSION() returns the current MySQL server version string.'],
+
+['SQL Server','Which DMV is commonly used to inspect currently executing requests?',['sys.dm_exec_requests','sys.running_sessions','sys.active_queries','sys.dm_requests'],0,'sys.dm_exec_requests returns information about requests executing in SQL Server.'],
+['SQL Server','Which statement restores a SQL Server database from a backup?',['RESTORE DATABASE','RECOVER DATABASE','LOAD DATABASE','BACKUP RESTORE DATABASE'],0,'RESTORE DATABASE is used to restore a database from a backup set.'],
+['SQL Server','Which system database stores SQL Server Agent jobs and schedules?',['master','model','msdb','tempdb'],2,'msdb stores SQL Server Agent jobs, schedules, alerts and related metadata.'],
+['SQL Server','Which database is recreated when the SQL Server service starts?',['master','model','msdb','tempdb'],3,'tempdb is recreated each time the SQL Server instance starts.'],
+['SQL Server','Which DMV can be used to inspect cached query plans and SQL text together with execution information?',['sys.dm_exec_query_stats','sys.query_cache','sys.dm_sql_plans','sys.cached_queries'],0,'sys.dm_exec_query_stats exposes aggregate performance statistics for cached query plans and can be joined to execution-plan and SQL-text DMFs.'],
+['SQL Server','Which command changes a database recovery model?',['ALTER DATABASE ... SET RECOVERY','ALTER SERVER ... SET RECOVERY','SET DATABASE RECOVERY','CHANGE DATABASE MODEL'],0,'ALTER DATABASE database_name SET RECOVERY {FULL|BULK_LOGGED|SIMPLE} changes the recovery model.'],
+['SQL Server','Which feature captures query performance information over time for troubleshooting regressions?',['Query Store','TempDB','Service Broker','Database Mail'],0,'Query Store persists query text, plans and runtime statistics so query performance can be analyzed over time.'],
+['SQL Server','Which command shows the current database context?',['SELECT DB_NAME();','SHOW CURRENT DATABASE;','GET DATABASE();','CURRENT DATABASE;'],0,'DB_NAME() returns the name of the current database when called without an argument.'],
+['SQL Server','Which system database provides the template for new user databases?',['master','model','msdb','tempdb'],1,'model is used as the template for new databases created on the SQL Server instance.'],
+['SQL Server','Which command can display currently running SQL Server sessions and requests?',['sp_who2','SHOW PROCESSLIST','LIST SESSIONS','pg_stat_activity'],0,'sp_who2 is a commonly used SQL Server system procedure for reviewing sessions and requests; DMVs are preferred for detailed diagnostics.']
+];
+var quizEngine='All',quizSubmitted=false;
+function renderQuizFilters(){var es=['All','Oracle','PostgreSQL','MySQL','SQL Server'];$('quizFilters').innerHTML=es.map(function(x){return '<button type="button" class="quiz-filter '+(quizEngine===x?'active':'')+'" data-quiz-engine="'+esc(x)+'">'+esc(x)+'</button>'}).join('')}
+function quizItems(){return QUIZ.filter(function(q){return quizEngine==='All'||q[0]===quizEngine})}
+function renderQuiz(){var items=quizItems();var answered=0;items.forEach(function(_,i){var r=document.querySelector('input[name="quiz-'+i+'"]:checked');if(r)answered++});$('quizProgress').innerHTML='<div class="quiz-progress"><div class="quiz-progress-top"><span><b>'+answered+'/'+items.length+'</b> answered</span><span class="quiz-muted">'+esc(quizEngine)+' · '+items.length+' questions</span></div><div class="quiz-track"><div class="quiz-fill" style="width:'+(items.length?Math.round(answered/items.length*100):0)+'%"></div></div></div>';$('quizContainer').innerHTML=items.map(function(q,i){var selected=document.querySelector('input[name="quiz-'+i+'"]:checked');var sel=selected?Number(selected.value):-1;return '<article class="quiz-card"><h2>'+ (i+1)+'. '+esc(q[1])+'</h2>'+q[2].map(function(opt,j){var cls='';if(quizSubmitted){if(j===q[3])cls=' correct';else if(j===sel)cls=' wrong'}return '<label class="quiz-option'+cls+'"><input type="radio" name="quiz-'+i+'" value="'+j+'" '+(j===sel?'checked':'')+' '+(quizSubmitted?'disabled':'')+'><span>'+esc(opt)+'</span></label>'}).join('')+(quizSubmitted?'<div class="quiz-explain"><b>Explanation:</b> '+esc(q[4])+'</div>':'')+'</article>'}).join('');$('quizResult').innerHTML=''}
+$('quizFilters').addEventListener('click',function(e){var b=e.target.closest('[data-quiz-engine]');if(!b)return;quizEngine=b.dataset.quizEngine;quizSubmitted=false;renderQuizFilters();renderQuiz();window.scrollTo(0,0)});
+$('quizContainer').addEventListener('change',function(){if(!quizSubmitted)renderQuiz()});
+$('quizSubmit').addEventListener('click',function(){var items=quizItems(),score=0,answered=0;items.forEach(function(q,i){var r=document.querySelector('input[name="quiz-'+i+'"]:checked');if(r){answered++;if(Number(r.value)===q[3])score++}});quizSubmitted=true;renderQuiz();var pct=items.length?Math.round(score/items.length*100):0;$('quizResult').innerHTML='<div class="quiz-result"><div class="quiz-muted">Quiz complete</div><div class="quiz-score">'+score+' / '+items.length+'</div><p><b>'+pct+'%</b> correct · '+answered+' answered</p><p class="quiz-muted">Review the explanations below and practise the commands in a safe lab environment before using them in production.</p></div>';window.scrollTo(0,0)});
+$('quizReset').addEventListener('click',function(){quizSubmitted=false;renderQuiz()});
+renderQuizFilters();renderQuiz();
+
 function showPage(page){
-  ['home','about','contact'].forEach(function(p){var el=document.getElementById('page-'+p);if(el)el.hidden=p!==page});
+  ['home','roadmaps','learning','commands','quiz','about','contact'].forEach(function(p){var el=document.getElementById('page-'+p);if(el)el.hidden=p!==page});
   document.querySelectorAll('.navbtn').forEach(function(b){b.classList.toggle('active',b.dataset.page===page)});
   document.querySelector('.filters').hidden=page!=='home';
   document.body.dataset.page=page;
@@ -736,5 +1098,36 @@ pop();
 render();
 showPage('home');
 </script>
+
+<footer class="site-footer footer-v39">
+  <div class="footer-grid">
+    <div class="footer-brand">
+      <div class="footer-logo">DBAMyWorld</div>
+      <p>Your practical DBA learning and reference space.</p>
+      <p class="footer-note">Version numbers, paths and passwords are examples. Always check vendor documentation for your release.</p>
+    </div>
+
+    <div class="footer-links">
+      <h4>Explore</h4>
+      <button type="button" onclick="showPage('home')">Home</button>
+      <button type="button" onclick="showPage('roadmaps')">Roadmaps</button>
+      <button type="button" onclick="showPage('learning')">Learning Paths</button>
+      <button type="button" onclick="showPage('commands')">Command Library</button>
+    </div>
+
+    <div class="footer-links">
+      <h4>Website</h4>
+      <button type="button" onclick="showPage('about')">About</button>
+      <button type="button" onclick="showPage('contact')">Contact</button>
+      <a href="mailto:dbamyworld@gmail.com">Email us</a>
+    </div>
+  </div>
+
+  <div class="footer-bottom">
+    <span>© 2026 DBAMyWorld</span>
+    <span>Built for DBAs &amp; database learners</span>
+  </div>
+</footer>
+<script id="learning-nav-v38">document.addEventListener('click',function(e){var b=e.target.closest('[data-page="learning"]');if(!b)return;e.preventDefault();if(typeof showPage==='function'){showPage('learning');}else{document.querySelectorAll('[id^="page-"]').forEach(function(s){s.hidden=true});var s=document.getElementById('page-learning');if(s)s.hidden=false;window.scrollTo(0,0);}});</script>
 </body>
 </html>
