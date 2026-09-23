@@ -855,6 +855,7 @@ body[data-page]:not([data-page="home"]) .filters{display:none!important}
 .sqlp-select{width:100%;box-sizing:border-box;min-width:0}
 @media(max-width:800px){.sqlp-toolbar{grid-template-columns:1fr}.sqlp-count{padding-top:2px}.sqlp-grid{grid-template-columns:1fr}}
 </style>
+<style id="v61-performance-css">[hidden]{display:none!important}.feature-page{content-visibility:auto;contain-intrinsic-size:800px}</style>
 </head>
 <body>
 <header class="top"><div class="in">
@@ -1721,7 +1722,6 @@ list.querySelectorAll('[data-ora-copy]').forEach(function(b){b.addEventListener(
 list.querySelectorAll('[data-ora-cmd]').forEach(function(b){b.addEventListener('click',function(){var pre=b.parentElement.querySelector('pre');if(navigator.clipboard){navigator.clipboard.writeText(pre.textContent).then(function(){b.textContent='Copied';setTimeout(function(){b.textContent='Copy SQL'},1000)})}})});
 }
 function initOra(){renderOraFilters();renderOra();var s=document.getElementById('oraSearch');if(s)s.addEventListener('input',function(){OF.search=s.value.trim();renderOra()});var trigger=document.getElementById('oraCategoryTrigger'),menu=document.getElementById('oraCategoryMenu');if(trigger&&menu){trigger.addEventListener('click',function(e){e.stopPropagation();var open=menu.classList.toggle('open');trigger.setAttribute('aria-expanded',open?'true':'false')});trigger.addEventListener('keydown',function(e){if(e.key==='ArrowDown'||e.key==='Enter'||e.key===' '){e.preventDefault();menu.classList.add('open');trigger.setAttribute('aria-expanded','true');var first=menu.querySelector('[data-ora-category]');if(first)first.focus()}});menu.addEventListener('keydown',function(e){var opts=Array.from(menu.querySelectorAll('[data-ora-category]')),i=opts.indexOf(document.activeElement);if(e.key==='Escape'){menu.classList.remove('open');trigger.setAttribute('aria-expanded','false');trigger.focus()}else if(e.key==='ArrowDown'){e.preventDefault();(opts[Math.min(i+1,opts.length-1)]||opts[0]).focus()}else if(e.key==='ArrowUp'){e.preventDefault();(opts[Math.max(i-1,0)]||opts[opts.length-1]).focus()}});document.addEventListener('click',function(e){if(!document.getElementById('oraCategorySelect').contains(e.target)){menu.classList.remove('open');trigger.setAttribute('aria-expanded','false')}})}}
-if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',initOra);else initOra();
 window.__DBAMyWorldOraInit=initOra;
 })();
 function showPage(page){
@@ -1729,6 +1729,18 @@ function showPage(page){
   document.querySelectorAll('.navbtn').forEach(function(b){b.classList.toggle('active',b.dataset.page===page)});
   document.querySelector('.filters').hidden=page!=='home';
   document.body.dataset.page=page;
+  /* v61: initialize heavy feature pages only when the user opens them. */
+  var lazy={
+    oraclelab:window.__DBAMyWorldLabInit,
+    oraerrors:window.__DBAMyWorldOraInit,
+    sqlpractice:window.__DBAMyWorldSQLPracticeInit,
+    interview:window.__DBAMyWorldInterviewInit
+  };
+  window.__DBAMyWorldLazyReady=window.__DBAMyWorldLazyReady||{};
+  if(lazy[page] && !window.__DBAMyWorldLazyReady[page]){
+    window.__DBAMyWorldLazyReady[page]=true;
+    lazy[page]();
+  }
   window.scrollTo(0,0);
 }
 document.querySelectorAll('.navbtn').forEach(function(b){b.addEventListener('click',function(){showPage(b.dataset.page)})});
@@ -1780,7 +1792,8 @@ function esc(x){return String(x).replace(/[&<>\"]/g,function(c){return {'&':'&am
 function renderFilters(){var topics=['All'].concat(Array.from(new Set(LABS.map(function(x){return x.topic}))));document.getElementById('labFilters').innerHTML=topics.map(function(t){return '<button type="button" class="lab-filter '+(t===filter?'active':'')+'" data-lab-filter="'+esc(t)+'">'+esc(t)+'</button>'}).join('');document.querySelectorAll('[data-lab-filter]').forEach(function(b){b.onclick=function(){filter=b.dataset.labFilter;render()}})}
 function render(){renderFilters();var q=(document.getElementById('labSearch').value||'').toLowerCase().trim();var list=LABS.filter(function(x){var hay=[x.title,x.topic,x.level,x.symptom,x.objective,x.fix,x.verify,x.answer,x.commands].join(' ').toLowerCase();return (filter==='All'||x.topic===filter)&&(!q||hay.indexOf(q)>=0)});var el=document.getElementById('labList');el.innerHTML=list.length?list.map(function(x){return '<article class="lab-card" data-lab-card="'+x.id+'"><div class="lab-meta">'+esc(x.topic)+' · '+esc(x.level)+'</div><h2>'+esc(x.title)+'</h2><p><strong>Symptom:</strong> '+esc(x.symptom)+'</p><p class="lab-objective"><strong>Objective:</strong> '+esc(x.objective)+'</p><h3>Check → Diagnose</h3><div class="lab-steps">'+x.steps.map(function(st,i){return '<label class="lab-step"><input type="checkbox" data-lab-step="'+x.id+'-'+i+'"> <span>'+esc(st)+'</span></label>'}).join('')+'</div><h3>Useful diagnostic command</h3><pre class="lab-code">'+esc(x.commands)+'</pre><div class="lab-actions"><button type="button" class="lab-btn primary" data-lab-answer="'+x.id+'">Show Fix &amp; Verify</button><button type="button" class="lab-btn" data-lab-copy="'+x.id+'">Copy Command</button><button type="button" class="lab-btn" data-lab-reset="'+x.id+'">Reset Steps</button></div><div class="lab-answer" id="lab-answer-'+x.id+'" hidden><p><strong>Fix:</strong> '+esc(x.fix)+'</p><p><strong>Verify:</strong> '+esc(x.verify)+'</p><p><strong>Key takeaway:</strong> '+esc(x.answer)+'</p></div></article>'}).join(''):'<div class="lab-card lab-empty">No Oracle DBA labs match your search.</div>';document.getElementById('labStatus').textContent=list.length+' lab'+(list.length===1?'':'s')+' available';bind();}
 function bind(){document.querySelectorAll('[data-lab-answer]').forEach(function(b){b.onclick=function(){var a=document.getElementById('lab-answer-'+b.dataset.labAnswer);a.hidden=!a.hidden;b.textContent=a.hidden?'Show Fix & Verify':'Hide Fix & Verify'}});document.querySelectorAll('[data-lab-copy]').forEach(function(b){b.onclick=function(){var x=LABS.find(function(z){return z.id===b.dataset.labCopy});navigator.clipboard&&navigator.clipboard.writeText(x.commands).then(function(){b.textContent='Copied';setTimeout(function(){b.textContent='Copy Command'},1200)}).catch(function(){b.textContent='Copy failed'})}});document.querySelectorAll('[data-lab-reset]').forEach(function(b){b.onclick=function(){var card=b.closest('[data-lab-card]');card.querySelectorAll('input[type=checkbox]').forEach(function(c){c.checked=false})}})}
-document.getElementById('labSearch').addEventListener('input',render);render();
+function initLab(){var s=document.getElementById('labSearch');if(!s)return;if(!window.__DBAMyWorldLabBound){s.addEventListener('input',render);window.__DBAMyWorldLabBound=true;}render();}
+window.__DBAMyWorldLabInit=initLab;
 })();
 </script>
 <script id="interview-center-v47-js">
@@ -1839,7 +1852,6 @@ function renderInterviewFilters(){var box=interviewEl('interviewFilters'); if(!b
 function interviewMatch(q){return (!IF.db||IF.db==='All'||q[0]===IF.db)&&(!IF.level||IF.level==='All'||q[1]===IF.level)&&(!IF.topic||IF.topic==='All'||q[2]===IF.topic)&&(!IF.search||q.join(' ').toLowerCase().includes(IF.search.toLowerCase()))}
 function renderInterview(){var list=interviewEl('interviewList'),sum=interviewEl('interviewSummary'); if(!list)return; var a=IQ.filter(interviewMatch); sum.textContent=a.length+' question'+(a.length===1?'':'s')+' found'; if(!a.length){list.innerHTML='<div class="interview-empty">No questions match your filters. Try clearing the search or choosing “All”.</div>';return} list.innerHTML=a.map(function(q,i){var id='iq-'+i+'-'+q[0].replace(/\W/g,'');return '<article class="interview-card"><div class="interview-card-top"><div class="interview-meta"><span class="interview-badge">'+q[0]+'</span><span class="interview-badge">'+q[1]+'</span><span class="interview-badge">'+q[2]+'</span></div><h2 class="interview-question">'+q[3]+'</h2><div class="interview-actions"><button type="button" class="interview-btn primary" data-answer="'+id+'">Show answer</button><button type="button" class="interview-btn" data-copy="'+id+'">Copy question</button></div></div><div class="interview-answer" id="'+id+'" hidden><h3>Model answer</h3><p>'+q[4]+'</p><h3>Key points to mention</h3><p>'+q[5]+'</p></div></article>'}).join(''); list.querySelectorAll('[data-answer]').forEach(function(b){b.addEventListener('click',function(){var a=document.getElementById(b.dataset.answer);var open=!a.hidden;a.hidden=open;b.textContent=open?'Show answer':'Hide answer'})}); list.querySelectorAll('[data-copy]').forEach(function(b){b.addEventListener('click',function(){var card=b.closest('.interview-card'),text=card.querySelector('.interview-question').textContent;navigator.clipboard&&navigator.clipboard.writeText(text).then(function(){b.textContent='Copied';setTimeout(function(){b.textContent='Copy question'},1200)})})})}
 function initInterview(){renderInterviewFilters();renderInterview();var search=interviewEl('interviewSearch');if(search)search.addEventListener('input',function(){IF.search=search.value.trim();renderInterview()});var filters=interviewEl('interviewFilters');if(filters)filters.addEventListener('click',function(e){var b=e.target.closest('[data-filter]');if(!b)return;IF[b.dataset.filter]=b.dataset.value;renderInterviewFilters();renderInterview()})}
-if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',initInterview);else initInterview();
 window.__DBAMyWorldInterviewInit=initInterview;
 })();
 </script>
@@ -1914,7 +1926,7 @@ grid.querySelectorAll('[data-model]').forEach(function(b){b.onclick=function(){v
 grid.querySelectorAll('[data-clear]').forEach(function(b){b.onclick=function(){var c=b.closest('.sqlp-card');c.querySelector('.sqlp-editor').value='';var r=c.querySelector('[data-result]');r.hidden=true;var d=c.querySelector('[data-answer]');d.style.display='none';c.querySelector('[data-model]').textContent='Show Answer';}});
 grid.querySelectorAll('[data-copy]').forEach(function(b){b.onclick=function(){var q=get(+b.dataset.copy);if(navigator.clipboard){navigator.clipboard.writeText(q.answer).then(function(){b.textContent='Copied';setTimeout(function(){b.textContent='Copy SQL'},1000)})}}});}
 function init(){var s=document.getElementById('sqlpSearch'),c=document.getElementById('sqlpCategory');if(!s||!c)return;s.oninput=function(){state.search=s.value.trim();render()};c.onchange=function(){state.cat=c.value;render()};render()}
-if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
+window.__DBAMyWorldSQLPracticeInit=init;
 })();
 </script>
 
