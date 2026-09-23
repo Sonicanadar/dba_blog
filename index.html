@@ -130,6 +130,12 @@ footer{
   line-height:1.5;
 }
 
+
+/* Step 4 · Production DBA Checklists */
+.check-wrap{display:grid;gap:16px}.check-hero{background:linear-gradient(135deg,var(--panel),rgba(22,64,122,.06));border:1px solid var(--line);border-radius:14px;padding:20px}.check-hero h1{margin:.2rem 0 .5rem}.check-toolbar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}.check-tabs{display:flex;gap:8px;flex-wrap:wrap}.check-tab{border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:999px;padding:9px 13px;font:inherit;cursor:pointer}.check-tab.active{background:var(--brand);color:var(--brandfg);border-color:var(--brand)}.check-actions{display:flex;gap:8px}.check-summary{border:1px solid var(--line);background:var(--panel);border-radius:12px;padding:13px 15px;font-weight:600}.check-list{display:grid;gap:10px}.check-section{border:1px solid var(--line);background:var(--panel);border-radius:12px;overflow:hidden}.check-section h2{font-size:1rem;margin:0;padding:13px 15px;border-bottom:1px solid var(--line)}.check-items{padding:5px 15px 10px}.check-item{display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--line)}.check-item:last-child{border-bottom:0}.check-item input{width:20px;height:20px;accent-color:var(--brand);margin-top:2px;flex:0 0 auto}.check-item label{cursor:pointer}.check-item small{display:block;color:var(--mute);font-weight:400;margin-top:2px}.check-progress{height:9px;background:var(--line);border-radius:999px;overflow:hidden;margin-top:8px}.check-progress span{display:block;height:100%;background:var(--brand);width:0;transition:width .2s ease}@media(max-width:700px){.check-toolbar{align-items:stretch}.check-tabs{overflow-x:auto;flex-wrap:nowrap;padding-bottom:2px}.check-tab{white-space:nowrap}.check-actions,.check-actions .tool-btn{width:100%}}
+
+/* Step 2 · Interactive DBA Tools */
+.tools-wrap{display:grid;gap:16px}.tools-hero{background:linear-gradient(135deg,var(--panel),rgba(22,64,122,.06));border:1px solid var(--line);border-radius:14px;padding:20px}.tools-hero h1{margin:.2rem 0 .5rem}.tools-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.tool-card{border:1px solid var(--line);background:var(--panel);border-radius:12px;padding:16px}.tool-card h2{margin:0 0 6px;font-size:1.08rem}.tool-card p{color:var(--mute);margin:0 0 14px;font-size:.92rem}.tool-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.tool-field{display:grid;gap:5px}.tool-field label{font-size:.84rem;font-weight:600}.tool-field input,.tool-field select{width:100%;font:inherit;padding:10px;border:1px solid var(--line);border-radius:8px;background:var(--panel);color:var(--ink);min-width:0}.tool-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.tool-btn{border:1px solid var(--brand);background:var(--brand);color:var(--brandfg);border-radius:8px;padding:9px 13px;font:inherit;font-weight:600;cursor:pointer}.tool-btn.secondary{background:transparent;color:var(--ink);border-color:var(--line)}.tool-result{margin-top:12px;padding:12px;border-radius:9px;background:var(--code);color:var(--codefg);font-family:'IBM Plex Mono',monospace;font-size:.86rem;white-space:pre-wrap;overflow-wrap:anywhere}.tool-note{margin-top:14px;padding:11px 13px;border-left:4px solid var(--brand);background:var(--wbg);color:var(--ink);border-radius:6px}.tools-kpis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-bottom:14px}.tool-kpi{border:1px solid var(--line);border-radius:10px;padding:12px;background:var(--panel)}.tool-kpi b{display:block;font-size:1.1rem}.tool-kpi span{color:var(--mute);font-size:.8rem}@media(max-width:760px){.tools-grid{grid-template-columns:1fr}.tool-form{grid-template-columns:1fr}.tools-kpis{grid-template-columns:1fr}}
 </style>
 <style>
 /* v28: professional footer */
@@ -597,12 +603,171 @@ mark.search-hit{background:var(--wbg);color:var(--w);border-radius:3px;padding:0
 .quiz-wrap{max-width:1000px;margin:0 auto;padding:8px 0 36px}.quiz-hero{background:linear-gradient(135deg,rgba(22,64,122,.12),rgba(20,184,166,.10));border:1px solid var(--line);border-radius:18px;padding:24px;margin-bottom:18px}.quiz-hero h1{margin:0 0 8px}.quiz-hero p{margin:0;color:var(--muted)}.quiz-toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:14px 0}.quiz-filter{border:1px solid var(--line);background:var(--card);color:inherit;border-radius:999px;padding:9px 13px;cursor:pointer}.quiz-filter.active{font-weight:700;box-shadow:0 0 0 2px rgba(22,64,122,.18)}.quiz-progress{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin-bottom:16px}.quiz-progress-top{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;font-size:14px}.quiz-track{height:8px;background:var(--line);border-radius:99px;overflow:hidden;margin-top:10px}.quiz-fill{height:100%;background:var(--brand);transition:width .2s}.quiz-card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px;margin-bottom:14px}.quiz-card h2{font-size:18px;margin:0 0 15px}.quiz-option{display:flex;gap:10px;align-items:flex-start;padding:11px 12px;border:1px solid var(--line);border-radius:10px;margin:8px 0;cursor:pointer}.quiz-option:hover{background:rgba(22,64,122,.05)}.quiz-option input{margin-top:3px}.quiz-option.correct{border-color:#22a06b;background:rgba(34,160,107,.10)}.quiz-option.wrong{border-color:#d64545;background:rgba(214,69,69,.08)}.quiz-explain{margin-top:12px;padding:10px 12px;border-left:3px solid var(--brand);background:rgba(22,64,122,.06);font-size:14px;color:var(--muted)}.quiz-actions{display:flex;gap:10px;flex-wrap:wrap;margin:18px 0}.quiz-btn{border:1px solid var(--line);border-radius:10px;padding:11px 16px;background:var(--brand);color:var(--brandfg);cursor:pointer;font-weight:700}.quiz-btn.secondary{background:var(--card);color:inherit}.quiz-result{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px;margin-bottom:16px}.quiz-score{font-size:30px;font-weight:800;margin:4px 0}.quiz-muted{color:var(--muted)}
 </style>
 
+
+<style id="troubleshooting-v41">
+.trouble-wrap{max-width:1200px;margin:0 auto;padding:8px 0 40px}
+.trouble-hero{background:linear-gradient(135deg,rgba(239,68,68,.12),rgba(245,158,11,.10));border:1px solid var(--line);border-radius:18px;padding:24px;margin-bottom:18px}
+.trouble-hero h1{margin:0 0 8px}.trouble-hero p{margin:0;color:var(--muted)}
+.trouble-toolbar{display:flex;gap:10px;flex-wrap:wrap;margin:16px 0}
+.trouble-search{flex:1;min-width:240px;padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:var(--card);color:var(--text);font:inherit}
+.trouble-filters{display:flex;gap:8px;flex-wrap:wrap}
+.trouble-filter{border:1px solid var(--line);background:var(--card);color:var(--text);padding:9px 13px;border-radius:999px;cursor:pointer}
+.trouble-filter.active{background:var(--text);color:var(--bg);border-color:var(--text)}
+.trouble-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px}
+.trouble-card{border:1px solid var(--line);background:var(--card);border-radius:16px;padding:17px;cursor:pointer;transition:transform .15s,box-shadow .15s}
+.trouble-card:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,.08)}
+.trouble-card h3{margin:7px 0 7px;font-size:18px}.trouble-card p{margin:0;color:var(--muted);line-height:1.5}
+.trouble-badge{display:inline-block;font-size:12px;font-weight:700;padding:4px 8px;border-radius:999px;background:rgba(99,102,241,.12)}
+.trouble-tag{display:inline-block;margin-top:11px;font-size:12px;color:var(--muted)}
+.trouble-detail{margin-top:18px;border:1px solid var(--line);border-radius:18px;background:var(--card);padding:22px}
+.trouble-detail-inline{margin-top:16px;border-top:1px solid var(--line);padding-top:16px;cursor:default}
+.trouble-detail-inline h4{margin:10px 0 8px;font-size:17px}.trouble-detail-inline h5{margin:16px 0 7px;font-size:14px}.trouble-detail-inline p{line-height:1.55}
+.trouble-card.is-open{cursor:default;transform:none;box-shadow:0 8px 24px rgba(0,0,0,.08)}
+.trouble-code{background:#111827;color:#f9fafb;border-radius:10px;padding:13px;overflow:auto;font:13px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace;white-space:pre-wrap}
+.trouble-close{float:right}.trouble-note{color:var(--muted);font-size:13px;margin-top:18px}
+.trouble-empty{padding:28px;border:1px dashed var(--line);border-radius:14px;text-align:center;color:var(--muted);grid-column:1/-1}
+@media(max-width:700px){.trouble-detail{padding:16px}.trouble-hero{padding:18px}}
+</style>
+
+
+<style id="mobile-friendly-v45">
+/* v45: mobile-first polish */
+html,body{max-width:100%;overflow-x:hidden}
+img,svg,video,canvas{max-width:100%;height:auto}
+pre,code{overflow-wrap:anywhere}
+pre{max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}
+button,input,select,textarea{max-width:100%;min-height:44px}
+.navbar{overflow-x:auto;flex-wrap:nowrap;padding-bottom:4px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.navbar::-webkit-scrollbar{display:none}
+.navbtn{flex:0 0 auto;min-height:44px}
+.top{padding-left:max(12px,env(safe-area-inset-left));padding-right:max(12px,env(safe-area-inset-right));}
+.layout{padding-left:max(12px,env(safe-area-inset-left));padding-right:max(12px,env(safe-area-inset-right));}
+.card,.check-hero,.tools-hero{overflow:hidden}
+.check-tabs{scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.check-tabs::-webkit-scrollbar{display:none}
+.check-tab{min-height:44px;flex:0 0 auto}
+.check-actions{width:100%}
+.check-actions .tool-btn{min-height:44px}
+.check-item{gap:12px;padding:12px 0}
+.check-item input{width:22px;height:22px;margin-top:1px}
+.check-item label{min-width:0;overflow-wrap:anywhere}
+.footer-grid{gap:18px}
+.footer-links button,.footer-links a{min-height:44px;display:flex;align-items:center}
+@media(max-width:520px){
+  body{font-size:15.5px}
+  .top{padding-top:14px;padding-bottom:14px}
+  .tag{font-size:.84rem;line-height:1.35;margin-top:3px}
+  .navbar{gap:6px;margin-top:10px}
+  .navbtn{padding:8px 11px;font-size:.9rem}
+  .layout{gap:12px;padding-top:12px;padding-bottom:32px}
+  .card{padding:14px;margin-bottom:12px;border-radius:9px}
+  .card h2{font-size:1.05rem}
+  .check-wrap,.tools-wrap{gap:12px}
+  .check-hero,.tools-hero{padding:15px;border-radius:11px}
+  .check-hero h1,.tools-hero h1{font-size:1.35rem;line-height:1.25}
+  .check-summary{padding:11px 12px}
+  .check-section h2{padding:12px}
+  .check-items{padding:4px 12px 8px}
+  .check-actions{display:grid;grid-template-columns:1fr}
+  .check-actions .tool-btn{width:100%}
+  .tool-form,.tools-grid,.tools-kpis{min-width:0}
+  .site-footer{padding-top:24px}
+  .footer-grid{padding-left:4px;padding-right:4px}
+}
+@media(max-width:360px){
+  .logo{font-size:1.3rem}
+  .navbtn{font-size:.84rem;padding:8px 10px}
+  .check-tab{font-size:.88rem;padding:8px 11px}
+}
+</style>
+
+<style id="production-checklist-mobile-v46">
+/* v46: dedicated mobile layout for Production DBA Checklists */
+#page-checklists{width:100%;min-width:0;box-sizing:border-box}
+#page-checklists *{box-sizing:border-box}
+#page-checklists .check-wrap{width:100%;min-width:0;display:grid;gap:12px}
+#page-checklists .check-hero{width:100%;min-width:0;padding:16px}
+#page-checklists .check-hero h1{font-size:clamp(1.25rem,5.5vw,1.8rem);line-height:1.2;overflow-wrap:anywhere}
+#page-checklists .check-hero p{overflow-wrap:anywhere}
+#page-checklists .check-toolbar{width:100%;min-width:0;display:flex;align-items:stretch;flex-direction:column;gap:10px}
+#page-checklists .check-tabs{width:100%;min-width:0;display:flex;flex-wrap:nowrap;overflow-x:auto;overflow-y:hidden;gap:8px;padding:2px 2px 7px;scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch}
+#page-checklists .check-tab{flex:0 0 auto;white-space:nowrap;min-height:44px;scroll-snap-align:start}
+#page-checklists .check-actions{width:100%;min-width:0;display:block}
+#page-checklists .check-actions .tool-btn{display:block;width:100%;min-height:46px}
+#page-checklists .check-summary{width:100%;min-width:0;overflow-wrap:anywhere;line-height:1.45}
+#page-checklists .check-list{width:100%;min-width:0;display:grid;gap:10px}
+#page-checklists .check-section{width:100%;min-width:0;overflow:hidden}
+#page-checklists .check-section h2{font-size:1rem;line-height:1.3;padding:13px 14px;overflow-wrap:anywhere;word-break:break-word}
+#page-checklists .check-items{width:100%;min-width:0;padding:4px 14px 8px}
+#page-checklists .check-item{width:100%;min-width:0;display:grid;grid-template-columns:28px minmax(0,1fr);gap:8px;align-items:start;padding:12px 0}
+#page-checklists .check-item input{width:22px;height:22px;margin:1px 0 0;justify-self:start}
+#page-checklists .check-item label{display:block;min-width:0;max-width:100%;overflow-wrap:anywhere;word-break:break-word;line-height:1.45}
+#page-checklists .tool-note{width:100%;min-width:0;overflow-wrap:anywhere;line-height:1.5}
+
+@media(max-width:520px){
+  #page-checklists .check-hero{padding:14px}
+  #page-checklists .check-hero h1{font-size:1.35rem}
+  #page-checklists .check-tabs{margin:0;width:100%;}
+  #page-checklists .check-section h2{font-size:.98rem;padding:12px 13px}
+  #page-checklists .check-items{padding-left:13px;padding-right:13px}
+  #page-checklists .check-item{grid-template-columns:28px minmax(0,1fr);gap:7px;padding:11px 0}
+  #page-checklists .check-item label{font-size:.94rem}
+}
+@media(max-width:360px){
+  #page-checklists .check-hero{padding:13px}
+  #page-checklists .check-hero h1{font-size:1.25rem}
+  #page-checklists .check-item{grid-template-columns:27px minmax(0,1fr);gap:6px}
+  #page-checklists .check-item label{font-size:.9rem}
+}
+</style>
+<style id="interview-center-v47">
+.interview-wrap{max-width:1100px;margin:0 auto;padding:18px 0 40px}.interview-hero{padding:24px;border:1px solid var(--line);border-radius:16px;background:linear-gradient(135deg,rgba(255,255,255,.05),rgba(255,255,255,.02));box-shadow:var(--shadow)}.interview-hero h1{margin:5px 0 10px;font-size:clamp(1.7rem,4vw,2.35rem)}.interview-hero p:last-child{max-width:850px;line-height:1.65;color:var(--muted)}.interview-toolbar{margin:16px 0;display:grid;gap:12px;padding:14px;border:1px solid var(--line);border-radius:14px;background:var(--panel)}.interview-search{display:grid;gap:6px;font-weight:700}.interview-search input{width:100%;padding:12px 14px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--text);font:inherit}.interview-filters{display:flex;gap:8px;flex-wrap:wrap}.interview-filter{border:1px solid var(--line);background:var(--bg);color:var(--text);border-radius:999px;padding:9px 13px;cursor:pointer;font:inherit}.interview-filter.active{background:var(--accent);color:#fff;border-color:var(--accent)}.interview-summary{margin:10px 0 14px;color:var(--muted);font-weight:700}.interview-list{display:grid;gap:12px}.interview-card{border:1px solid var(--line);border-radius:14px;background:var(--panel);overflow:hidden;box-shadow:var(--shadow)}.interview-card-top{padding:17px 18px}.interview-meta{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:9px}.interview-badge{font-size:.78rem;padding:4px 8px;border-radius:999px;background:var(--bg);border:1px solid var(--line);font-weight:700}.interview-question{margin:0;font-size:1.05rem;line-height:1.45}.interview-answer{border-top:1px solid var(--line);padding:16px 18px;background:rgba(127,127,127,.06)}.interview-answer h3{margin:0 0 7px;font-size:1rem}.interview-answer p{line-height:1.6;margin:7px 0}.interview-answer ul{margin:8px 0 0;padding-left:20px;line-height:1.6}.interview-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:13px}.interview-btn{border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:9px;padding:9px 13px;cursor:pointer;font:inherit;font-weight:700;display:inline-flex;align-items:center;justify-content:center;visibility:visible;opacity:1}.interview-btn.primary{background:var(--brand);color:var(--brandfg);border-color:var(--brand);visibility:visible;opacity:1}.interview-empty{padding:24px;border:1px dashed var(--line);border-radius:14px;text-align:center;color:var(--muted)}
+@media(max-width:520px){.interview-wrap{padding:12px 0 28px}.interview-hero{padding:16px;border-radius:12px}.interview-toolbar{padding:11px;border-radius:11px}.interview-filters{overflow-x:auto;flex-wrap:nowrap;padding-bottom:3px;scrollbar-width:none}.interview-filters::-webkit-scrollbar{display:none}.interview-filter{flex:0 0 auto;min-height:44px}.interview-card-top,.interview-answer{padding:14px}.interview-actions{display:grid;grid-template-columns:1fr}.interview-btn{width:100%;min-height:44px}}
+</style>
+
+<style id="laptop-responsive-v50">
+/* v50: laptop + desktop responsive polish */
+*{box-sizing:border-box}
+html,body{width:100%;max-width:100%;overflow-x:hidden}
+.top .in{width:min(100%,1440px);margin:0 auto}
+.layout{width:min(100%,1440px);margin:0 auto}
+main{min-width:0;width:100%}
+.card,.interview-card,.question-card{max-width:100%;overflow:hidden}
+@media (min-width:900px){
+  .layout{grid-template-columns:260px minmax(0,1fr);gap:28px;padding-left:24px;padding-right:24px}
+  main{min-width:0}
+  .filters{min-width:0}
+}
+@media (min-width:1200px){
+  .layout{grid-template-columns:280px minmax(0,1fr);gap:32px;padding-left:32px;padding-right:32px}
+}
+@media (min-width:1400px){
+  .layout{grid-template-columns:300px minmax(0,1fr)}
+}
+@media (min-width:900px) and (max-width:1199px){
+  .top .in{padding-left:20px;padding-right:20px}
+  .navbar{gap:6px}
+  .navbtn{padding:8px 10px}
+}
+@media (min-width:700px){
+  .interview-grid,.questions-grid{grid-template-columns:repeat(2,minmax(0,1fr));}
+}
+@media (min-width:1100px){
+  .interview-grid,.questions-grid{grid-template-columns:repeat(3,minmax(0,1fr));}
+}
+@media (max-width:899px){
+  .layout{grid-template-columns:1fr}
+  .filters{position:static;max-height:none}
+}
+pre,code{max-width:100%;overflow-wrap:anywhere}
+pre{overflow-x:auto}
+</style>
 </head>
 <body>
 <header class="top"><div class="in">
 <div class="logo">DBAMyWorld</div>
 <div class="tag">Step-by-step DBA guides for Oracle, PostgreSQL, MySQL and SQL Server</div>
-<nav class="navbar" aria-label="Main navigation"><button class="navbtn active" data-page="home">Home</button><button class="navbtn" data-page="roadmaps">Roadmaps</button><button type="button" data-page="learning">Learning Paths</button><button type="button" class="navbtn" data-page="commands">Command Library</button><button type="button" class="navbtn" data-page="quiz">DBA Quiz</button><button class="navbtn" data-page="about">About</button><button class="navbtn" data-page="contact">Contact</button></nav>
+<nav class="navbar" aria-label="Main navigation"><button class="navbtn active" data-page="home">Home</button><button class="navbtn" data-page="roadmaps">Roadmaps</button><button type="button" class="navbtn" data-page="learning">Learning Paths</button><button type="button" class="navbtn" data-page="commands">Command Library</button><button type="button" class="navbtn" data-page="troubleshooting">Troubleshooting</button><button type="button" class="navbtn" data-page="tools">DBA Tools</button><button type="button" class="navbtn" data-page="checklists">Production Checklists</button><button type="button" class="navbtn" data-page="quiz">DBA Quiz</button><button type="button" class="navbtn" data-page="interview">Interview Center</button><button class="navbtn" data-page="about">About</button><button class="navbtn" data-page="contact">Contact</button></nav>
 </div></header>
 <div class="layout">
 <aside class="filters">
@@ -681,6 +846,77 @@ mark.search-hit{background:var(--wbg);color:var(--w);border-radius:3px;padding:0
 </div>
 </section>
 
+
+
+<section id="page-troubleshooting" hidden>
+<div class="trouble-wrap">
+  <div class="trouble-hero">
+    <p class="page-kicker">Step 1 · DBA Troubleshooting Center</p>
+    <h1>DBA Troubleshooting Center</h1>
+    <p>Find a database error or production symptom and work through the likely cause, checks, diagnostic commands and practical resolution steps.</p>
+  </div>
+  <div class="trouble-toolbar">
+    <input id="troubleSearch" class="trouble-search" type="search" placeholder="Search error code, symptom, cause or command…" autocomplete="off">
+  </div>
+  <div class="trouble-filters" id="troubleFilters"></div>
+  <div id="troubleGrid" class="trouble-grid" style="margin-top:16px"></div>
+  <div id="troubleDetail"></div>
+  <p class="trouble-note">Production caution: diagnostic queries are generally safer than corrective commands. Confirm the database version, privileges, backup/recovery position and change impact before applying a fix.</p>
+</div>
+</section>
+
+<section id="page-tools" hidden>
+<div class="tools-wrap">
+  <div class="tools-hero">
+    <p class="page-kicker">Step 2 · Interactive DBA Tools</p>
+    <h1>Interactive DBA Tools</h1>
+    <p>Use quick calculators for capacity planning, backup sizing, Oracle memory and log generation. Results are estimates—verify them against your database and vendor documentation.</p>
+  </div>
+  <div class="tools-kpis"><div class="tool-kpi"><b>6</b><span>Practical calculators</span></div><div class="tool-kpi"><b>4</b><span>Database platforms covered</span></div><div class="tool-kpi"><b>100%</b><span>Runs locally in your browser</span></div></div>
+  <div class="tools-grid">
+    <article class="tool-card"><h2>📦 Tablespace Capacity</h2><p>Estimate free space and projected capacity after growth.</p><div class="tool-form"><div class="tool-field"><label for="tsTotal">Total size (GB)</label><input id="tsTotal" type="number" min="0" step="0.1" value="100"></div><div class="tool-field"><label for="tsUsed">Used size (GB)</label><input id="tsUsed" type="number" min="0" step="0.1" value="72"></div><div class="tool-field"><label for="tsGrowth">Monthly growth (GB)</label><input id="tsGrowth" type="number" min="0" step="0.1" value="5"></div><div class="tool-field"><label for="tsMonths">Months to project</label><input id="tsMonths" type="number" min="1" step="1" value="6"></div></div><div class="tool-actions"><button class="tool-btn" id="tsCalc" type="button">Calculate</button></div><div class="tool-result" id="tsOut" aria-live="polite">Enter values and calculate.</div></article>
+    <article class="tool-card"><h2>💾 RMAN Backup Size</h2><p>Estimate backup output from database size, compression and daily change rate.</p><div class="tool-form"><div class="tool-field"><label for="rmanDb">Database size (GB)</label><input id="rmanDb" type="number" min="0" step="0.1" value="500"></div><div class="tool-field"><label for="rmanComp">Compression ratio</label><input id="rmanComp" type="number" min="0.1" step="0.1" value="2.5"></div><div class="tool-field"><label for="rmanChange">Daily change (%)</label><input id="rmanChange" type="number" min="0" max="100" step="0.1" value="8"></div><div class="tool-field"><label for="rmanDays">Backup days</label><input id="rmanDays" type="number" min="1" step="1" value="7"></div></div><div class="tool-actions"><button class="tool-btn" id="rmanCalc" type="button">Calculate</button></div><div class="tool-result" id="rmanOut" aria-live="polite">Enter values and calculate.</div></article>
+    <article class="tool-card"><h2>🧠 Oracle SGA / PGA Planner</h2><p>Estimate a starting memory allocation from server RAM and workload type.</p><div class="tool-form"><div class="tool-field"><label for="memRam">Server RAM (GB)</label><input id="memRam" type="number" min="1" step="0.5" value="64"></div><div class="tool-field"><label for="memWork">Workload</label><select id="memWork"><option value="oltp">OLTP</option><option value="mixed">Mixed</option><option value="dw">Data Warehouse</option></select></div></div><div class="tool-actions"><button class="tool-btn" id="memCalc" type="button">Calculate</button></div><div class="tool-result" id="memOut" aria-live="polite">Enter server RAM and calculate.</div></article>
+    <article class="tool-card"><h2>🗄️ Database Size Growth</h2><p>Project database size from current size and monthly growth.</p><div class="tool-form"><div class="tool-field"><label for="dbNow">Current size (GB)</label><input id="dbNow" type="number" min="0" step="0.1" value="1000"></div><div class="tool-field"><label for="dbGrowth">Monthly growth (GB)</label><input id="dbGrowth" type="number" min="0" step="0.1" value="40"></div><div class="tool-field"><label for="dbMonths">Projection (months)</label><input id="dbMonths" type="number" min="1" step="1" value="12"></div></div><div class="tool-actions"><button class="tool-btn" id="dbCalc" type="button">Calculate</button></div><div class="tool-result" id="dbOut" aria-live="polite">Enter values and calculate.</div></article>
+    <article class="tool-card"><h2>📈 Archive / WAL Log Estimator</h2><p>Estimate daily and monthly log generation from hourly generation.</p><div class="tool-form"><div class="tool-field"><label for="logHour">Log generated per hour (GB)</label><input id="logHour" type="number" min="0" step="0.1" value="4"></div><div class="tool-field"><label for="logDays">Days retained</label><input id="logDays" type="number" min="1" step="1" value="7"></div><div class="tool-field"><label for="logPeak">Peak multiplier</label><input id="logPeak" type="number" min="1" step="0.1" value="1.5"></div></div><div class="tool-actions"><button class="tool-btn" id="logCalc" type="button">Calculate</button></div><div class="tool-result" id="logOut" aria-live="polite">Enter values and calculate.</div></article>
+    <article class="tool-card"><h2>⏱️ SQL Throughput Calculator</h2><p>Convert execution time and executions into approximate executions per second and daily runtime.</p><div class="tool-form"><div class="tool-field"><label for="sqlMs">Average execution time (ms)</label><input id="sqlMs" type="number" min="0.1" step="0.1" value="25"></div><div class="tool-field"><label for="sqlExec">Executions per hour</label><input id="sqlExec" type="number" min="0" step="1" value="10000"></div></div><div class="tool-actions"><button class="tool-btn" id="sqlCalc" type="button">Calculate</button></div><div class="tool-result" id="sqlOut" aria-live="polite">Enter values and calculate.</div></article>
+  </div>
+  <div class="tool-note"><b>Production reminder:</b> These calculators provide planning estimates, not configuration recommendations. Validate against workload, Oracle/PostgreSQL/MySQL/SQL Server release documentation, monitoring data, backup strategy and available infrastructure before making production changes.</div>
+</div>
+</section>
+
+<section id="page-checklists" hidden>
+<div class="check-wrap">
+  <div class="check-hero">
+    <p class="page-kicker">Step 4 · Production DBA Checklists</p>
+    <h1>Production DBA Checklists</h1>
+    <p>Use repeatable checklists for daily operations, maintenance, patching, upgrades, disaster-recovery drills and production health checks.</p>
+  </div>
+  <div class="check-toolbar">
+    <div id="checkFilters" class="check-tabs" role="tablist" aria-label="Checklist categories"></div>
+    <div class="check-actions"><button type="button" class="tool-btn" id="checkReset">Reset current checklist</button></div>
+  </div>
+  <div class="check-summary" id="checkSummary" aria-live="polite"></div>
+  <div id="checkList" class="check-list"></div>
+  <div class="tool-note"><b>Production reminder:</b> Checklists are operational guides. Adapt them to your environment, change-management process, database release, HA/DR design, backup policy and monitoring standards before using them in production.</div>
+</div>
+</section>
+
+<section id="page-interview" hidden>
+<div class="interview-wrap">
+  <div class="interview-hero">
+    <p class="page-kicker">Step 5 · DBA Interview Center</p>
+    <h1>DBA Interview Questions</h1>
+    <p>Practice practical DBA interview questions across Oracle, PostgreSQL, MySQL and SQL Server. Filter by database and difficulty, search by topic, and reveal model answers with key points to mention.</p>
+  </div>
+  <div class="interview-toolbar">
+    <label class="interview-search"><span>Search questions</span><input id="interviewSearch" type="search" placeholder="Search backup, RAC, WAL, replication…" autocomplete="off"></label>
+    <div id="interviewFilters" class="interview-filters" aria-label="Interview filters"></div>
+  </div>
+  <div class="interview-summary" id="interviewSummary" aria-live="polite"></div>
+  <div id="interviewList" class="interview-list"></div>
+</div>
+</section>
 
 <section id="page-quiz" hidden>
 <div class="quiz-wrap">
@@ -1006,6 +1242,91 @@ $('commandSearch').addEventListener('input',renderCommands);
 $('commandGrid').addEventListener('click',function(e){var b=e.target.closest('[data-command-copy]');if(!b)return;var d=D[Number(b.dataset.commandCopy)];if(!d)return;navigator.clipboard.writeText(d[4]).then(function(){b.textContent='Copied';setTimeout(function(){b.textContent='Copy command'},1200)},function(){b.textContent='Select and copy'});});
 renderCommandFilters();renderCommands();
 
+
+var TROUBLE=[
+['Oracle','ORA-01000','Maximum open cursors exceeded','The session has opened more cursors than the OPEN_CURSORS setting allows.','Check sessions and cursor usage, then identify applications or code that repeatedly opens cursors without closing them.','SELECT s.sid,s.serial#,s.username,s.open_cursors FROM v$open_cursor c JOIN v$session s ON s.sid=c.sid GROUP BY s.sid,s.serial#,s.username,s.open_cursors ORDER BY s.open_cursors DESC;','Review application cursor handling. Increase OPEN_CURSORS only when justified and after checking the actual workload.'],
+['Oracle','ORA-01555','Snapshot too old','A long-running query needs older undo data that has already been overwritten.','Check undo usage, query duration and concurrent DML. Review UNDO_RETENTION and undo tablespace sizing.','SELECT tablespace_name,retention,contents FROM dba_tablespaces WHERE contents=\'UNDO\';','Tune the query and workload, and size/configure undo appropriately. Avoid treating a larger UNDO_RETENTION value alone as a guaranteed fix.'],
+['Oracle','ORA-01653','Unable to extend table','Oracle cannot allocate another extent for a segment in the required tablespace.','Check free space, datafile sizes, autoextend settings and whether the tablespace has reached a storage limit.','SELECT tablespace_name, SUM(bytes)/1024/1024 free_mb FROM dba_free_space GROUP BY tablespace_name;','Add space or resize/enable appropriate datafiles after validating filesystem/storage capacity and change controls.'],
+['Oracle','ORA-01652','Unable to extend temp segment','A temporary segment cannot obtain enough temporary space.','Check TEMP usage, active sessions and operations such as sorts or hash joins.','SELECT tablespace_name,used_blocks,free_blocks FROM v$temp_space_header;','Investigate the SQL consuming TEMP and add/resize temporary space when required.'],
+['Oracle','ORA-00060','Deadlock detected','Two or more sessions are waiting on resources held by each other. Oracle resolves the deadlock by rolling back one statement.','Review the trace/alert information and identify the sessions and SQL involved. Look for inconsistent locking order or missing indexes on foreign keys.','SELECT sid,serial#,username,event,blocking_session FROM v$session WHERE blocking_session IS NOT NULL;','Fix the application transaction/locking pattern. Do not simply kill sessions without understanding the cause.'],
+['Oracle','ORA-00054','Resource busy / NOWAIT specified','A requested object or resource is locked by another session and NOWAIT prevented waiting.','Identify the locking session and object, and determine whether the operation is safe to wait for or reschedule.','SELECT sid,serial#,username,event,blocking_session FROM v$session WHERE blocking_session IS NOT NULL;','Coordinate the change window or resolve the blocking transaction before retrying the DDL.'],
+['Oracle','ORA-12154','Could not resolve the connect identifier specified','The client cannot resolve the supplied Oracle Net service name.','Check the connect string, tnsnames.ora, TNS_ADMIN and naming method configuration on the client.','tnsping SERVICE_NAME','Correct the client naming configuration or use a valid Easy Connect/connect descriptor.'],
+['Oracle','ORA-12514','Listener does not currently know of service requested','The listener received a request for a service that is not registered or configured there.','Check listener services and database service registration.','lsnrctl status','Verify SERVICE_NAME, listener configuration and dynamic/static registration, then retry after registration is available.'],
+['Oracle','ORA-19809','Limit exceeded for recovery files','The Fast Recovery Area has reached its configured limit.','Check FRA usage, archived logs, backups and obsolete files.','SELECT name,space_limit/1024/1024/1024 limit_gb,space_used/1024/1024/1024 used_gb FROM v$recovery_file_dest;','Increase FRA capacity or safely remove/expire obsolete recovery files according to the recovery policy.'],
+['Oracle','ORA-00600','Internal Oracle error','ORA-00600 indicates an internal Oracle error with arguments useful for diagnosis.','Capture the complete error, alert log/trace information, database version and recent changes. Avoid guessing a fix from the error number alone.','SELECT banner_full FROM v$version;','Collect diagnostics and check Oracle Support documentation/patch guidance for the exact error arguments and release.'],
+['PostgreSQL','ERROR: remaining connection slots are reserved','The server has reached max_connections and only reserved slots remain for superuser access.','Check current sessions and connection pooling. Identify applications creating excessive or idle connections.','SELECT count(*) AS connections FROM pg_stat_activity;','Reduce unnecessary connections, use pooling and adjust max_connections only after considering memory and workload.'],
+['PostgreSQL','deadlock detected','Transactions are waiting on each other in a cycle. PostgreSQL aborts one transaction to break the deadlock.','Inspect application transaction order and PostgreSQL logs. Identify the statements involved.','SELECT pid,usename,wait_event_type,wait_event,query FROM pg_stat_activity WHERE wait_event_type=\'Lock\';','Use a consistent locking order and keep transactions short. Retry aborted transactions where appropriate.'],
+['PostgreSQL','canceling statement due to lock timeout','A statement waited longer than lock_timeout for a required lock.','Check blocking sessions and the transaction holding the lock.','SELECT pid,pg_blocking_pids(pid),query FROM pg_stat_activity WHERE cardinality(pg_blocking_pids(pid))>0;','Resolve the underlying blocking pattern or adjust timeout policy only when appropriate.'],
+['PostgreSQL','could not extend file','A relation or temporary file needs more disk space than is available.','Check filesystem capacity, database/table growth and temporary-file consumers.','SELECT pg_size_pretty(pg_database_size(current_database()));','Free or provision storage and investigate unexpected growth before retrying the workload.'],
+['PostgreSQL','WAL directory growing rapidly','WAL retention is preventing old WAL files from being recycled or archived.','Check replication slots, archiving status and replica lag.','SELECT slot_name,active,pg_size_pretty(pg_wal_lsn_diff(pg_current_wal_lsn(),restart_lsn)) AS retained_wal FROM pg_replication_slots;','Fix broken archiving or inactive replication slots and verify retention before removing anything.'],
+['PostgreSQL','remaining connection slots are reserved for non-replication superuser connections','Connection capacity is exhausted while reserved slots remain.','Review pg_stat_activity by application/user and look for idle or leaked connections.','SELECT usename,state,count(*) FROM pg_stat_activity GROUP BY usename,state ORDER BY count(*) DESC;','Use pooling and correct connection lifecycle management; change capacity only after resource review.'],
+['PostgreSQL','could not connect to server','The client cannot establish a connection to the PostgreSQL server.','Check service state, listen_addresses, port, pg_hba.conf, firewall and DNS/network reachability.','pg_isready -h HOST -p 5432','Correct the service/network/authentication configuration and retry.'],
+['PostgreSQL','permission denied for relation','The connected role lacks required privileges on the table or related object.','Confirm the role, object owner and effective privileges.','SELECT current_user; SELECT has_table_privilege(current_user,\'schema.table\',\'SELECT\');','Grant the minimum required privilege through the appropriate role after confirming the access requirement.'],
+['PostgreSQL','database is being accessed by other users','An operation such as DROP DATABASE is blocked because other sessions are connected.','List sessions connected to the database and identify the clients.','SELECT pid,usename,client_addr,state,query FROM pg_stat_activity WHERE datname=\'DBNAME\';','Schedule the operation and disconnect sessions only when authorized and understood.'],
+['PostgreSQL','could not receive data from WAL stream','A standby has lost or cannot maintain its WAL streaming connection.','Check primary/standby connectivity, replication status, slots and logs.','SELECT client_addr,state,sent_lsn,write_lsn,flush_lsn,replay_lsn FROM pg_stat_replication;','Restore connectivity/configuration and ensure required WAL is retained before rebuilding or resynchronizing a standby.'],
+['MySQL','Too many connections','The server has reached max_connections and cannot accept more client connections.','Inspect processlist and connection counts; identify idle/leaked application connections.','SHOW STATUS LIKE \'Threads_connected\'; SHOW VARIABLES LIKE \'max_connections\';','Fix connection pooling/lifecycle issues and adjust max_connections only after memory and workload review.'],
+['MySQL','Lock wait timeout exceeded','A transaction waited too long for a lock.','Find the blocking transaction and inspect InnoDB lock information and long-running transactions.','SHOW ENGINE INNODB STATUS\\G','Resolve the blocking workload and keep transactions short; tune timeout only with a clear reason.'],
+['MySQL','Deadlock found when trying to get lock','InnoDB detected a transaction deadlock and rolled back one transaction.','Review the deadlock section in InnoDB status and compare transaction access order.','SHOW ENGINE INNODB STATUS\\G','Use consistent access order, suitable indexes and short transactions; applications should handle deadlock retries.'],
+['MySQL','Table is full','The table cannot accept additional data, often because of storage or table-size limits.','Check filesystem space, table engine, partitioning and relevant size limits.','SHOW TABLE STATUS LIKE \'table_name\';','Free/provision storage or redesign the table/partitioning when a structural limit is involved.'],
+['MySQL','Host is blocked because of many connection errors','MySQL has blocked a host after repeated failed connection attempts.','Check the error log and host_cache information, and identify the source of connection failures.','SHOW GLOBAL STATUS LIKE \'Aborted_connects\';','Fix the underlying connection/authentication problem before clearing or changing host-blocking behavior.'],
+['MySQL','The server is running with the --read-only option','Write operations are rejected because the server is read-only or a session is read-only.','Check global/session read-only variables and whether the server is a replica.','SHOW VARIABLES LIKE \'read_only\'; SHOW VARIABLES LIKE \'super_read_only\';','Confirm intended primary/replica role before changing read-only settings.'],
+['MySQL','MySQL server has gone away','The client connection was closed or lost while communicating with the server.','Check server error log, network, wait_timeout, max_allowed_packet and crashes/restarts.','SHOW VARIABLES LIKE \'max_allowed_packet\'; SHOW GLOBAL STATUS LIKE \'Aborted_clients\';','Correct the underlying timeout, packet-size, network or server-stability issue.'],
+['MySQL','Access denied for user','Authentication or account/host authorization failed.','Verify username, host matching, authentication plugin and password.','SELECT user,host,plugin FROM mysql.user;','Correct the account or connection configuration using least privilege; avoid exposing credentials.'],
+['MySQL','Replica SQL thread stopped','The replication applier has stopped, often because of an error applying an event.','Inspect replication status and the Last_SQL_Error.','SHOW REPLICA STATUS\\G','Fix the underlying data/schema/event problem and follow a documented replication recovery procedure.'],
+['MySQL','Disk is full','The server or its filesystem has insufficient space for data, logs, temporary files or binary logs.','Check filesystem usage and identify the largest database/log directories.','SELECT table_schema,ROUND(SUM(data_length+index_length)/1024/1024/1024,2) size_gb FROM information_schema.tables GROUP BY table_schema ORDER BY size_gb DESC;','Free/provision capacity and clean up only files that are safe to remove under the backup/replication policy.'],
+['SQL Server','Login failed for user','SQL Server rejected the login because of authentication, account, password, server access or database-access issues.','Check the SQL Server error log for the failure state and verify authentication mode and login status.','EXEC xp_readerrorlog 0,1,\'Login failed\';','Correct the specific authentication/authorization issue indicated by the error state.'],
+['SQL Server','Transaction log is full','The log cannot reuse space because of an active transaction, recovery/backup issue or other log-reuse wait.','Check log reuse wait and log file usage.','SELECT name,log_reuse_wait_desc FROM sys.databases WHERE name=DB_NAME();','Address the actual log-reuse wait, take required log backups in FULL recovery and resize the log when justified.'],
+['SQL Server','Deadlock victim','SQL Server detected a deadlock and selected the current transaction as the victim.','Review the deadlock graph in Extended Events or the system_health session.','SELECT * FROM sys.dm_exec_requests WHERE blocking_session_id<>0;','Reduce lock duration, use consistent access order and improve indexing; retry victim transactions in application code where appropriate.'],
+['SQL Server','Could not allocate a new page for database','The database file or underlying disk cannot provide the required space.','Check datafile growth, free disk space and database file sizes.','SELECT name,size*8/1024 AS size_mb,max_size,growth FROM sys.database_files;','Add or provision storage and configure sensible file growth after checking capacity.'],
+['SQL Server','Blocking session','A request is waiting on a lock held by another session.','Identify the head blocker, duration, transaction and SQL text.','SELECT session_id,blocking_session_id,wait_type,wait_time,command FROM sys.dm_exec_requests WHERE blocking_session_id<>0;','Resolve the root transaction/workload issue; terminate a session only when authorized and understood.'],
+['SQL Server','TempDB full','tempdb lacks available space for temporary objects, version store or internal worktables.','Check tempdb files, free space and version-store consumers.','SELECT name,size*8/1024 AS size_mb FROM tempdb.sys.database_files;','Identify the consumer, correct the workload and provision appropriately sized tempdb files.'],
+['SQL Server','Always On replica not synchronizing','An availability replica is not maintaining the expected synchronization state.','Check replica state, synchronization health, send/redo queues and connectivity.','SELECT DB_NAME(database_id) AS db_name,synchronization_state_desc,synchronization_health_desc FROM sys.dm_hadr_database_replica_states;','Investigate network, endpoint, log-send/redo queues and replica health before forcing failover or re-seeding.'],
+['SQL Server','SQL Server Agent job failed','A scheduled Agent job step returned an error or the job could not run.','Review job history, failing step, SQL Agent log and schedule/credential configuration.','EXEC msdb.dbo.sp_help_jobhistory @job_name=\'JOB_NAME\';','Correct the failing step/dependency and rerun after validating the change.'],
+['SQL Server','Database in SUSPECT state','SQL Server cannot complete normal database recovery or access the database normally.','Check the SQL Server error log and storage/I/O health first. Do not immediately run repair commands.','SELECT name,state_desc,recovery_model_desc FROM sys.databases WHERE name=\'DB_NAME\';','Restore from a known-good backup when possible and follow a documented recovery procedure; repair options can involve data loss.'],
+['SQL Server','Query performance suddenly degraded','A query that previously ran acceptably is now slower due to plan changes, statistics, blocking, resource pressure or data growth.','Compare Query Store plans/runtime stats, waits, blocking and recent changes.','SELECT actual_state_desc FROM sys.database_query_store_options;','Use evidence from Query Store and execution plans to address the actual regression cause rather than blindly forcing a plan.']
+];
+
+var troubleEngine='All', troubleSelected=null;
+function renderTroubleFilters(){
+  var es=['All','Oracle','PostgreSQL','MySQL','SQL Server'];
+  $('troubleFilters').innerHTML=es.map(function(x){return '<button type="button" class="trouble-filter '+(troubleEngine===x?'active':'')+'" data-trouble-engine="'+esc(x)+'">'+esc(x)+'</button>'}).join('');
+}
+function troubleItems(){
+  var q=($('troubleSearch').value||'').trim().toLowerCase();
+  return TROUBLE.filter(function(x){
+    var engineOk=troubleEngine==='All'||x[0]===troubleEngine;
+    var hay=x.slice(0,7).join(' ').toLowerCase();
+    return engineOk&&(!q||hay.indexOf(q)!==-1);
+  });
+}
+function troubleDetailHtml(x){
+  return '<div class="trouble-detail-inline" tabindex="-1"><button type="button" class="trouble-filter trouble-close" data-trouble-close>Close</button><span class="trouble-badge">'+esc(x[0])+'</span><h4>Cause &amp; resolution</h4><p><b>Problem:</b> '+esc(x[2])+'</p><h5>Likely cause / meaning</h5><p>'+esc(x[3])+'</p><h5>What to check</h5><p>'+esc(x[4])+'</p><h5>Diagnostic command</h5><pre class="trouble-code">'+esc(x[5])+'</pre><h5>Resolution approach</h5><p>'+esc(x[6])+'</p></div>';
+}
+function renderTrouble(){
+  var items=troubleItems();
+  $('troubleGrid').innerHTML=items.length?items.map(function(x){
+    var original=TROUBLE.indexOf(x);
+    var open=troubleSelected===original;
+    return '<article class="trouble-card '+(open?'is-open':'')+'" tabindex="0" data-trouble-index="'+original+'"><span class="trouble-badge">'+esc(x[0])+'</span><h3>'+esc(x[1])+'</h3><p>'+esc(x[2])+'</p><span class="trouble-tag">'+(open?'Cause and resolution shown below ↓':'Click to open cause and resolution ↓')+'</span>'+(open?troubleDetailHtml(x):'')+'</article>';
+  }).join(''):'<div class="trouble-empty">No troubleshooting entry matches your search.</div>';
+  $('troubleDetail').innerHTML='';
+}
+$('troubleFilters').addEventListener('click',function(e){var b=e.target.closest('[data-trouble-engine]');if(!b)return;troubleEngine=b.dataset.troubleEngine;troubleSelected=null;renderTroubleFilters();renderTrouble()});
+$('troubleSearch').addEventListener('input',function(){troubleSelected=null;renderTrouble()});
+$('troubleGrid').addEventListener('click',function(e){
+  if(e.target.closest('[data-trouble-close]')){
+    var openCard=e.target.closest('[data-trouble-index]');
+    if(openCard){troubleSelected=null;renderTrouble();openCard.scrollIntoView({behavior:'smooth',block:'nearest'});}
+    return;
+  }
+  var c=e.target.closest('[data-trouble-index]');if(!c)return;
+  troubleSelected=Number(c.dataset.troubleIndex);renderTrouble();
+  setTimeout(function(){var d=document.querySelector('.trouble-detail-inline');if(d)d.scrollIntoView({behavior:'smooth',block:'nearest'});},20);
+});
+$('troubleGrid').addEventListener('keydown',function(e){if(e.key!=='Enter'&&e.key!==' ')return;var c=e.target.closest('[data-trouble-index]');if(!c)return;e.preventDefault();troubleSelected=Number(c.dataset.troubleIndex);renderTrouble();});
+renderTroubleFilters();renderTrouble();
+
+
 var QUIZ=[
 ['Oracle','Which dynamic performance view shows current database sessions?',['V$SESSION','DBA_USERS','V$DATABASE','DBA_TABLESPACES'],0,'V$SESSION provides information about current Oracle sessions, including SID, status, username and machine.'],
 ['Oracle','Which Oracle tool is designed for backup, restore and recovery?',['Data Pump','RMAN','SQL*Loader','DBCA'],1,'RMAN (Recovery Manager) is Oracle\'s primary tool for database backup and recovery.'],
@@ -1061,8 +1382,68 @@ $('quizSubmit').addEventListener('click',function(){var items=quizItems(),score=
 $('quizReset').addEventListener('click',function(){quizSubmitted=false;renderQuiz()});
 renderQuizFilters();renderQuiz();
 
+
+function num(id){var v=Number(document.getElementById(id).value);return Number.isFinite(v)?v:null}
+function out(id,msg){document.getElementById(id).textContent=msg}
+function fmt(n){return Number(n).toLocaleString(undefined,{maximumFractionDigits:2})}
+function valid(vals){return vals.every(function(v){return v!==null&&Number.isFinite(v)&&v>=0})}
+document.getElementById('tsCalc').addEventListener('click',function(){var t=num('tsTotal'),u=num('tsUsed'),g=num('tsGrowth'),m=num('tsMonths');if(!valid([t,u,g,m])||t<=0||m<1||u>t){out('tsOut','Check values: total must be > 0, used cannot exceed total, and months must be at least 1.');return}var future=u+g*m,free=t-u,pct=free/t*100;out('tsOut','Current free: '+fmt(free)+' GB ('+fmt(pct)+'%)\nProjected used: '+fmt(future)+' GB\nProjected free: '+fmt(Math.max(0,t-future))+' GB\n'+(future>t?'Capacity exceeded during projection.':'Capacity remains within current size.') )});
+document.getElementById('rmanCalc').addEventListener('click',function(){var db=num('rmanDb'),c=num('rmanComp'),chg=num('rmanChange'),d=num('rmanDays');if(!valid([db,c,chg,d])||db<=0||c<=0||chg>100||d<1){out('rmanOut','Check values: database size and compression must be > 0; change rate must be 0–100%.');return}var daily=(db*chg/100)/c,weekly=daily*d;out('rmanOut','Estimated daily changed data: '+fmt(db*chg/100)+' GB\nEstimated compressed backup for changed data: '+fmt(daily)+' GB/day\nEstimated '+fmt(d)+'-day storage: '+fmt(weekly)+' GB\nFull backup baseline (compressed): '+fmt(db/c)+' GB');});
+document.getElementById('memCalc').addEventListener('click',function(){var ram=num('memRam'),w=document.getElementById('memWork').value;if(!valid([ram])||ram<1){out('memOut','Enter server RAM of at least 1 GB.');return}var os=4;if(ram<=16)os=2;else if(ram<=64)os=4;else os=8;var db=ram-os;var sgaPct=w==='dw'?0.65:w==='oltp'?0.55:0.60;var sga=db*sgaPct,pga=db-sga;out('memOut','Illustrative starting point only\nReserved for OS: '+fmt(os)+' GB\nDB memory pool: '+fmt(db)+' GB\nSGA estimate: '+fmt(sga)+' GB\nPGA estimate: '+fmt(pga)+' GB\nWorkload: '+(w==='dw'?'Data Warehouse':w==='oltp'?'OLTP':'Mixed'));});
+document.getElementById('dbCalc').addEventListener('click',function(){var n=num('dbNow'),g=num('dbGrowth'),m=num('dbMonths');if(!valid([n,g,m])||m<1){out('dbOut','Check values: current size and growth cannot be negative; months must be at least 1.');return}var end=n+g*m;out('dbOut','Projected size: '+fmt(end)+' GB\nGrowth added: '+fmt(g*m)+' GB\nApprox. average monthly size: '+fmt(n+g*m/2)+' GB');});
+document.getElementById('logCalc').addEventListener('click',function(){var h=num('logHour'),d=num('logDays'),p=num('logPeak');if(!valid([h,d,p])||d<1||p<1){out('logOut','Check values: log generation must be non-negative; days and peak multiplier must be at least 1.');return}var daily=h*24,peak=daily*p,ret=peak*d;out('logOut','Baseline daily generation: '+fmt(daily)+' GB\nPeak-adjusted daily estimate: '+fmt(peak)+' GB\nPeak-adjusted retention estimate: '+fmt(ret)+' GB for '+fmt(d)+' days');});
+document.getElementById('sqlCalc').addEventListener('click',function(){var ms=num('sqlMs'),e=num('sqlExec');if(!valid([ms,e])||ms<=0){out('sqlOut','Execution time must be > 0 ms and executions cannot be negative.');return}var eps=e/3600,concurrency=e*ms/3600000,dailySec=e*24*ms/1000;out('sqlOut','Approx. executions/second: '+fmt(eps)+'\nApprox. average concurrent work from this statement: '+fmt(concurrency)+' sessions\nApprox. DB time generated per day: '+fmt(dailySec/3600)+' hours');});
+
+/* Step 4 · Production DBA Checklists */
+(function(){
+var data={
+ daily:{label:'Daily',sections:[
+  ['Database & connectivity',['Confirm database instances are up and reachable.','Check listener/service status and recent connection failures.','Review active sessions, blocked sessions and unusual waits.']],
+  ['Storage & jobs',['Check tablespace/database file free space and growth trends.','Review archive/WAL/log generation and destination capacity.','Check scheduled jobs, failed jobs and unusual runtime changes.']],
+  ['Backup & protection',['Confirm the latest backup completed successfully.','Check backup destination space and retention position.','Review database/OS alerts and critical errors since the previous check.']]
+ ]},
+ weekly:{label:'Weekly',sections:[
+  ['Performance',['Review top SQL, database time and wait events for trends.','Review blocking/deadlocks and recurring performance incidents.','Check CPU, memory, I/O and storage latency trends.']],
+  ['Backup & recovery',['Perform a backup/recovery health review and verify backup metadata.','Review archive/WAL retention and cleanup jobs.','Confirm monitoring and alerting are reporting expected status.']],
+  ['Maintenance',['Review invalid objects, statistics maintenance and housekeeping jobs.','Review capacity forecasts for database files and logs.','Review open incidents and recurring operational issues.']]
+ ]},
+ monthly:{label:'Monthly',sections:[
+  ['Capacity planning',['Compare database growth with the previous month.','Review projected tablespace, filesystem and backup capacity.','Review license/feature usage where applicable.']],
+  ['Security & access',['Review privileged accounts and stale access.','Review failed logins and security-relevant audit findings.','Confirm backup and monitoring accounts still have required access.']],
+  ['DR readiness',['Review replication/standby health and lag history.','Review DR documentation, contact lists and escalation paths.','Confirm a recent restore or DR exercise is scheduled or completed.']]
+ ]},
+ patching:{label:'Pre-Patching',sections:[
+  ['Scope & change plan',['Confirm exact database, OS, Grid/cluster and application scope.','Review vendor patch documentation, prerequisites and known issues.','Confirm change window, rollback plan, owners and communication plan.']],
+  ['Backup & recovery',['Verify a current restorable backup exists before the change.','Confirm recovery/rollback resources and required storage.','Capture baseline health, performance and configuration information.']],
+  ['Validation',['Confirm space, OS packages, services and required privileges.','Record database, listener, cluster and replication status.','Prepare post-patch validation checks and application smoke tests.']]
+ ]},
+ upgrade:{label:'Pre-Upgrade',sections:[
+  ['Assessment',['Confirm source and target database versions and supported upgrade path.','Review deprecated/removed features and compatibility requirements.','Inventory applications, clients, drivers, extensions and integrations.']],
+  ['Prechecks',['Run vendor pre-upgrade checks and resolve blocking findings.','Check invalid objects, space, statistics and workload baselines.','Verify backup, restore and rollback strategy.']],
+  ['Cutover readiness',['Confirm downtime/availability expectations and stakeholders.','Prepare upgrade commands, validation SQL and rollback steps.','Document exact start/stop sequence and post-upgrade checks.']]
+ ]},
+ dr:{label:'DR Drill',sections:[
+  ['Preparation',['Confirm drill scope, success criteria, owners and communication plan.','Verify source backups/replication state before starting.','Record baseline RPO/RTO measurements and system health.']],
+  ['Failover / recovery',['Execute the documented recovery or failover procedure.','Validate database role, application connectivity and data accessibility.','Record actual recovery time and any manual interventions.']],
+  ['Failback & lessons',['Restore the intended primary/standby arrangement.','Validate replication, backups, monitoring and application health.','Document gaps, corrective actions and owners.']]
+ ]},
+ health:{label:'Health Check',sections:[
+  ['Database health',['Check instance/database status, errors and alert logs.','Check storage, tablespaces/filesystems and log destinations.','Review sessions, locks, waits and long-running operations.']],
+  ['Performance',['Review CPU, memory, I/O and database wait trends.','Review top resource-consuming SQL and plan changes.','Check connection pool/application symptoms against database metrics.']],
+  ['HA / backup',['Check replication/standby synchronization and lag.','Confirm recent backups and backup-job status.','Confirm monitoring, alerting and critical integrations are healthy.']]
+ ]}
+};
+var current='daily', rootKey='dbamyworld_checklist_v1';
+function esc(x){return String(x).replace(/[&<>\"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','\\':'&#92;','"':'&quot;'}[c]})}
+function state(){try{return JSON.parse(localStorage.getItem(rootKey)||'{}')}catch(e){return {}}}
+function save(st){try{localStorage.setItem(rootKey,JSON.stringify(st))}catch(e){}}
+function renderTabs(){var el=document.getElementById('checkFilters');el.innerHTML=Object.keys(data).map(function(k){return '<button type="button" class="check-tab '+(k===current?'active':'')+'" data-check="'+k+'">'+esc(data[k].label)+'</button>'}).join('');el.querySelectorAll('[data-check]').forEach(function(b){b.addEventListener('click',function(){current=b.dataset.check;render()})})}
+function render(){renderTabs();var st=state(), saved=st[current]||{}, total=0,done=0,html='';data[current].sections.forEach(function(sec,si){html+='<section class="check-section"><h2>'+esc(sec[0])+'</h2><div class="check-items">';sec[1].forEach(function(item,ii){var id=current+'-'+si+'-'+ii, checked=!!saved[id];total++;if(checked)done++;html+='<div class="check-item"><input type="checkbox" id="'+id+'" data-check-id="'+id+'" '+(checked?'checked':'')+'><label for="'+id+'">'+esc(item)+'</label></div>'});html+='</div></section>'});document.getElementById('checkList').innerHTML=html;var pct=total?Math.round(done/total*100):0;document.getElementById('checkSummary').innerHTML='<div>'+esc(data[current].label)+' checklist: '+done+' of '+total+' completed ('+pct+'%)</div><div class="check-progress" aria-hidden="true"><span style="width:'+pct+'%"></span></div>';document.querySelectorAll('[data-check-id]').forEach(function(c){c.addEventListener('change',function(){var all=state();all[current]=all[current]||{};all[current][c.dataset.checkId]=c.checked;save(all);render()})})}
+document.getElementById('checkReset').addEventListener('click',function(){var all=state();delete all[current];save(all);render()});render();
+})();
+
 function showPage(page){
-  ['home','roadmaps','learning','commands','quiz','about','contact'].forEach(function(p){var el=document.getElementById('page-'+p);if(el)el.hidden=p!==page});
+  ['home','roadmaps','learning','commands','troubleshooting','tools','checklists','quiz','interview','about','contact'].forEach(function(p){var el=document.getElementById('page-'+p);if(el)el.hidden=p!==page});
   document.querySelectorAll('.navbtn').forEach(function(b){b.classList.toggle('active',b.dataset.page===page)});
   document.querySelector('.filters').hidden=page!=='home';
   document.body.dataset.page=page;
@@ -1094,11 +1475,73 @@ document.getElementById('contactForm').addEventListener('submit',function(e){
   window.addEventListener('pageshow',returnHome);
 });
 
+
+
 pop();
 render();
 showPage('home');
 </script>
 
+<script id="interview-center-v47-js">
+(function(){
+var IQ=[
+['Oracle','Beginner','Architecture','What is the difference between an Oracle instance and a database?','An instance is the memory structures and background processes used to access a database. The database is the physical set of files such as data files, control files and online redo logs.','Mention SGA/PGA and background processes for the instance; data files, control files and redo logs for the database.'],
+['Oracle','Beginner','Storage','What is the difference between a tablespace, data file and segment?','A tablespace is a logical storage container. Data files are physical files belonging to a tablespace. A segment is the storage allocated for a database object such as a table or index.','Explain the logical-to-physical relationship and avoid treating a tablespace as a physical file.'],
+['Oracle','Intermediate','Performance','How would you investigate a sudden increase in database CPU usage?','Start by confirming the OS and database symptoms, then identify top CPU-consuming sessions or SQL, check execution plans and workload changes, and correlate the timing with jobs or deployments.','Mention evidence first: OS metrics, database sessions/SQL, execution plans, recent changes and time correlation.'],
+['Oracle','Intermediate','Backup','What is the purpose of RMAN?','RMAN is Oracle’s backup and recovery utility. It can back up database files and archived redo, validate backups, restore files and perform recovery operations.','Mention backup, restore, recovery, validation and metadata/catalog concepts where relevant.'],
+['Oracle','Intermediate','Data Guard','What is the difference between physical and logical standby databases?','A physical standby maintains a block-for-block copy through redo apply. A logical standby transforms redo into SQL changes and applies them logically.','Focus on how redo is applied and note that supported features and restrictions depend on the Oracle release.'],
+['Oracle','Advanced','RAC','What is Oracle RAC and why is it used?','RAC allows multiple instances on different servers to access the same database. It is used for high availability and horizontal scaling of database workload.','Discuss shared database storage, instances, services, Cache Fusion and application design.'],
+['Oracle','Advanced','Recovery','What would you check if RMAN reports that media recovery is required before opening a database?','Determine the database state and incarnation/role, inspect the alert log and recovery messages, identify the required redo and apply recovery before retrying the open operation.','Do not force an open blindly; identify the recovery requirement and preserve consistency.'],
+['Oracle','Advanced','Locks','How would you troubleshoot blocking sessions in Oracle?','Identify the blocked and blocking sessions, inspect transaction age and SQL, determine whether the blocker is expected, then coordinate cancellation or termination according to the change/incident process.','Mention v$session, transaction details, SQL and business impact before killing sessions.'],
+['Oracle','Intermediate','Security','Why should DBAs avoid granting excessive privileges?','Excess privileges increase the impact of compromised accounts and accidental changes. Grant only the permissions needed for the workload and review them periodically.','Mention least privilege, role-based access and periodic review.'],
+['Oracle','Advanced','Patching','What should be checked before an Oracle patch?','Confirm supported versions, inventory, patch prerequisites, backups, space, application compatibility, cluster/standby considerations, rollback plan and maintenance approval.','Separate technical prechecks from change-management and rollback planning.'],
+['Oracle','Beginner','SQL','What is the difference between DELETE, TRUNCATE and DROP?','DELETE removes rows and can be filtered; TRUNCATE removes all rows using a DDL operation; DROP removes the object itself. Exact transactional and recovery behavior depends on the database operation and context.','State the object impact clearly: rows versus the object itself.'],
+['Oracle','Intermediate','Monitoring','Why is the alert log important?','It records important database events and diagnostic messages such as startup, shutdown, errors and other operational events.','Use it together with database views and trace/diagnostic information rather than as the only source of evidence.'],
+['PostgreSQL','Beginner','Architecture','What is the role of the PostgreSQL postmaster/server process?','The PostgreSQL server manages database connections and coordinates backend processes and shared resources. Modern PostgreSQL terminology generally refers to the main server process rather than relying on older naming.','Explain the client connection, server process and backend relationship.'],
+['PostgreSQL','Beginner','Storage','What is WAL in PostgreSQL?','Write-Ahead Logging records changes in WAL before the corresponding data pages are written, supporting crash recovery and replication.','Mention durability, crash recovery and replication.'],
+['PostgreSQL','Intermediate','Vacuum','Why is VACUUM important?','VACUUM helps reclaim storage from dead row versions for reuse and maintains visibility information. Autovacuum automates routine maintenance based on workload and settings.','Connect MVCC, dead tuples, table bloat and autovacuum.'],
+['PostgreSQL','Intermediate','Performance','How would you investigate a slow PostgreSQL query?','Capture the exact query and parameters, inspect EXPLAIN/EXPLAIN ANALYZE, review indexes, row estimates, joins, I/O and wait behavior, then compare with recent changes.','Mention that EXPLAIN ANALYZE executes the query, so use care with write statements.'],
+['PostgreSQL','Intermediate','Replication','What is streaming replication?','A primary sends WAL records to a standby, where they are received and replayed. It is commonly used for high availability and read scaling, subject to workload and configuration.','Know the difference between WAL generation, sending, receiving and replay/replay lag.'],
+['PostgreSQL','Advanced','Recovery','What is a replication slot and what risk can it introduce?','A replication slot retains WAL needed by a consumer that may be behind. If the consumer stops advancing, retained WAL can grow and consume disk space.','Always monitor slot activity and retained WAL.'],
+['PostgreSQL','Advanced','Locks','How do you find blocking sessions?','Use pg_stat_activity together with pg_blocking_pids() to identify sessions waiting on other sessions, then inspect the blocking transaction and query.','Check transaction age and business impact before terminating a backend.'],
+['PostgreSQL','Advanced','Upgrades','What should be checked before a major PostgreSQL upgrade?','Review supported upgrade paths, extensions, application compatibility, replication/HA design, backups and restore testing, disk space, downtime or migration method, and rollback planning.','Major upgrades require compatibility validation; do not treat them like a minor patch update.'],
+['PostgreSQL','Intermediate','Security','What is the difference between a role and a user in PostgreSQL?','PostgreSQL uses roles for authorization. A role with LOGIN can act as a user, while roles without LOGIN can be used to group privileges.','Think of roles as the common security object and LOGIN as an attribute.'],
+['PostgreSQL','Beginner','Monitoring','What would you check if a database is running out of disk space?','Check filesystem usage, database and table sizes, WAL growth, replication slots, logs and temporary files, then identify the source before removing anything.','Do not delete WAL or database files manually; resolve the underlying retention or storage issue.'],
+['PostgreSQL','Advanced','HA','What is the purpose of a failover manager or HA orchestration layer?','It coordinates health checks, leader/standby state and promotion or routing according to a defined HA design. PostgreSQL itself provides replication primitives, while orchestration is often handled by additional tooling.','Distinguish PostgreSQL capabilities from external HA orchestration.'],
+['MySQL','Beginner','Storage','What is InnoDB?','InnoDB is the default general-purpose MySQL storage engine in modern MySQL releases and provides transactions, row-level locking and crash recovery.','Mention ACID transactions, indexes, locking and recovery.'],
+['MySQL','Beginner','Transactions','What is the difference between COMMIT and ROLLBACK?','COMMIT makes the current transaction changes durable according to the engine and transaction settings; ROLLBACK undoes uncommitted changes.','Mention autocommit and transaction boundaries when relevant.'],
+['MySQL','Intermediate','Performance','How would you investigate high MySQL CPU?','Confirm host CPU usage, identify expensive statements and active sessions, inspect execution plans and indexes, and correlate the spike with workload or recent changes.','Use evidence from performance schema, process/session information and query plans.'],
+['MySQL','Intermediate','Replication','What is replication lag?','Replication lag means a replica is behind the source in processing changes. The exact measurement depends on the replication technology and MySQL version.','Identify source, receiver/applier state and the reason for lag before taking action.'],
+['MySQL','Intermediate','Backup','What should a DBA verify after a MySQL backup?','Verify the backup completed, check logs and errors, confirm files or backup metadata are complete, and regularly perform restore tests.','A successful backup job is not the same as a tested recovery.'],
+['MySQL','Advanced','Locks','How would you troubleshoot a lock wait?','Identify the waiting transaction and blocker, inspect the SQL and transaction age, determine why the blocker remains open, then resolve it according to the application and incident process.','Long transactions are a common clue; investigate before killing sessions.'],
+['MySQL','Advanced','Recovery','Why should binary logs be retained carefully?','Binary logs support point-in-time recovery and replication, but excessive retention can consume disk space. Retention should match recovery and replication requirements.','Balance recovery objectives with storage capacity and replica health.'],
+['MySQL','Intermediate','Indexes','Why can adding an index sometimes make performance worse?','Indexes consume storage and add write overhead because inserts, updates and deletes may need index maintenance. Poor or redundant indexes can also increase optimizer choices and maintenance cost.','Index for actual query patterns and verify with execution plans and workload measurements.'],
+['MySQL','Advanced','Upgrades','What should you check before upgrading MySQL?','Review release compatibility, deprecated features, SQL behavior changes, replication topology, backup/restore, application drivers, configuration and rollback strategy.','Use the target release documentation and test the application workload.'],
+['MySQL','Beginner','Security','What is the principle of least privilege?','Accounts should receive only the privileges required for their tasks. This limits the impact of accidental or unauthorized actions.','Prefer narrowly scoped privileges and separate administrative/application accounts.'],
+['MySQL','Intermediate','Monitoring','What would you check when connections are exhausted?','Check current connections, configured limits, connection age, application pooling, sleeping sessions and errors. Determine whether the cause is a leak, traffic spike or configuration mismatch.','Fix the cause rather than only increasing the connection limit.'],
+['SQL Server','Beginner','Architecture','What is the difference between a database and an instance in SQL Server?','An instance is the SQL Server service/environment hosting databases. A database contains its own logical objects and physical files such as data and log files.','Mention that one instance can host multiple databases.'],
+['SQL Server','Beginner','Storage','Why is the transaction log important?','The transaction log records changes needed for transaction durability and recovery. Its behavior and truncation depend on the recovery model and log backups.','Know SIMPLE, FULL and BULK_LOGGED recovery models at a high level.'],
+['SQL Server','Intermediate','Performance','How would you investigate a slow query in SQL Server?','Capture the query, inspect the actual or estimated execution plan, waits, indexes, statistics, blocking and resource usage, then compare with recent workload or code changes.','Use Query Store where available and appropriate.'],
+['SQL Server','Intermediate','Backup','Why are log backups important in FULL recovery?','They capture transaction log records so the log can be truncated as appropriate and enable point-in-time recovery when combined with the required backup chain.','A full database backup does not replace regular log backups in FULL recovery.'],
+['SQL Server','Intermediate','Blocking','How do you investigate blocking?','Identify the head blocker and waiting sessions, inspect their SQL and transaction state, determine why the blocker remains open, and resolve the underlying cause.','Do not kill sessions without understanding transaction impact.'],
+['SQL Server','Advanced','Always On','What is Always On Availability Groups used for?','Availability Groups provide database-level high availability and disaster-recovery capabilities using replicas and log-based data movement.','Discuss synchronous/asynchronous commit and readable secondary options where applicable.'],
+['SQL Server','Advanced','TempDB','Why is TempDB important?','TempDB is used for temporary objects, worktables, versioning and other internal operations. Poor sizing, contention or unexpected workload can affect many queries.','Mention multiple data files and configuration according to workload and supported guidance.'],
+['SQL Server','Advanced','Recovery','What is a point-in-time restore?','It restores a database using the appropriate full/differential and log backup sequence to a chosen point in time, assuming the backup chain supports it.','Protect the log chain and validate restores regularly.'],
+['SQL Server','Intermediate','Security','What is the difference between a login and a database user?','A login is an instance-level security principal used to connect to SQL Server. A database user maps access within a particular database.','Explain the server-level versus database-level scope.'],
+['SQL Server','Intermediate','Maintenance','Why are statistics important?','The optimizer uses statistics to estimate row counts and choose execution plans. Stale or insufficient statistics can contribute to poor plans.','Statistics maintenance should be workload-aware rather than blindly rebuilding everything.'],
+['SQL Server','Advanced','DR','What should be included in a SQL Server DR drill?','Test the documented recovery procedure, backup availability, restore sequence, application connectivity, data validation, failover steps, RTO/RPO measurement and rollback or failback procedure.','A DR drill should prove the recovery process, not only the existence of backups.']
+];
+var IF={db:'All',level:'All',topic:'All',search:''};
+var interviewEl=function(id){return document.getElementById(id)};
+function interviewVals(){return {db:['All'].concat([...new Set(IQ.map(x=>x[0]))]),level:['All','Beginner','Intermediate','Advanced'],topic:['All'].concat([...new Set(IQ.map(x=>x[2]))])}}
+function renderInterviewFilters(){var box=interviewEl('interviewFilters'); if(!box)return; var v=interviewVals(); box.innerHTML=''; [['db','Database',v.db],['level','Level',v.level],['topic','Topic',v.topic]].forEach(function(g){g[2].forEach(function(x){var b=document.createElement('button');b.type='button';b.className='interview-filter '+((IF[g[0]]===x)?'active':'');b.textContent=(g[1]+': '+x);b.dataset.filter=g[0];b.dataset.value=x;box.appendChild(b)})})}
+function interviewMatch(q){return (!IF.db||IF.db==='All'||q[0]===IF.db)&&(!IF.level||IF.level==='All'||q[1]===IF.level)&&(!IF.topic||IF.topic==='All'||q[2]===IF.topic)&&(!IF.search||q.join(' ').toLowerCase().includes(IF.search.toLowerCase()))}
+function renderInterview(){var list=interviewEl('interviewList'),sum=interviewEl('interviewSummary'); if(!list)return; var a=IQ.filter(interviewMatch); sum.textContent=a.length+' question'+(a.length===1?'':'s')+' found'; if(!a.length){list.innerHTML='<div class="interview-empty">No questions match your filters. Try clearing the search or choosing “All”.</div>';return} list.innerHTML=a.map(function(q,i){var id='iq-'+i+'-'+q[0].replace(/\W/g,'');return '<article class="interview-card"><div class="interview-card-top"><div class="interview-meta"><span class="interview-badge">'+q[0]+'</span><span class="interview-badge">'+q[1]+'</span><span class="interview-badge">'+q[2]+'</span></div><h2 class="interview-question">'+q[3]+'</h2><div class="interview-actions"><button type="button" class="interview-btn primary" data-answer="'+id+'">Show answer</button><button type="button" class="interview-btn" data-copy="'+id+'">Copy question</button></div></div><div class="interview-answer" id="'+id+'" hidden><h3>Model answer</h3><p>'+q[4]+'</p><h3>Key points to mention</h3><p>'+q[5]+'</p></div></article>'}).join(''); list.querySelectorAll('[data-answer]').forEach(function(b){b.addEventListener('click',function(){var a=document.getElementById(b.dataset.answer);var open=!a.hidden;a.hidden=open;b.textContent=open?'Show answer':'Hide answer'})}); list.querySelectorAll('[data-copy]').forEach(function(b){b.addEventListener('click',function(){var card=b.closest('.interview-card'),text=card.querySelector('.interview-question').textContent;navigator.clipboard&&navigator.clipboard.writeText(text).then(function(){b.textContent='Copied';setTimeout(function(){b.textContent='Copy question'},1200)})})})}
+function initInterview(){renderInterviewFilters();renderInterview();var search=interviewEl('interviewSearch');if(search)search.addEventListener('input',function(){IF.search=search.value.trim();renderInterview()});var filters=interviewEl('interviewFilters');if(filters)filters.addEventListener('click',function(e){var b=e.target.closest('[data-filter]');if(!b)return;IF[b.dataset.filter]=b.dataset.value;renderInterviewFilters();renderInterview()})}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',initInterview);else initInterview();
+window.__DBAMyWorldInterviewInit=initInterview;
+})();
+</script>
 <footer class="site-footer footer-v39">
   <div class="footer-grid">
     <div class="footer-brand">
@@ -1113,6 +1556,10 @@ showPage('home');
       <button type="button" onclick="showPage('roadmaps')">Roadmaps</button>
       <button type="button" onclick="showPage('learning')">Learning Paths</button>
       <button type="button" onclick="showPage('commands')">Command Library</button>
+      <button type="button" onclick="showPage('troubleshooting')">Troubleshooting</button>
+      <button type="button" onclick="showPage('tools')">DBA Tools</button>
+      <button type="button" onclick="showPage('checklists')">Production Checklists</button>
+      <button type="button" onclick="showPage('interview')">Interview Center</button>
     </div>
 
     <div class="footer-links">
