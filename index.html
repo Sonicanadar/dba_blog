@@ -136,6 +136,20 @@ footer{
 
 /* Step 2 · Interactive DBA Tools */
 .tools-wrap{display:grid;gap:16px}.tools-hero{background:linear-gradient(135deg,var(--panel),rgba(22,64,122,.06));border:1px solid var(--line);border-radius:14px;padding:20px}.tools-hero h1{margin:.2rem 0 .5rem}.tools-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.tool-card{border:1px solid var(--line);background:var(--panel);border-radius:12px;padding:16px}.tool-card h2{margin:0 0 6px;font-size:1.08rem}.tool-card p{color:var(--mute);margin:0 0 14px;font-size:.92rem}.tool-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.tool-field{display:grid;gap:5px}.tool-field label{font-size:.84rem;font-weight:600}.tool-field input,.tool-field select{width:100%;font:inherit;padding:10px;border:1px solid var(--line);border-radius:8px;background:var(--panel);color:var(--ink);min-width:0}.tool-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.tool-btn{border:1px solid var(--brand);background:var(--brand);color:var(--brandfg);border-radius:8px;padding:9px 13px;font:inherit;font-weight:600;cursor:pointer}.tool-btn.secondary{background:transparent;color:var(--ink);border-color:var(--line)}.tool-result{margin-top:12px;padding:12px;border-radius:9px;background:var(--code);color:var(--codefg);font-family:'IBM Plex Mono',monospace;font-size:.86rem;white-space:pre-wrap;overflow-wrap:anywhere}.tool-note{margin-top:14px;padding:11px 13px;border-left:4px solid var(--brand);background:var(--wbg);color:var(--ink);border-radius:6px}.tools-kpis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-bottom:14px}.tool-kpi{border:1px solid var(--line);border-radius:10px;padding:12px;background:var(--panel)}.tool-kpi b{display:block;font-size:1.1rem}.tool-kpi span{color:var(--mute);font-size:.8rem}@media(max-width:760px){.tools-grid{grid-template-columns:1fr}.tool-form{grid-template-columns:1fr}.tools-kpis{grid-template-columns:1fr}}
+
+<style id="oracle-dba-lab-v53-css">
+.lab-wrap{display:grid;grid-template-columns:minmax(0,1fr);gap:18px}
+.lab-toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:14px 0}
+.lab-search{flex:1;min-width:220px;padding:11px 13px;border:1px solid var(--border,#d7dce3);border-radius:10px;background:var(--card,#fff);color:var(--text,#111827)}
+.lab-filters{display:flex;gap:8px;flex-wrap:wrap}
+.lab-filter{border:1px solid var(--border,#d7dce3);background:var(--card,#fff);color:var(--text,#111827);border-radius:999px;padding:8px 12px;cursor:pointer}
+.lab-filter.active{background:var(--accent,#2563eb);color:#fff;border-color:var(--accent,#2563eb)}
+.lab-card{border:1px solid var(--border,#d7dce3);border-radius:14px;background:var(--card,#fff);padding:18px;margin-bottom:14px;box-shadow:0 3px 12px rgba(0,0,0,.04)}
+.lab-card h2{margin:0 0 6px}.lab-meta{font-size:.86rem;opacity:.75;margin-bottom:12px}.lab-objective{margin:10px 0 14px}.lab-steps{display:grid;gap:8px;margin:12px 0}.lab-step{display:flex;gap:10px;align-items:flex-start;padding:10px;border:1px solid var(--border,#d7dce3);border-radius:10px}.lab-step input{margin-top:3px;accent-color:var(--accent,#2563eb)}
+.lab-code{background:#111827;color:#f3f4f6;border-radius:10px;padding:13px;overflow:auto;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.86rem;white-space:pre-wrap}.lab-actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:12px}.lab-btn{border:1px solid var(--border,#d7dce3);background:var(--card,#fff);color:var(--text,#111827);padding:9px 13px;border-radius:9px;cursor:pointer;font-weight:600}.lab-btn.primary{background:var(--accent,#2563eb);border-color:var(--accent,#2563eb);color:#fff}.lab-answer{margin-top:14px;padding:14px;border-radius:10px;background:rgba(37,99,235,.08);border:1px solid rgba(37,99,235,.25)}
+.lab-status{font-weight:700}.lab-empty{padding:24px;text-align:center;opacity:.7}.lab-note{padding:12px;border-left:4px solid var(--accent,#2563eb);background:rgba(37,99,235,.06);border-radius:8px;margin:12px 0}
+@media(max-width:600px){.lab-card{padding:14px}.lab-toolbar{display:block}.lab-search{width:100%;box-sizing:border-box;margin-bottom:9px}.lab-btn{width:100%}}
+</style>
 </style>
 <style>
 /* v28: professional footer */
@@ -762,12 +776,36 @@ main{min-width:0;width:100%}
 pre,code{max-width:100%;overflow-wrap:anywhere}
 pre{overflow-x:auto}
 </style>
+
+<style id="laptop-page-layout-v54">
+/* v54: fix laptop page layout — feature pages use the full content width */
+.layout{width:min(100%,1440px);margin:0 auto;min-width:0}
+.layout>main{min-width:0;width:100%}
+@media (min-width:900px){
+  body[data-page]:not([data-page="home"]) .layout{grid-template-columns:minmax(0,1fr);gap:0;padding-left:24px;padding-right:24px}
+  body[data-page]:not([data-page="home"]) .filters{display:none !important}
+}
+/* Keep the large navigation usable on laptop screens without squeezing buttons */
+.navbar{display:flex;flex-wrap:nowrap;overflow-x:auto;overflow-y:hidden;scrollbar-width:none;padding-bottom:2px}
+.navbar::-webkit-scrollbar{display:none}
+.navbtn{flex:0 0 auto;white-space:nowrap}
+/* Interview Center: use the available laptop width for cards */
+#page-interview{width:100%;min-width:0}
+#page-interview .interview-wrap{width:100%;max-width:1120px;margin:0 auto;padding:22px 0 44px}
+#page-interview .interview-list{grid-template-columns:repeat(2,minmax(0,1fr));align-items:start}
+@media (min-width:1200px){#page-interview .interview-list{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media (max-width:899px){
+  .navbar{flex-wrap:nowrap}
+  #page-interview .interview-wrap{padding:14px 0 32px}
+  #page-interview .interview-list{grid-template-columns:1fr}
+}
+</style>
 </head>
 <body>
 <header class="top"><div class="in">
 <div class="logo">DBAMyWorld</div>
 <div class="tag">Step-by-step DBA guides for Oracle, PostgreSQL, MySQL and SQL Server</div>
-<nav class="navbar" aria-label="Main navigation"><button class="navbtn active" data-page="home">Home</button><button class="navbtn" data-page="roadmaps">Roadmaps</button><button type="button" class="navbtn" data-page="learning">Learning Paths</button><button type="button" class="navbtn" data-page="commands">Command Library</button><button type="button" class="navbtn" data-page="troubleshooting">Troubleshooting</button><button type="button" class="navbtn" data-page="tools">DBA Tools</button><button type="button" class="navbtn" data-page="checklists">Production Checklists</button><button type="button" class="navbtn" data-page="quiz">DBA Quiz</button><button type="button" class="navbtn" data-page="interview">Interview Center</button><button class="navbtn" data-page="about">About</button><button class="navbtn" data-page="contact">Contact</button></nav>
+<nav class="navbar" aria-label="Main navigation"><button class="navbtn active" data-page="home">Home</button><button class="navbtn" data-page="roadmaps">Roadmaps</button><button type="button" class="navbtn" data-page="learning">Learning Paths</button><button type="button" class="navbtn" data-page="commands">Command Library</button><button type="button" class="navbtn" data-page="troubleshooting">Troubleshooting</button><button type="button" class="navbtn" data-page="tools">DBA Tools</button><button type="button" class="navbtn" data-page="oraclelab">Oracle DBA Lab</button><button type="button" class="navbtn" data-page="checklists">Production Checklists</button><button type="button" class="navbtn" data-page="quiz">DBA Quiz</button><button type="button" class="navbtn" data-page="interview">Interview Center</button><button class="navbtn" data-page="about">About</button><button class="navbtn" data-page="contact">Contact</button></nav>
 </div></header>
 <div class="layout">
 <aside class="filters">
@@ -902,6 +940,20 @@ pre{overflow-x:auto}
 </div>
 </section>
 
+
+<section id="page-oraclelab" hidden>
+  <div class="page-head">
+    <h1>Oracle DBA Lab</h1>
+    <p>Practice production-style Oracle DBA scenarios with a simple Check → Diagnose → Fix → Verify workflow.</p>
+  </div>
+  <div class="lab-note"><strong>Practice mode:</strong> These labs are designed for a safe test environment. Do not run termination, recovery, or storage-changing commands on production systems without your normal change and incident controls.</div>
+  <div class="lab-toolbar">
+    <input id="labSearch" class="lab-search" type="search" placeholder="Search scenario, symptom, command or topic…" aria-label="Search Oracle DBA labs">
+    <div id="labFilters" class="lab-filters"></div>
+  </div>
+  <div id="labStatus" class="lab-status" aria-live="polite"></div>
+  <div id="labList" class="lab-wrap"></div>
+</section>
 <section id="page-interview" hidden>
 <div class="interview-wrap">
   <div class="interview-hero">
@@ -1443,7 +1495,7 @@ document.getElementById('checkReset').addEventListener('click',function(){var al
 })();
 
 function showPage(page){
-  ['home','roadmaps','learning','commands','troubleshooting','tools','checklists','quiz','interview','about','contact'].forEach(function(p){var el=document.getElementById('page-'+p);if(el)el.hidden=p!==page});
+  ['home','roadmaps','learning','commands','troubleshooting','tools','oraclelab','checklists','quiz','interview','about','contact'].forEach(function(p){var el=document.getElementById('page-'+p);if(el)el.hidden=p!==page});
   document.querySelectorAll('.navbtn').forEach(function(b){b.classList.toggle('active',b.dataset.page===page)});
   document.querySelector('.filters').hidden=page!=='home';
   document.body.dataset.page=page;
@@ -1482,6 +1534,25 @@ render();
 showPage('home');
 </script>
 
+
+<script id="oracle-dba-lab-v53-js">
+(function(){
+var LABS=[
+{id:'slow-db',topic:'Performance',level:'Intermediate',title:'Production database suddenly becomes slow',symptom:'Users report that normal transactions are taking much longer than usual.',objective:'Build a repeatable first-response path before changing anything.',steps:['Confirm the slowdown window and affected application/workload.','Check OS CPU, memory and I/O alongside database activity.','Identify active sessions, waits and top resource-consuming SQL.','Compare the current workload with a known healthy baseline.'],commands:`SELECT sid, serial#, username, event, wait_class, seconds_in_wait\nFROM v$session\nWHERE status = 'ACTIVE'\nORDER BY seconds_in_wait DESC;`,fix:'Do not restart or kill sessions just because the database is slow. Use the evidence to isolate the bottleneck, then apply the smallest approved corrective action and monitor the result.',verify:'Recheck the affected workload, wait profile and response time after the change.',answer:'Start with evidence: scope and timing → OS/database health → sessions/waits → top SQL → recent deployments/jobs/configuration changes → targeted remediation.'},
+{id:'blocking',topic:'Locks',level:'Intermediate',title:'A blocking session is delaying application transactions',symptom:'Several sessions are waiting and users report that updates are hanging.',objective:'Identify the blocker, understand the transaction, and choose a controlled response.',steps:['Find blocked sessions and their blocking session IDs.','Inspect the blocker’s SQL and transaction age.','Confirm whether the transaction is expected or part of an incident.','Coordinate cancellation/termination only through the approved process.'],commands:`SELECT sid, serial#, blocking_session, event, seconds_in_wait\nFROM v$session\nWHERE blocking_session IS NOT NULL;`,fix:'If the blocker is safe to stop, follow the incident/change procedure to cancel or terminate it. If it is an expected long transaction, address the application or transaction design instead.',verify:'Confirm blocked sessions are progressing and that the blocking transaction is no longer holding the problematic lock.',answer:'The key is to identify both sides of the chain. Never kill a session blindly; inspect SQL, transaction age, business impact and ownership first.'},
+{id:'tablespace',topic:'Storage',level:'Beginner',title:'A tablespace is approaching full capacity',symptom:'Monitoring reports a tablespace at 90–95% utilization.',objective:'Determine whether the risk is temporary, predictable growth, or a capacity problem.',steps:['Check tablespace usage and free space.','Identify the data files and whether they can autoextend.','Review recent growth and expected workload growth.','Confirm filesystem/storage capacity before extending anything.'],commands:`SELECT tablespace_name, file_name, bytes/1024/1024 AS mb,\n       autoextensible, maxbytes/1024/1024 AS max_mb\nFROM dba_data_files\nORDER BY tablespace_name, file_name;`,fix:'Choose an approved capacity action: resize a suitable data file, add a data file, or correct an autoextend/capacity configuration. Verify underlying storage before making the change.',verify:'Recheck tablespace free space, data-file capacity and monitoring thresholds.',answer:'A high percentage alone is not the whole diagnosis. Check actual free space, growth rate, autoextend settings, max size and the storage layer before expanding the database.'},
+{id:'rman',topic:'Backup & Recovery',level:'Intermediate',title:'RMAN backup job failed',symptom:'The scheduled backup reports failure and the latest successful backup is older than expected.',objective:'Find the failure point and restore backup protection as quickly and safely as possible.',steps:['Capture the RMAN error and job start/end time.','Check database, filesystem and backup-destination health.','Confirm archive generation and available destination space.','Review the RMAN job output and retry only after addressing the cause.'],commands:`RMAN> LIST BACKUP SUMMARY;\nRMAN> CROSSCHECK BACKUP;\nRMAN> REPORT OBSOLETE;`,fix:'Correct the specific failure such as destination capacity, connectivity, permissions, expired pieces, or database/archive issues. Then run a controlled backup and validate it.',verify:'Confirm a new successful backup exists and that restore/recovery metadata is consistent with your backup policy.',answer:'Treat a failed backup as a protection incident. Identify the exact RMAN error first, correct the underlying issue, then prove that a usable backup was created.'},
+{id:'dataguard',topic:'Data Guard',level:'Advanced',title:'Data Guard standby is showing apply lag',symptom:'The standby is behind the primary and the lag continues to increase.',objective:'Separate transport lag from apply lag and identify where the pipeline is slowing.',steps:['Check primary redo generation and transport status.','Check standby receive and apply status.','Compare transport lag and apply lag.','Inspect standby database waits, I/O and managed recovery status.'],commands:`SELECT name, value, unit\nFROM v$dataguard_stats\nWHERE name IN ('transport lag','apply lag','apply finish time');`,fix:'If transport is the problem, investigate connectivity, destination errors and redo shipping. If apply is the problem, investigate standby I/O, CPU, waits and recovery process health before changing configuration.',verify:'Confirm lag is decreasing and monitor it over multiple intervals rather than relying on one sample.',answer:'First determine whether redo is arriving late or arriving but applying slowly. That distinction narrows the investigation considerably.'},
+{id:'pdb',topic:'Multitenant',level:'Intermediate',title:'A PDB is not open after a restart',symptom:'The CDB is available but an application PDB is not in the expected open mode.',objective:'Check the PDB state and recover the intended service state without changing unrelated containers.',steps:['Confirm the current container and list PDB open modes.','Identify whether the PDB is mounted, read only, or read write.','Open the specific PDB using the approved startup procedure.','If required, configure the desired state to persist across restart.'],commands:`SHOW CON_NAME;\nSELECT name, open_mode, restricted FROM v$pdbs;`,fix:'Open only the affected PDB using the intended mode and validate application connectivity. If the PDB should automatically reopen after restart, use the documented save-state approach for your Oracle release.',verify:'Confirm the PDB open mode, services and application connectivity.',answer:'Always distinguish CDB state from PDB state. A healthy CDB does not automatically mean every PDB is open in the required mode.'}
+];
+var filter='All';
+function esc(x){return String(x).replace(/[&<>\"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','\\':'&#92;','"':'&quot;'}[c]})}
+function renderFilters(){var topics=['All'].concat(Array.from(new Set(LABS.map(function(x){return x.topic}))));document.getElementById('labFilters').innerHTML=topics.map(function(t){return '<button type="button" class="lab-filter '+(t===filter?'active':'')+'" data-lab-filter="'+esc(t)+'">'+esc(t)+'</button>'}).join('');document.querySelectorAll('[data-lab-filter]').forEach(function(b){b.onclick=function(){filter=b.dataset.labFilter;render()}})}
+function render(){renderFilters();var q=(document.getElementById('labSearch').value||'').toLowerCase().trim();var list=LABS.filter(function(x){var hay=[x.title,x.topic,x.level,x.symptom,x.objective,x.fix,x.verify,x.answer,x.commands].join(' ').toLowerCase();return (filter==='All'||x.topic===filter)&&(!q||hay.indexOf(q)>=0)});var el=document.getElementById('labList');el.innerHTML=list.length?list.map(function(x){return '<article class="lab-card" data-lab-card="'+x.id+'"><div class="lab-meta">'+esc(x.topic)+' · '+esc(x.level)+'</div><h2>'+esc(x.title)+'</h2><p><strong>Symptom:</strong> '+esc(x.symptom)+'</p><p class="lab-objective"><strong>Objective:</strong> '+esc(x.objective)+'</p><h3>Check → Diagnose</h3><div class="lab-steps">'+x.steps.map(function(st,i){return '<label class="lab-step"><input type="checkbox" data-lab-step="'+x.id+'-'+i+'"> <span>'+esc(st)+'</span></label>'}).join('')+'</div><h3>Useful diagnostic command</h3><pre class="lab-code">'+esc(x.commands)+'</pre><div class="lab-actions"><button type="button" class="lab-btn primary" data-lab-answer="'+x.id+'">Show Fix &amp; Verify</button><button type="button" class="lab-btn" data-lab-copy="'+x.id+'">Copy Command</button><button type="button" class="lab-btn" data-lab-reset="'+x.id+'">Reset Steps</button></div><div class="lab-answer" id="lab-answer-'+x.id+'" hidden><p><strong>Fix:</strong> '+esc(x.fix)+'</p><p><strong>Verify:</strong> '+esc(x.verify)+'</p><p><strong>Key takeaway:</strong> '+esc(x.answer)+'</p></div></article>'}).join(''):'<div class="lab-card lab-empty">No Oracle DBA labs match your search.</div>';document.getElementById('labStatus').textContent=list.length+' lab'+(list.length===1?'':'s')+' available';bind();}
+function bind(){document.querySelectorAll('[data-lab-answer]').forEach(function(b){b.onclick=function(){var a=document.getElementById('lab-answer-'+b.dataset.labAnswer);a.hidden=!a.hidden;b.textContent=a.hidden?'Show Fix & Verify':'Hide Fix & Verify'}});document.querySelectorAll('[data-lab-copy]').forEach(function(b){b.onclick=function(){var x=LABS.find(function(z){return z.id===b.dataset.labCopy});navigator.clipboard&&navigator.clipboard.writeText(x.commands).then(function(){b.textContent='Copied';setTimeout(function(){b.textContent='Copy Command'},1200)}).catch(function(){b.textContent='Copy failed'})}});document.querySelectorAll('[data-lab-reset]').forEach(function(b){b.onclick=function(){var card=b.closest('[data-lab-card]');card.querySelectorAll('input[type=checkbox]').forEach(function(c){c.checked=false})}})}
+document.getElementById('labSearch').addEventListener('input',render);render();
+})();
+</script>
 <script id="interview-center-v47-js">
 (function(){
 var IQ=[
